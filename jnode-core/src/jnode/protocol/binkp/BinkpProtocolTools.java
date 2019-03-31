@@ -35,11 +35,14 @@ import java.security.NoSuchAlgorithmException;
 
 import jnode.dto.Link;
 import jnode.ftn.tosser.FtnTosser;
+import jnode.logger.Logger;
+import jnode.protocol.binkp.connector.BinkpAbstractConnector;
 import jnode.protocol.binkp.types.BinkpCommand;
 import jnode.protocol.binkp.types.BinkpFrame;
 import jnode.protocol.io.Message;
 
 public class BinkpProtocolTools {
+	static final Logger logger = Logger.getLogger(BinkpProtocolTools.class);
 
 	public static byte hex2decimal(String s) {
 		String digits = "0123456789ABCDEF";
@@ -55,8 +58,11 @@ public class BinkpProtocolTools {
 
 	public static String getAuthPassword(Link foreignLink, boolean secure,
 			String cramAlgo, String cramText) {
+		logger.l5("cramAlgo = " + cramAlgo);
+		logger.l5("cramText = " + cramText);
 		MessageDigest md;
 		String password = (secure) ? foreignLink.getProtocolPassword() : "-";
+		logger.l5("protocol password = " + password);
 		if (!secure || cramAlgo == null || cramText == null) {
 			return password;
 		} else {

@@ -22,6 +22,7 @@ package jnode.protocol.binkp.connector;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.NoSuchElementException;
 
@@ -123,7 +124,7 @@ public class BinkpPipeConnector extends BinkpAbstractConnector {
 					remaining -= buf.length;
 					data.put(buf);
 				}
-				data.flip();
+				((Buffer)data).flip();
 				BinkpFrame frame;
 				if (command) {
 					BinkpCommand cmd = BinkpProtocolTools

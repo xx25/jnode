@@ -415,6 +415,10 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			error("We weren't waiting for M_PWD");
 		}
 		boolean valid = (!secure || checkPassword(arg));
+
+		//FIXME отключили проверку пароля
+//		valid = true;
+		
 		String text;
 		if (secure) {
 			text = "(S) Secure  connection with "
@@ -433,11 +437,15 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	}
 
 	private boolean checkPassword(String arg) {
+		logger.l5("checkPassword(" + arg + ")");
+				
 		String password = foreignLink.getProtocolPassword();
+		logger.l5("protocol password: " + password);
 		if (password.equals(arg)) {
 			return true;
 		}
 		password = getAuthPassword(foreignLink, secure, cramAlgo, cramText);
+		logger.l5("auth password: " + password);
 		if (password.endsWith(arg)) {
 			return true;
 		}

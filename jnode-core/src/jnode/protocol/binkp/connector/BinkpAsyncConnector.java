@@ -25,6 +25,7 @@ import static jnode.protocol.binkp.BinkpProtocolTools.write;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -127,14 +128,14 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 								for (int len = 0; len < 2;) {
 									len += readOrDie(head, channel);
 								}
-								head.flip();
+								((Buffer)head).flip();
 								int header = ((int) head.getShort()) & 0xffff;
 								int datalen = header & 0x7fff;
 								ByteBuffer data = ByteBuffer.allocate(datalen);
 								for (int len = 0; len < datalen;) {
 									len += readOrDie(data, channel);
 								}
-								data.flip();
+								((Buffer)data).flip();
 								if ((header & 0x8000) >= 0x8000) {
 									// command
 									BinkpCommand cmd = getCommand(data.get());
