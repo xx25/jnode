@@ -63,7 +63,7 @@ public class TelegramChannelPosterModule extends JnodeModule {
 			            logger.l4("No such echoarea - " + areaName);
 			            continue;
 			        }
-					File[] messageFiles = channelsDir.listFiles();
+					File[] messageFiles = channel.listFiles();
 					Arrays.sort(messageFiles, new Comparator<File>() {
 						@Override
 						public int compare(File o1, File o2) {
