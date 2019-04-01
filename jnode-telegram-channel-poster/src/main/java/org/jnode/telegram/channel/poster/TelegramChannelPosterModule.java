@@ -93,7 +93,7 @@ public class TelegramChannelPosterModule extends JnodeModule {
 							}
 							String message = stringBuffer.toString();
 							logger.l4("posting to " + areaName + ": " + subject);
-							FtnTools.writeEchomail(area, subject, message);
+							FtnTools.writeEchomail(area, subject, message, "Telegram Channels Robot", "All");
 						}
 						messageFile.delete();
 					}
