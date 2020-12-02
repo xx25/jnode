@@ -1560,7 +1560,7 @@ public final class FtnTools {
 		mail.setMsgid(getPrimaryFtnAddress().toString() + " "
 				+ FtnTools.generate8d());
 		StringBuilder b = new StringBuilder();
-		b.append(String.format("\001PID: %s\n\001TID: %s\n\n",
+		b.append(String.format("\001PID: %s\n\001TID: %s\n\001CHRS: CP866 2\n",
 				MainHandler.getVersion(), MainHandler.getVersion()));
 		b.append(text);
 		b.append("\n--- "
