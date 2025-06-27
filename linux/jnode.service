@@ -1,0 +1,42 @@
+[Unit]
+Description=jNode FTN Mailer and Tosser Service
+Documentation=file:///opt/jnode/docs/
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=jnode
+Group=jnode
+WorkingDirectory=/opt/jnode
+ExecStart=/usr/bin/java -Xms128m -Xmx512m -server -Djava.awt.headless=true -Dfile.encoding=UTF-8 -Djava.net.preferIPv6Addresses=false -cp "/opt/jnode/lib/*" jnode.main.Main /opt/jnode/etc/jnode.conf
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=60
+TimeoutStopSec=30
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/jnode/db /opt/jnode/log /opt/jnode/inbound /opt/jnode/nodelist /opt/jnode/tmp /opt/jnode/files
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jnode
+
+[Install]
+WantedBy=multi-user.target

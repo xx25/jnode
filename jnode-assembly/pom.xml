@@ -19,7 +19,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>buildnumber-maven-plugin</artifactId>
-				<version>1.2</version>
+				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<phase>validate</phase>
@@ -34,7 +34,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.4</version>
+				<version>3.6.0</version>
 				<executions>
 					<execution>
 						<id>stable</id>
@@ -43,7 +43,7 @@
 							<goal>single</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/dist</outputDirectory>
+							<outputDirectory>${project.build.directory}</outputDirectory>
 							<ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
 							<finalName>jnode-${project.version}</finalName>
 							<descriptors>
@@ -58,7 +58,7 @@
 							<goal>single</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/dist</outputDirectory>
+							<outputDirectory>${project.build.directory}</outputDirectory>
 							<ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
 							<finalName>jnode-${project.version}</finalName>
 							<descriptors>

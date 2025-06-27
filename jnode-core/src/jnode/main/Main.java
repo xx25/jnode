@@ -20,7 +20,6 @@
 
 package jnode.main;
 
-import com.j256.ormlite.logger.LocalLog;
 import jnode.dto.*;
 import jnode.event.Notifier;
 import jnode.event.SharedModuleEvent;
@@ -58,7 +57,7 @@ public class Main {
 	private static final String LOGZIPPATH = "log.zippath";
 
 	public static void main(String[] args) {
-		System.setProperty(LocalLog.LOCAL_LOG_LEVEL_PROPERTY, "INFO");
+		// ORMLite logging is handled by default logger configuration
 		if (args.length == 0) {
 			System.out.println("Usage: $0 <config-file>");
 			System.exit(-1);
