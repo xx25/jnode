@@ -1,7 +1,7 @@
 <table class="links" id="users">
 	<tr>
-		<th>Имя пользователя</th>
-		<th>Операции</th>
+		<th>Username</th>
+		<th>Operations</th>
 	</tr>
 	%s
 </table>
@@ -10,22 +10,22 @@
 	onsubmit="return checkPasswords();">
 	<table class="info">
 		<tr>
-			<th colspan="2">Новый пользователь</th>
+			<th colspan="2">New User</th>
 		</tr>
 		<tr>
-			<th>Имя пользователя</th>
+			<th>Username</th>
 			<td><input type="text" name="username" id="user1" /></td>
 		</tr>
 		<tr>
-			<th>Пароль</th>
+			<th>Password</th>
 			<td><input type="password" name="password" id="pass1" /></td>
 		</tr>
 		<tr>
-			<th>Подтверждение</th>
+			<th>Confirmation</th>
 			<td><input type="password" id="pass2" /></td>
 		</tr>
 	</table>
-	<input type="submit" name="s" value="Отправить" />
+	<input type="submit" name="s" value="Submit" />
 </form>
 
 <form action="/secure/user/password" method="post" id="pwd_form">

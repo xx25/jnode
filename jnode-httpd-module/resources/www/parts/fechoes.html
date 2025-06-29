@@ -2,13 +2,13 @@
 <a href="#new" onclick="fnew();" class="button">New area</a>
 <table class="links" id="echoes">
 	<tr>
-		<th colspan="4" class="center">Фэхи на узле</th>
+		<th colspan="4" class="center">File Echoes on Node</th>
 	</tr>
 	<tr>
-		<th>Имя</th>
-		<th>Описание</th>
+		<th>Name</th>
+		<th>Description</th>
 		<th>R/W/G</th>
-		<th>Операции</th>
+		<th>Operations</th>
 	</tr>
 	%s
 </table>
@@ -18,27 +18,27 @@
 	<input type="hidden" name="id" id="_id" value="0" />
 	<table class="info" id="new">
 		<tr>
-			<th>Имя</th>
+			<th>Name</th>
 			<td><input type="text" name="name" id="_name" /></td>
 		</tr>
 		<tr>
-			<th>Описание</th>
+			<th>Description</th>
 			<td><input type="text" name="descr" id="_descr" /></td>
 		</tr>
 		<tr>
-			<th>Уровень доступа ( чтение )</th>
+			<th>Access Level (read)</th>
 			<td><input type="text" size="3" name="rl" id="_rl" /></td>
 		</tr>
 		<tr>
-			<th>Уровень доступа ( запись )</th>
+			<th>Access Level (write)</th>
 			<td><input type="text" size="3" name="wl" id="_wl" /></td>
 		</tr>
 		<tr>
-			<th>Уровень доступа ( группа )</th>
+			<th>Access Level (group)</th>
 			<td><input type="text" size="5" name="gr" id="_gr" /></td>
 		</tr>
 	</table>
-	<input type="submit" name="_s" value="Отправить" class="button" />
+	<input type="submit" name="_s" value="Submit" class="button" />
 </form>
 <script>
 	function _edit(e) {
