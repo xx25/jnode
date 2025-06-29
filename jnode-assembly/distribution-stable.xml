@@ -42,7 +42,7 @@
 			<directory>${basedir}/../docs/nodelist</directory>
 			<outputDirectory>jnode/nodelist</outputDirectory>
 			<includes>
-				<include>NODELIST</include>
+				<include>nodelist</include>
 			</includes>
 		</fileSet>
 		<fileSet>
