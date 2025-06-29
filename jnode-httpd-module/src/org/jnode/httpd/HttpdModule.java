@@ -120,6 +120,7 @@ public class HttpdModule extends JnodeModule {
 		Spark.get(new FileareasRoute());
 		Spark.get(new RoutingsRoute());
 		Spark.get(new RewritesRoute());
+		Spark.get(new NetmailAcceptRulesRoute());
 		Spark.get(new UsersRoute());
 
 		Spark.post(new LinkRoute());
@@ -128,6 +129,7 @@ public class HttpdModule extends JnodeModule {
 		Spark.post(new FileareaRoute());
 		Spark.post(new RoutingRoute());
 		Spark.post(new RewriteRoute());
+		Spark.post(new NetmailAcceptRuleRoute());
 		Spark.post(new UserRoute());
 
 		try {

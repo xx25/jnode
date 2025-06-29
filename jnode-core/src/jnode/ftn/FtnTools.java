@@ -62,6 +62,7 @@ import jnode.dto.FilemailAwaiting;
 import jnode.dto.Link;
 import jnode.dto.LinkOption;
 import jnode.dto.Netmail;
+import jnode.dto.NetmailAcceptRule;
 import jnode.dto.Rewrite;
 import jnode.dto.Robot;
 import jnode.dto.Route;
@@ -1520,16 +1521,129 @@ public final class FtnTools {
 			FtnNdlAddress from = NodelistScanner.getInstance().isExists(
 					netmail.getFromAddr());
 			if (from == null) {
-				logger.l3(String.format(
-						"Netmail %s -> %s reject ( origin not found )", netmail
-								.getFromAddr().toString(), netmail.getToAddr()
-								.toString()));
+				// Unknown node - check if we accept netmail to our system
+				if (isNetmailToOurSystem(netmail)) {
+					validFrom = true;
+					logger.l4(String.format("Accepting netmail from unknown node %s to our system", 
+						netmail.getFromAddr()));
+				} else {
+					logger.l3(String.format("Netmail %s -> %s reject (origin not found)", 
+						netmail.getFromAddr(), netmail.getToAddr()));
+				}
 			} else {
-				validFrom = true;
+				// Nodelist node - check acceptance rules
+				if (checkNetmailAcceptanceFromNodelist(netmail)) {
+					validFrom = true;
+					logger.l4(String.format("Accepting netmail from nodelist node %s based on rules", 
+						netmail.getFromAddr()));
+				} else {
+					logger.l3(String.format("Netmail %s -> %s reject (not allowed by acceptance rules)", 
+						netmail.getFromAddr(), netmail.getToAddr()));
+				}
 			}
 		}
 
 		return !(validFrom && validTo);
+	}
+
+	/**
+	 * Check if netmail matches acceptance rule pattern
+	 * 
+	 * @param rule
+	 * @param netmail
+	 * @return
+	 */
+	public static boolean matchesNetmailAcceptRule(NetmailAcceptRule rule, FtnMessage netmail) {
+		if (!rule.getEnabled()) {
+			return false;
+		}
+		
+		String[] patterns = {
+			rule.getFromAddress(),
+			rule.getToAddress(), 
+			rule.getFromName(),
+			rule.getToName(),
+			rule.getSubject()
+		};
+		
+		String[] values = {
+			netmail.getFromAddr().toString(),
+			netmail.getToAddr().toString(),
+			netmail.getFromName(),
+			netmail.getToName(), 
+			netmail.getSubject()
+		};
+		
+		for (int i = 0; i < patterns.length; i++) {
+			String pattern = patterns[i];
+			String value = values[i];
+			
+			if (pattern != null && !pattern.equals("*")) {
+				if (value == null || !value.matches(pattern)) {
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+
+	/**
+	 * Check if netmail should be accepted from nodelist-only node
+	 * 
+	 * @param netmail
+	 * @return
+	 */
+	public static boolean checkNetmailAcceptanceFromNodelist(FtnMessage netmail) {
+		// Always accept netmail to our own system addresses
+		if (isNetmailToOurSystem(netmail)) {
+			return true;
+		}
+		
+		// Check acceptance rules in priority order
+		List<NetmailAcceptRule> rules = ORMManager.get(NetmailAcceptRule.class)
+			.getOrderAnd("nice", true);
+			
+		for (NetmailAcceptRule rule : rules) {
+			if (matchesNetmailAcceptRule(rule, netmail)) {
+				logger.l4(String.format("Netmail %s -> %s matched rule: %s (action: %s)",
+					netmail.getFromAddr(), netmail.getToAddr(), 
+					rule.getDescription(), rule.getAction()));
+					
+				boolean accept = (rule.getAction() == NetmailAcceptRule.Action.ACCEPT);
+				
+				if (rule.getStopProcessing()) {
+					return accept;
+				}
+			}
+		}
+		
+		// Default: reject if no rules matched
+		return false;
+	}
+
+	/**
+	 * Check if netmail is addressed to our system
+	 * 
+	 * @param netmail
+	 * @return
+	 */
+	private static boolean isNetmailToOurSystem(FtnMessage netmail) {
+		FtnAddress toAddr = netmail.getToAddr();
+		
+		// Check if it's to our point
+		if (isOurPoint(toAddr)) {
+			return true;
+		}
+		
+		// Check if it's to any of our system addresses
+		for (FtnAddress systemAddr : MainHandler.getCurrentInstance().getInfo().getAddressList()) {
+			if (systemAddr.equals(toAddr) || systemAddr.equals(toAddr.cloneNode())) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	public static void writeEchomail(Echoarea area, String subject, String text) {
