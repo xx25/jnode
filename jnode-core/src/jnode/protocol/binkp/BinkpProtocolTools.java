@@ -123,7 +123,22 @@ public class BinkpProtocolTools {
 	public static int write(BinkpFrame frame, SocketChannel socket) {
 		if (frame != null) {
 			try {
-				socket.write(ByteBuffer.wrap(frame.getBytes()));
+				logger.l5("=== write() called with frame: " + frame);
+				ByteBuffer buf = ByteBuffer.wrap(frame.getBytes());
+				int totalBytes = buf.remaining();
+				int writtenBytes = 0;
+				
+				while (buf.hasRemaining()) {
+					int written = socket.write(buf);
+					writtenBytes += written;
+					if (written == 0) {
+						logger.l2("=== CRITICAL: channel.write() returned 0, remaining=" + buf.remaining() + ", socket.isConnected()=" + socket.isConnected());
+						Thread.yield(); // Give the channel a moment
+					} else if (written > 0) {
+						logger.l4("=== Network write: " + written + " bytes written, total so far: " + writtenBytes + "/" + totalBytes);
+					}
+				}
+				logger.l3("=== NETWORK TRANSMISSION COMPLETE: " + writtenBytes + "/" + totalBytes + " bytes for " + (frame.getCommand() != null ? "command " + frame.getCommand() : "data frame"));
 				return 1;
 			} catch (IOException e) {
 				e.printStackTrace();
