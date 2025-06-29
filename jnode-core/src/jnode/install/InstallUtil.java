@@ -194,14 +194,14 @@ public class InstallUtil {
 	}
 
 	private void updateFromVersion(Version ver) {
-		if (ver.equals("1.0")) {
+		if (VersionComparator.isEqual(ver, 1L, 0L)) {
 			execQuery("ALTER TABLE netmail ADD last_modified BIGINT NOT NULL DEFAULT 0;");
 			ver.setMinorVersion(1L);
 			ver.setInstalledAt(new Date());
 			ORMManager.get(Version.class).save(ver);
 			logger.l1(String.format("Upgraded to %s", ver.toString()));
 		}
-		if (ver.equals("1.1")) {
+		if (VersionComparator.isEqual(ver, 1L, 1L)) {
 			try {
 				List<LinkOption_1_1> options2 = ORMManager.get(
 						LinkOption_1_1.class).getAll();
@@ -229,7 +229,7 @@ public class InstallUtil {
 				e.printStackTrace();
 			}
 		}
-		if (ver.equals("1.2")) {
+		if (VersionComparator.isEqual(ver, 1L, 2L)) {
 			try {
 				List<Route_1_2> routes = ORMManager.get(Route_1_2.class)
 						.getAll();
@@ -259,7 +259,7 @@ public class InstallUtil {
 				logger.l1("Exception while updating to 1.3", e);
 			}
 		}
-		if (ver.equals("1.3")) {
+		if (VersionComparator.isEqual(ver, 1L, 3L)) {
 			execQuery("ALTER TABLE links ADD COLUMN address varchar(255) NOT NULL DEFAULT '-';");
 			execQuery("UPDATE links SET address=host;");
 			execQuery("ALTER TABLE links DROP COLUMN host;");
@@ -269,7 +269,7 @@ public class InstallUtil {
 			ORMManager.get(Version.class).save(ver);
 			logger.l1(String.format("Upgraded to %s", ver.toString()));
 		}
-		if (ver.equals("1.4")) {
+		if (VersionComparator.isEqual(ver, 1L, 4L)) {
 			try {
                 logger.l5("starting migration");
 
@@ -350,7 +350,7 @@ public class InstallUtil {
 				ORMManager.get(Version.class).save(ver);
 				logger.l1(String.format("Upgraded to %s", ver.toString()));
 			} catch (Exception e) {
-				logger.l1("Exception while updating to 1.5", e);
+				logger.l1("Exception while updating to " + ver.getMajorVersion() + "." + (ver.getMinorVersion() + 1), e);
 			}
 		}
 	}
