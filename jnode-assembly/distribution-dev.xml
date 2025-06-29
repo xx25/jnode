@@ -50,13 +50,6 @@
 			</includes>
 		</fileSet>
 		<fileSet>
-			<directory>${basedir}/../docs/bin</directory>
-			<outputDirectory>jnode/bin</outputDirectory>
-			<includes>
-				<include>*.*</include>
-			</includes>
-		</fileSet>
-		<fileSet>
 			<directory>${basedir}/../docs/docs</directory>
 			<outputDirectory>jnode/docs</outputDirectory>
 			<includes>
@@ -97,6 +90,20 @@
 			<excludes>
 				<exclude>*/**</exclude>
 			</excludes>
+		</fileSet>
+		<fileSet>
+			<directory>${basedir}/../linux</directory>
+			<outputDirectory>jnode/linux</outputDirectory>
+			<includes>
+				<include>*.*</include>
+			</includes>
+		</fileSet>
+		<fileSet>
+			<directory>${basedir}/../windows</directory>
+			<outputDirectory>jnode/windows</outputDirectory>
+			<includes>
+				<include>*.*</include>
+			</includes>
 		</fileSet>
 		<fileSet>
 			<directory>${basedir}/..</directory>
