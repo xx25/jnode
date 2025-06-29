@@ -1,0 +1,201 @@
+<h3>Netmail Acceptance Rules</h3>
+
+<p>Configure which netmail messages are accepted from nodes that exist in nodelist but not in your LINKS table. 
+Rules are processed in priority order (lower numbers first). <strong>Netmail to your system addresses is always accepted.</strong></p>
+
+<div class="info-box">
+    <strong>Pattern Syntax:</strong> Use Java regular expressions. Use <code>*</code> to match all. Examples:
+    <ul>
+        <li><code>2:5020/.*</code> - All nodes in net 5020</li>
+        <li><code>.*Robot.*</code> - Any name containing "Robot"</li>  
+        <li><code>AreaFix.*</code> - Subject starting with "AreaFix"</li>
+    </ul>
+</div>
+
+<!-- Add/Edit Form -->
+<form action="/secure/netmail-accept" method="post" id="ruleForm">
+    <input type="hidden" name="id" id="_id" value="0" />
+    
+    <table class="info" id="editForm">
+        <tr><th colspan="2">Add/Edit Rule</th></tr>
+        <tr>
+            <th>Priority:</th>
+            <td><input type="number" name="priority" id="_priority" min="0" max="999999" value="100" /></td>
+        </tr>
+        <tr>
+            <th>Enabled:</th>
+            <td><input type="checkbox" name="enabled" id="_enabled" checked /></td>
+        </tr>
+        <tr>
+            <th>From Address:</th>
+            <td><input type="text" name="from_addr" id="_from_addr" value="*" placeholder="2:5020/.*" size="30" /></td>
+        </tr>
+        <tr>
+            <th>To Address:</th>
+            <td><input type="text" name="to_addr" id="_to_addr" value="*" placeholder="2:5020/841" size="30" /></td>
+        </tr>
+        <tr>
+            <th>From Name:</th>
+            <td><input type="text" name="from_name" id="_from_name" value="*" placeholder=".*Robot.*" size="30" /></td>
+        </tr>
+        <tr>
+            <th>To Name:</th>
+            <td><input type="text" name="to_name" id="_to_name" value="*" placeholder="Sysop" size="30" /></td>
+        </tr>
+        <tr>
+            <th>Subject:</th>
+            <td><input type="text" name="subject" id="_subject" value="*" placeholder="AreaFix.*" size="30" /></td>
+        </tr>
+        <tr>
+            <th>Action:</th>
+            <td>
+                <select name="action" id="_action">
+                    <option value="ACCEPT">Accept</option>
+                    <option value="REJECT">Reject</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th>Stop Processing:</th>
+            <td><input type="checkbox" name="stop_processing" id="_stop_processing" /></td>
+        </tr>
+        <tr>
+            <th>Description:</th>
+            <td><input type="text" name="description" id="_description" placeholder="Human-readable description" size="50" /></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input type="submit" value="Save Rule" class="button" />
+                <input type="button" value="Cancel" class="button" onclick="clearForm()" />
+            </td>
+        </tr>
+    </table>
+</form>
+
+<!-- Rules Table -->
+<table class="info">
+    <tr>
+        <th>Priority</th><th>Enabled</th><th>From Addr</th><th>To Addr</th>
+        <th>From Name</th><th>To Name</th><th>Subject</th>
+        <th>Action</th><th>Stop</th><th>Description</th><th>Actions</th>
+    </tr>
+    %s
+</table>
+
+<!-- Delete Form -->
+<form action="/secure/netmail-accept" method="post" id="_delete" style="display:none">
+    <input type="hidden" id="_did" name="did" />
+</form>
+
+<script>
+function edit(id) {
+    // Simple implementation - could be enhanced with AJAX
+    var rows = document.querySelectorAll('tr.enabled, tr.disabled');
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var cells = row.cells;
+        if (cells.length > 10) {
+            var editLink = cells[10].querySelector('a[href*="edit(' + id + ')"]');
+            if (editLink) {
+                // Extract data from table row
+                _value("_id", id);
+                _value("_priority", cells[0].textContent);
+                document.getElementById("_enabled").checked = cells[1].textContent === "Yes";
+                _value("_from_addr", cells[2].textContent === "*" ? "*" : cells[2].querySelector('code').textContent);
+                _value("_to_addr", cells[3].textContent === "*" ? "*" : cells[3].querySelector('code').textContent);
+                _value("_from_name", cells[4].textContent === "*" ? "*" : cells[4].querySelector('code').textContent);
+                _value("_to_name", cells[5].textContent === "*" ? "*" : cells[5].querySelector('code').textContent);
+                _value("_subject", cells[6].textContent === "*" ? "*" : cells[6].querySelector('code').textContent);
+                _value("_action", cells[7].textContent);
+                document.getElementById("_stop_processing").checked = cells[8].textContent === "Yes";
+                _value("_description", cells[9].textContent);
+                
+                // Scroll to form
+                document.getElementById("editForm").scrollIntoView();
+                break;
+            }
+        }
+    }
+}
+
+function del(id) {
+    if (confirm('Delete this rule?')) {
+        _value("_did", id);
+        document.getElementById("_delete").submit();
+    }
+}
+
+function clearForm() {
+    document.getElementById("ruleForm").reset();
+    _value("_id", "0");
+    _value("_priority", "100");
+    _value("_from_addr", "*");
+    _value("_to_addr", "*");
+    _value("_from_name", "*");
+    _value("_to_name", "*");
+    _value("_subject", "*");
+    _value("_action", "REJECT");
+    _value("_description", "");
+    document.getElementById("_enabled").checked = true;
+    document.getElementById("_stop_processing").checked = false;
+}
+
+// Status messages
+var code = getUrlParameter('code');
+if (code == '200') {
+    showMessage('Rule saved successfully', 'success');
+} else if (code == '400') {
+    showMessage('Invalid regular expression pattern', 'error');
+} else if (code == '404') {
+    showMessage('Rule not found', 'error');
+} else if (code == '500') {
+    showMessage('Error saving rule', 'error');
+}
+
+// Helper functions (assuming they exist in jnode.js)
+function getUrlParameter(name) {
+    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    var results = regex.exec(location.search);
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+}
+
+function showMessage(message, type) {
+    // Simple alert - could be enhanced with better UI
+    if (type === 'error') {
+        alert('Error: ' + message);
+    } else {
+        alert(message);
+    }
+}
+</script>
+
+<style>
+.enabled { background-color: #f0f8f0; }
+.disabled { background-color: #f8f0f0; opacity: 0.7; }
+.action-accept { color: green; font-weight: bold; }
+.action-reject { color: red; font-weight: bold; }
+.info-box { 
+    background: #e7f3ff; 
+    padding: 10px; 
+    margin: 10px 0; 
+    border-left: 4px solid #2196F3; 
+    border-radius: 4px;
+}
+.info-box code {
+    background: #f4f4f4;
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-family: monospace;
+}
+.button {
+    padding: 5px 10px;
+    margin: 2px;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+    cursor: pointer;
+}
+.button:hover {
+    background: #e9e9e9;
+}
+</style>
