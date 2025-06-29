@@ -97,9 +97,12 @@ public class BinkpFrame {
 
 	@Override
 	public String toString() {
-		return "[ "
-				+ ((command != null) ? command.toString() + " " + arg
-						: displayFrame()) + " ]";
+		if (command != null) {
+			return "[ " + command.toString() + " " + arg + " ]";
+		} else {
+			// For data frames, show size instead of hex dump
+			return "[ DATA frame, size=" + (frame != null ? frame.length - 2 : 0) + " bytes ]";
+		}
 	}
 
 	// http://stackoverflow.com/questions/9655181/convert-from-byte-array-to-hex-string-in-java

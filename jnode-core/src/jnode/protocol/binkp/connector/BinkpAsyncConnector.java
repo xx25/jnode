@@ -89,9 +89,12 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 	public void run() {
 		try {
 			greet();
+			int loopCounter = 0;
 			while (true) {
 				try {
 					selector.select(staticMaxTimeout);
+					loopCounter++;
+					logger.l5("=== Selector loop #" + loopCounter + ", keys=" + selector.selectedKeys().size());
 					for (SelectionKey key : selector.selectedKeys()) {
 						SocketChannel channel = (SocketChannel) key.channel();
 						if (key.isValid()) {
@@ -110,19 +113,63 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 							}
 							if (key.isWritable()) {
 								checkForMessages();
-								if (!frames.isEmpty()) {
+								// CRITICAL: Send ALL queued frames before processing any reads
+								while (!frames.isEmpty()) {
+									// DEBUG: Log queue state before sending
+									if (frames.size() > 1) {
+										logger.l2("=== BEFORE SEND: Queue has " + frames.size() + " frames");
+										for (int i = 0; i < Math.min(3, frames.size()); i++) {
+											BinkpFrame peek = frames.get(i);
+											if (peek.getCommand() != null) {
+												logger.l2("===   Frame[" + i + "]: " + peek.getCommand() + " " + (peek.getArg() != null ? peek.getArg() : ""));
+											} else {
+												logger.l2("===   Frame[" + i + "]: DATA " + (peek.getBytes().length - 2) + " bytes");
+											}
+										}
+									}
+									
 									BinkpFrame frame = frames.removeFirst();
-									logger.l5("Frame sent: " + frame
+									logger.l2("=== SENDING Frame: " + frame
 											+ ", next " + frames.size()
 											+ " frames, total sent "
 											+ total_sent_bytes);
-									write(frame, channel);
+									
+									try {
+										// Track actual bytes sent
+										int bytesSent = 0;
+										if (frame.getCommand() == null) {
+											// Data frame
+											bytesSent = frame.getBytes().length;
+											logger.l2("=== SENDING DATA to network: " + bytesSent + " bytes");
+										}
+										
+										write(frame, channel);
+										
+										if (frame.getCommand() == null) {
+											// Log first few bytes of data frame to verify content
+											byte[] data = frame.getBytes();
+											StringBuilder hex = new StringBuilder();
+											for (int i = 2; i < Math.min(data.length, 18); i++) {
+												hex.append(String.format("%02X ", data[i] & 0xFF));
+											}
+											logger.l2("=== DATA SENT to network: " + (data.length - 2) + " bytes, preview: " + hex.toString());
+										} else {
+											logger.l2("=== COMMAND SENT to network: " + frame);
+										}
+									} catch (Exception e) {
+										logger.l2("=== SEND FAILED: " + frame + ", error: " + e.getMessage());
+										throw e;
+									}
 								}
 							}
 							if (!isConnected()) {
 								finish("Connect ended");
 							}
+							// CRITICAL: Only process reads AFTER all writes are complete
 							if (key.isReadable()) {
+								if (!frames.isEmpty()) {
+									logger.l2("=== SKIPPING READ: Still have " + frames.size() + " frames to send");
+								} else {
 								BinkpFrame frame = null;
 								ByteBuffer head = ByteBuffer.allocate(2);
 								for (int len = 0; len < 2;) {
@@ -157,6 +204,7 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 								if (frame != null) {
 									logger.l5("Frame received: " + frame);
 									proccessFrame(frame);
+								}
 								}
 							}
 						} else {
