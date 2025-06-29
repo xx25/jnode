@@ -1,16 +1,16 @@
-<a href="#edit" onclick="createNew()" class="css-link-1">Новый линк</a>
+<a href="#edit" onclick="createNew()" class="css-link-1">New Link</a>
 
 <table id="_links" class="links">
 	<tr>
-		<th colspan="6">Список линков ( пойнты внизу )</th>
+		<th colspan="6">List of Links (points below)</th>
 	</tr>
 	<tr>
-		<th>Название линка</th>
-		<th>FTN-адрес</th>
-		<th>Адрес для соединения</th>
-		<th>Пароль для соединения</th>
-		<th>Пароль на пакеты</th>
-		<th>Операции</th>
+		<th>Link Name</th>
+		<th>FTN Address</th>
+		<th>Connection Address</th>
+		<th>Connection Password</th>
+		<th>Packet Password</th>
+		<th>Operations</th>
 	</tr>
 	%s
 </table>
@@ -18,37 +18,37 @@
 	<input type="hidden" name="id" id="_link_id" value="0" />
 	<table id="edit" class="links">
 		<tr>
-			<th colspan="2">Форма управления линком</th>
+			<th colspan="2">Link Management Form</th>
 		</tr>
 		<tr>
-			<th>Название линка</th>
+			<th>Link Name</th>
 			<td><input type="text" name="name" id="_link_name" /></td>
 		</tr>
 
 		<tr>
-			<th>FTN-адрес</th>
+			<th>FTN Address</th>
 			<td><input type="text" name="addr" id="_link_ftn" /></td>
 		</tr>
 
 		<tr>
-			<th>Адрес для соединения</th>
+			<th>Connection Address</th>
 			<td><input type="text" name="address" id="_link_address" /></td>
 		</tr>
 
 		<tr>
-			<th>Пароль для соединения</th>
+			<th>Connection Password</th>
 			<td><input type="text" name="password" id="_link_password"
 				size="8" /></td>
 		</tr>
 
 		<tr>
-			<th>Пароль на пакеты</th>
+			<th>Packet Password</th>
 			<td><input type="text" name="pktpassword" id="_link_pktpassword"
 				size="8" /></td>
 		</tr>
 	</table>
-	<input type="submit" name="s" value="Отправить" class="button" /> <input
-		type="reset" value="Очистить" class="button" />
+	<input type="submit" name="s" value="Submit" class="button" /> <input
+		type="reset" value="Clear" class="button" />
 </form>
 <script type="text/javascript">
 	function createNew() {
@@ -75,107 +75,107 @@
 	}
 </script>
 <div id="options" style="display: none">
-	<a href="#" onclick="toggle(false)" class="css-link-1">Скрыть</a>
+	<a href="#" onclick="toggle(false)" class="css-link-1">Hide</a>
 	<form action="/secure/linkoption" method="post">
 		<input type="hidden" name="_id" id="_options_id" />
 		<table class="links">
 			<tr>
-				<th colspan="6" class="center">Основные настройки</th>
+				<th colspan="6" class="center">Basic Settings</th>
 			</tr>
 			<tr>
 				<td colspan="2">&nbsp;</td>
-				<th>Наш AKA</th>
+				<th>Our AKA</th>
 				<td><input type="text" id="_opt_ouraka" name="ouraka" size="8" /></td>
 				<td colspan="2">&nbsp;</td>
 			</tr>
 			<tr>
-				<th>Не проверять пароль в пакетах</th>
+				<th>Don't check packet password</th>
 				<td><select id="_opt_ignorepktpwd" name="ignorepktpwd">
 
 						<option value="true" selected>true</option>
 						<option value="false">false</option>
 				</select></td>
-				<th>Паковать нетмейл</th>
+				<th>Pack netmail</th>
 				<td><select id="_opt_packnetmail" name="packnetmail"><option
 							value="true">true</option>
 						<option value="false" selected>false</option></select></td>
-				<th>Паковать эхомейл</th>
+				<th>Pack echomail</th>
 				<td><select id="_opt_packechomail" name="packechomail"><option
 							value="true" selected>true</option>
 						<option value="false">false</option></select></td>
 			</tr>
 			<tr>
-				<th>Звонить если есть нетмейл</th>
+				<th>Call if netmail available</th>
 				<td><select id="_opt_crashnetmail" name="crashnetmail"><option
 							value="true" selected>true</option>
 						<option value="false">false</option></select></td>
-				<th>Звонить если есть эхомейл</th>
+				<th>Call if echomail available</th>
 				<td><select id="_opt_crashechomail" name="crashechomail"><option
 							value="true">true</option>
 						<option value="false" selected>false</option></select></td>
-				<th>Звонить если есть файлы</th>
+				<th>Call if files available</th>
 				<td><select id="_opt_crashfilemail" name="crashfilemail"><option
 							value="true">true</option>
 						<option value="false" selected>false</option></select></td>
 			</tr>
 			<tr>
-				<th>Разрешить автосоздание эх</th>
+				<th>Allow auto-creation of echoes</th>
 				<td><select id="_opt_areaautocreate" name="areaautocreate"><option
 							value="true">true</option>
 						<option value="false" selected>false</option></select></td>
-				<th>Разрешить автосоздание фэх</th>
+				<th>Allow auto-creation of file echoes</th>
 				<td><select id="_opt_fileautocreate" name="fileautocreate"><option
 							value="true">true</option>
 						<option value="false" selected>false</option></select></td>
-				<th>Звонить по таймеру</th>
+				<th>Call by timer</th>
 				<td><select id="_opt_pollbytimeout" name="pollbytimeout"><option
 							value="true" selected>true</option>
 						<option value="false">false</option></select></td>
 			</tr>
 			<tr>
-				<th>Включить паузу</th>
+				<th>Enable pause</th>
 				<td><select id="_opt_pause" name="pause"><option
 							value="true">true</option>
 						<option value="false" selected>false</option></select></td>
-				<th>Уровень доступа</th>
+				<th>Access level</th>
 				<td><input type="text" id="_opt_level" name="level" size="8" /></td>
-				<th>Группы доступа</th>
+				<th>Access groups</th>
 				<td><input type="text" id="_opt_groups" name="groups" size="8" /></td>
 			</tr>
 
 			<tr>
-				<th colspan="6" class="center">Настройки роботов</th>
+				<th colspan="6" class="center">Robot Settings</th>
 			</tr>
 			<tr>
-				<th>Включить AreaFix</th>
+				<th>Enable AreaFix</th>
 				<td><select id="_opt_areafix" name="areafix"><option
 							value="true" selected>true</option>
 						<option value="false">false</option></select></td>
 
-				<th>Включить FileFix</th>
+				<th>Enable FileFix</th>
 				<td><select id="_opt_filefix" name="filefix"><option
 							value="true" selected>true</option>
 						<option value="false">false</option></select></td>
-				<th>Включить ScriptFix</th>
+				<th>Enable ScriptFix</th>
 				<td><select id="_opt_scriptfix" name="scriptfix"><option
 							value="true">true</option>
 						<option value="false" selected>false</option></select></td>
 			</tr>
 			<tr>
-				<th>Пароль для AreaFix</th>
+				<th>Password for AreaFix</th>
 				<td><input type="text" id="_opt_areafixpwd" name="areafixpwd"
 					size="8" /></td>
-				<th>Пароль для FileFix</th>
+				<th>Password for FileFix</th>
 				<td><input type="text" id="_opt_filefixpwd" name="filefixpwd"
 					size="8" /></td>
-				<th>Пароль для ScriptFix</th>
+				<th>Password for ScriptFix</th>
 				<td><input type="text" id="_opt_scriptfixpwd"
 					name="scriptfixpwd" size="8" /></td>
 			</tr>
 
 		</table>
-		<input type="submit" name="_s" value="Установить" class="button" />
-		<input type="reset" class="button" name="_s" value="По-умолчанию"
+		<input type="submit" name="_s" value="Set" class="button" />
+		<input type="reset" class="button" name="_s" value="Default"
 			onclick="_clear_options()" />
 	</form>
 </div>
