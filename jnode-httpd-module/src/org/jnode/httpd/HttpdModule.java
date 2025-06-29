@@ -34,7 +34,7 @@ import org.jnode.httpd.routes.post.*;
 import org.jnode.httpd.util.HTML;
 
 /**
- * HttpdModule - модуль, слушающий порт и отдающий странички
+ * HttpdModule - module listening to port and serving pages
  * 
  * @author kreon
  * 

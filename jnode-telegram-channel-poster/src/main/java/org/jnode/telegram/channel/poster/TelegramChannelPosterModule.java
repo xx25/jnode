@@ -81,7 +81,7 @@ public class TelegramChannelPosterModule extends JnodeModule {
 						if(strings.isEmpty()) {
 							logger.l4("empty file: " + messageFile.getName());
 						} else {
-							//1ю строчку используем как тему сообщения
+							//use 1st line as message subject
 							String subject = strings.get(0);
 							if(subject.length() > MAX_SUBJECT_LENGTH) {
 								subject = subject.substring(0, MAX_SUBJECT_LENGTH - 4) + "...";

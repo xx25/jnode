@@ -90,7 +90,7 @@ public class PointListHelper extends IJscriptHelper {
 	}
 
 	/**
-	 * Отправить файл в арию
+	 * Send file to area
 	 * 
 	 * @param areaName
 	 * @param zip
@@ -129,7 +129,7 @@ public class PointListHelper extends IJscriptHelper {
 	}
 
 	/**
-	 * zxx xxx итд
+	 * zxx xxx etc
 	 * 
 	 * @param template
 	 * @return

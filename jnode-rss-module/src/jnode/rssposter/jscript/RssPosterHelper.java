@@ -34,7 +34,7 @@ import jnode.jscript.IJscriptHelper;
 import jnode.logger.Logger;
 
 /**
- * Постит RSS куда надо
+ * Posts RSS where needed
  * 
  * @author kreon
  * 
@@ -60,7 +60,7 @@ public class RssPosterHelper extends IJscriptHelper {
 	}
 
 	/**
-	 * Запостить новости за последние сутки
+	 * Post news from last 24 hours
 	 */
 	public void postNewsToEchoarea(String title, String echoarea, String URL,
 			int daysBefore) {

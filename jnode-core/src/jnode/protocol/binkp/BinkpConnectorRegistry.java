@@ -30,7 +30,7 @@ import jnode.protocol.binkp.connector.BinkpPipeConnector;
 import jnode.protocol.binkp.connector.BinkpSyncConnector;
 
 /**
- * Хранит в себе разные коннекторы - для модульности
+ * Stores various connectors - for modularity
  * 
  * @author kreon
  * 

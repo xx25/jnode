@@ -36,7 +36,7 @@ import jnode.protocol.binkp.types.BinkpCommand;
 import jnode.protocol.binkp.types.BinkpFrame;
 
 /**
- * TCP/IP соединение
+ * TCP/IP connection
  * 
  * @author kreon
  * 

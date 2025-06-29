@@ -34,7 +34,7 @@ import jnode.dto.Subscription;
 import jnode.orm.ORMManager;
 
 /**
- * Команда LIST
+ * LIST command
  * 
  * @author kreon
  * 

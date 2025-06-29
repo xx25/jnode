@@ -43,7 +43,7 @@ import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.table.TableUtils;
 
 /**
- * Вот такое вот дао :)
+ * Here's such a DAO :)
  * 
  * @author kreon
  * 
@@ -150,7 +150,7 @@ public abstract class GenericDAO<T> {
 	}
 
 	/**
-	 * Получаем по ID
+	 * Get by ID
 	 * 
 	 * @param id
 	 * @return
@@ -166,7 +166,7 @@ public abstract class GenericDAO<T> {
 	}
 
 	/**
-	 * Получить все
+	 * Get all
 	 * 
 	 * @return
 	 */
@@ -181,7 +181,7 @@ public abstract class GenericDAO<T> {
 	}
 
 	/**
-	 * Аргументы: a == b, c == d
+	 * Arguments: a == b, c == d
 	 * 
 	 * @param args
 	 * @return
@@ -201,7 +201,7 @@ public abstract class GenericDAO<T> {
 	}
 	
 	/**
-	 * Аргументы: limit, a == b, c == d
+	 * Arguments: limit, a == b, c == d
 	 * 
 	 * @param args
 	 * @return
@@ -252,7 +252,7 @@ public abstract class GenericDAO<T> {
 	}
 
 	/**
-	 * Аргументы: a == b, c == d
+	 * Arguments: a == b, c == d
 	 * 
 	 * @param args
 	 * @return

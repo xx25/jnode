@@ -45,7 +45,7 @@ public class BecomeLinkRoute extends Route {
 		if (!enabled) {
 			return HTML
 					.start(false)
-					.append("<b>К сожалению, запрос линков отключен сисопом</b>")
+					.append("<b>Unfortunately, link requests are disabled by sysop</b>")
 					.footer().get();
 		}
 		return HTML.start(false).append(request).footer().get();

@@ -70,7 +70,7 @@ public class BinkpFrame {
 	private void init() {
 		int datalen = frame.length - 2;
 		if (datalen > MAX_SIZE) {
-			// тут ругаться матом
+			// swear here
 		} else {
 			datalen &= 0x7fff;
 		}

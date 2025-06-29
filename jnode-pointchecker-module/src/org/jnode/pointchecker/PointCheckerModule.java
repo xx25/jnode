@@ -45,9 +45,9 @@ import jnode.ndl.FtnNdlAddress;
 import jnode.ndl.NodelistScanner;
 
 /**
- * Для NPK и RPK
+ * For NPK and RPK
  * 
- * Поскольку я сам NPK :)
+ * Since I'm NPK myself :)
  * 
  * @author kreon
  * 

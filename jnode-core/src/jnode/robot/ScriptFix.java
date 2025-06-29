@@ -64,7 +64,7 @@ public class ScriptFix extends AbstractRobot {
 			return;
 		}
 
-        // если скрипт - то фигарим скрипт
+        // if script - then fire script
         logger.l5(String.format("process message [%s]", fmsg.getText()));
         String scriptContent = extractScript(fmsg.getText());
         if (scriptContent != null){

@@ -24,7 +24,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 /**
- * Хелперы - для внешних модулей
+ * Helpers - for external modules
  * 
  * @author kreon
  * 

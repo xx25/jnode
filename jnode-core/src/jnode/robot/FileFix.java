@@ -37,7 +37,7 @@ import jnode.ftn.types.FtnMessage;
 import jnode.orm.ORMManager;
 
 /**
- * Простой filefix
+ * Simple filefix
  * 
  * @author kreon
  * 
@@ -97,7 +97,7 @@ public class FileFix extends AbstractRobot {
 	}
 
 	/**
-	 * Отправляем %HELP
+	 * Send %HELP
 	 * 
 	 * @return
 	 */
@@ -112,7 +112,7 @@ public class FileFix extends AbstractRobot {
 	}
 
 	/**
-	 * Отправляем %LIST
+	 * Send %LIST
 	 * 
 	 * @param link
 	 * @return
@@ -162,7 +162,7 @@ public class FileFix extends AbstractRobot {
 	}
 
 	/**
-	 * Отправляем %QUERY
+	 * Send %QUERY
 	 * 
 	 * @param link
 	 * @return

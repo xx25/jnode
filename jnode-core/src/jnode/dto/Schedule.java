@@ -29,7 +29,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 /**
- * Планировщик (жалкая замена cron :-) )
+ * Scheduler (poor replacement for cron :-) )
  *
  * @author Manjago
  */

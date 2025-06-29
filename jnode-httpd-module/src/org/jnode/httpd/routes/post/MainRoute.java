@@ -30,7 +30,7 @@ import spark.Response;
 import spark.Route;
 
 /**
- * Переводим .html :-)
+ * Translate .html :-)
  * 
  * @author kreon
  * 

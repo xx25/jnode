@@ -168,7 +168,7 @@ public class AreaFix extends AbstractRobot {
 	}
 
 	/**
-	 * Отправляем %HELP
+	 * Send %HELP
 	 * 
 	 * @return
 	 */
@@ -189,7 +189,7 @@ public class AreaFix extends AbstractRobot {
 	}
 
 	/**
-	 * Отправляем %LIST
+	 * Send %LIST
 	 * 
 	 * @param link
 	 * @return
@@ -239,7 +239,7 @@ public class AreaFix extends AbstractRobot {
 	}
 
 	/**
-	 * Отправляем %QUERY
+	 * Send %QUERY
 	 * 
 	 * @param link
 	 * @return

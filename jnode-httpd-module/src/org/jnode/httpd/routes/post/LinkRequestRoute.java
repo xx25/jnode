@@ -151,7 +151,7 @@ public class LinkRequestRoute extends Route {
 	}
 
 	private void writeGreets(Link link) {
-		// написать нам на почту
+		// write to our email
 		FtnTools.writeNetmail(FtnTools.getPrimaryFtnAddress(),
 				FtnTools.getPrimaryFtnAddress(), MainHandler
 						.getCurrentInstance().getInfo().getStationName(),
@@ -170,7 +170,7 @@ public class LinkRequestRoute extends Route {
 	}
 
 	private void writeKey(Request req, LinkRequest lr) {
-		// написать нам на почту
+		// write to our email
 		FtnTools.writeNetmail(FtnTools.getPrimaryFtnAddress(),
 				FtnTools.getPrimaryFtnAddress(), MainHandler
 						.getCurrentInstance().getInfo().getStationName(),
