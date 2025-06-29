@@ -48,7 +48,7 @@ public class BecomePointRoute extends Route {
 		if (!enabled) {
 			return HTML
 					.start(false)
-					.append("<b>К сожалению, запрос пойнта отключен сисопом</b>")
+					.append("<b>Unfortunately, point requests are disabled by sysop</b>")
 					.footer().get();
 		}
 		StringBuilder sb = new StringBuilder();

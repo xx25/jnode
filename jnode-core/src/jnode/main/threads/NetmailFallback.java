@@ -33,7 +33,7 @@ import jnode.logger.Logger;
 import jnode.orm.ORMManager;
 
 /**
- * Поиск лучшего роутинга для нетмейла
+ * Finding best routing for netmail
  * 
  * @author kreon
  * 

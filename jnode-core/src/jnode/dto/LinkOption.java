@@ -27,7 +27,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 /**
- * Опции для линков
+ * Options for links
  * 
  * @author kreon
  * 
@@ -58,7 +58,7 @@ public class LinkOption {
 	private static final HashMap<String, String> options = generateOptionsMap();
 
 	/**
-	 * Короткие названия
+	 * Short names
 	 * 
 	 * @return
 	 */

@@ -34,7 +34,7 @@ import jnode.protocol.binkp.types.BinkpCommand;
 import jnode.protocol.binkp.types.BinkpFrame;
 
 /**
- * Соединение через пайп
+ * Connection through pipe
  * 
  * @author kreon
  * 

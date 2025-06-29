@@ -31,7 +31,7 @@ import java.io.FileNotFoundException;
 import java.text.MessageFormat;
 
 /**
- * Еще одна постилка RSS
+ * Another RSS poster
  *
  * @author Manjago
  */
@@ -56,13 +56,13 @@ public class RssPosterHelperAlt extends IJscriptHelper {
     }
 
     /**
-     * Постит новости в фидоарию
+     * Posts news to fido area
      *
-     * @param title    subject сообщения
-     * @param echoarea ария
-     * @param url      url источника
-     * @param datafile файл с данными
-     * @param limit    максимальное количество собщений для положительной величины, либо неограничено
+     * @param title    message subject
+     * @param echoarea area
+     * @param url      source url
+     * @param datafile data file
+     * @param limit    maximum number of messages for positive value, or unlimited
      */
     public void postNewsToEchoarea(String title, String echoarea, String url, String datafile, int limit) {
 

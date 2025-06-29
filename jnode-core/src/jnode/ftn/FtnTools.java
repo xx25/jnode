@@ -87,7 +87,7 @@ import jnode.protocol.io.Message;
 import jnode.robot.IRobot;
 
 /**
- * Сборник всякой хрени
+ * Collection of various utilities
  * 
  * @author kreon
  * 
@@ -107,7 +107,7 @@ public final class FtnTools {
 	private static final Hashtable<String, IRobot> robotMaps = new Hashtable<>();
 
 	/**
-	 * Сортировщик 2D-адресов
+	 * 2D address sorter
 	 * 
 	 * @author kreon
 	 * 
@@ -125,7 +125,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Сортировщик 4D-адресов
+	 * 4D address sorter
 	 * 
 	 * @author kreon
 	 * 
@@ -155,7 +155,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Генерация 8d-рандома
+	 * 8d random generation
 	 * 
 	 * @return
 	 */
@@ -197,7 +197,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Подстрока в виде байтов и в cp866
+	 * Substring as bytes and in cp866
 	 * 
 	 * @param s
 	 * @param len
@@ -214,7 +214,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Читаем пакет пока не встретим \0
+	 * Read packet until we meet \0
 	 * 
 	 * @param is
 	 * @return
@@ -233,7 +233,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Превращает строки синбаев в лист 2D адресов
+	 * Converts seenby strings to list of 2D addresses
 	 * 
 	 * @param seenByLines
 	 * @return
@@ -269,7 +269,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Превращает лист синбаев в строку для добавления в письмо
+	 * Converts seenby list to string for adding to message
 	 * 
 	 * @param seenby
 	 * @return
@@ -312,7 +312,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Превращает путь в List
+	 * Converts path to List
 	 * 
 	 * @param seenByLines
 	 * @return
@@ -340,7 +340,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Превращает List в путь
+	 * Converts List to path
 	 * 
 	 * @param path
 	 * @return
@@ -382,7 +382,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Читаем 2d-адреса через разделитель
+	 * Read 2d addresses through delimiter
 	 * 
 	 * @param list2d
 	 * @return
@@ -441,7 +441,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Читаем 4d-адреса через разделитель
+	 * Read 4d addresses through delimiter
 	 * 
 	 * @param list2d
 	 * @return
@@ -458,7 +458,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Пишем 2d-адреса через разделитель
+	 * Write 2d addresses through delimiter
 	 * 
 	 * @param list
 	 * @param sort
@@ -482,7 +482,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Пишем 4d-адреса через разделитель
+	 * Write 4d addresses through delimiter
 	 * 
 	 * @param list
 	 * @return
@@ -503,7 +503,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Опции для линков
+	 * Options for links
 	 * 
 	 * @param link
 	 * @param option
@@ -551,7 +551,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Конвертер
+	 * Converter
 	 * 
 	 * @param mail
 	 * @return
@@ -581,7 +581,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Конвертер
+	 * Converter
 	 * 
 	 * @param mail
 	 * @return
@@ -600,7 +600,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Распаковка из зип-архива
+	 * Unpacking from zip archive
 	 * 
 	 * @param message
 	 * @return
@@ -714,7 +714,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Проверка соответствия маски :)
+	 * Mask matching check :)
 	 * 
 	 * @param route
 	 * @param message
@@ -740,7 +740,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Проверка соответствия маски :)
+	 * Mask matching check :)
 	 * 
 	 * @param rewrite
 	 * @param message
@@ -766,7 +766,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Перезапись сообщения
+	 * Message rewriting
 	 * 
 	 * @param rewrite
 	 * @param message
@@ -826,7 +826,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Проверям сообщение на соответствие роботу
+	 * Check message for robot compliance
 	 * 
 	 * @param message
 	 * @return
@@ -877,7 +877,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Получаем роутинг для нетмейла
+	 * Get routing for netmail
 	 * 
 	 * @param message
 	 * @return
@@ -890,7 +890,7 @@ public final class FtnTools {
 		if (!isOurPoint(routeTo)) {
 			routeTo.setPoint(0);
 			routeVia = getLinkByFtnAddress(routeTo);
-			// а теперь - по роутингу
+			// and now - by routing
 			if (routeVia == null) {
 				List<Route> routes = ORMManager.get(Route.class).getOrderAnd(
 						"nice", true);
@@ -961,7 +961,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Пишем ответ на нетмейл
+	 * Write reply to netmail
 	 * 
 	 * @param fmsg
 	 * @param subject
@@ -1009,7 +1009,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Создание нетмейла
+	 * Netmail creation
 	 * 
 	 * @param from
 	 * @param to
@@ -1127,7 +1127,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Эхобандл
+	 * Echobundle
 	 * 
 	 * @return
 	 */
@@ -1161,7 +1161,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Паковка сообщений На удаление !
+	 * Message packing For deletion !
 	 * 
 	 * @param messages
 	 * @param link
@@ -1282,11 +1282,11 @@ public final class FtnTools {
 		if (addr.getPoint() > 0) {
 			for (FtnAddress address : MainHandler.getCurrentInstance()
 					.getInfo().getAddressList()) {
-				if (addr.isPointOf(address)) { // если это пойнт - то
-												// посылаем с того
-												// адреса, на
-												// который он
-												// привязан
+				if (addr.isPointOf(address)) { // if this is a point - then
+												// send from the
+												// address to
+												// which it is
+												// attached
 					ret = address;
 					break;
 				}
@@ -1317,7 +1317,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Кривые пакеты - в инбаунд -- на удаление
+	 * Bad packets - to inbound -- for deletion
 	 * 
 	 * @param pkt
 	 */
@@ -1335,7 +1335,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Делаем реврайт
+	 * Do rewrite
 	 * 
 	 * @param message
 	 */
@@ -1360,7 +1360,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * получение и аутокриейт
+	 * Getting and autocreate
 	 * 
 	 * @param name
 	 * @param link
@@ -1405,7 +1405,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * получение и аутокриейт
+	 * Getting and autocreate
 	 * 
 	 * @param name
 	 * @param link
@@ -1455,21 +1455,21 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Проверка на дроп нетмейла
+	 * Check for netmail drop
 	 * 
 	 * 
 	 * @param netmail
 	 * @return
 	 */
 	public static boolean checkNetmailMustDropped(FtnMessage netmail) {
-		// дополнительная проверка
+		// additional check
 		if (!MainHandler.getCurrentInstance().getBooleanProperty(NETMAIL_VALID,
 				true)) {
 			return false;
 		}
 		boolean validFrom = false;
 		boolean validTo = false;
-		// к нам на узел
+		// to our node
 		if (isOurPoint(netmail.getToAddr())) {
 			validTo = true;
 		} else if (getLinkByFtnAddress(netmail.getToAddr()) != null) {
@@ -1652,7 +1652,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Эхомейл
+	 * Echomail
 	 * 
 	 * @param area
 	 * @param subject
@@ -1699,7 +1699,7 @@ public final class FtnTools {
 	}
 
 	/**
-	 * Отправка файла в фэху
+	 * Send file to file echo
 	 * 
 	 * @param area
 	 * @param attach

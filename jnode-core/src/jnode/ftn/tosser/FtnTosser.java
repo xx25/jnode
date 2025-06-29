@@ -60,7 +60,7 @@ public class FtnTosser {
 	private boolean running;
 
 	/**
-	 * Разбор нетмейла
+	 * Netmail parsing
 	 * 
 	 * @param netmail
 	 * @param secure
@@ -149,7 +149,7 @@ public class FtnTosser {
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 			return;
 		}
-		// попадаются злобные сообщения без MSGID
+		// malicious messages without MSGID occur
 
 		if (echomail.getMsgid() != null) {
 			if (isADupe(area, echomail.getMsgid())) {
@@ -194,10 +194,10 @@ public class FtnTosser {
 	}
 
 	/**
-	 * Получаем сообщения из бандлов
+	 * Get messages from bundles
 	 * 
 	 * @param message
-	 *            сообщение
+	 *            message
 	 */
 	public static int tossIncoming(Message message) {
 		if (message == null) {
@@ -222,7 +222,7 @@ public class FtnTosser {
 	}
 
 	/**
-	 * Разбор файлов в папке inbound
+	 * Parse files in inbound folder
 	 */
 	public void tossInboundDirectory() {
 		running = true;
@@ -779,7 +779,7 @@ public class FtnTosser {
 	}
 
 	/**
-	 * Получить новые сообщения для линка
+	 * Get new messages for link
 	 * 
 	 * @param link
 	 * @return

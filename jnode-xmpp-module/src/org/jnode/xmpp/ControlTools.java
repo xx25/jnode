@@ -29,7 +29,7 @@ import org.jnode.xmpp.commands.ListCommandProcessor;
 import org.jnode.xmpp.commands.QuitCommandProcessor;
 
 /**
- * Управление командами
+ * Command management
  * 
  * @author kreon
  * 
@@ -39,7 +39,7 @@ public class ControlTools {
 
 	private static HashMap<String, CommandProcessor> createCommandTable() {
 		HashMap<String, CommandProcessor> table = new HashMap<>();
-		// TODO: реализовать
+		// TODO: implement
 		table.put("HELP", new HelpCommandProcessor());
 		table.put("QUIT", new QuitCommandProcessor());
 		table.put("LIST", new ListCommandProcessor());

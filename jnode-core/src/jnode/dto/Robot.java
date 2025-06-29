@@ -24,7 +24,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 /**
- * Можно внешних роботов вешать если что - расширяемый интерфейс же ;)
+ * You can attach external robots if needed - it's an extensible interface ;)
  * 
  * @author kreon
  * 

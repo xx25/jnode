@@ -49,10 +49,10 @@ public final class Cleaner {
         replaceAll(sb, "</i>", "/");
         replaceAll(sb, "<em>", "/");
         replaceAll(sb, "</em>", "/");
-        replaceAll(sb, "<s>", "[зачеркнуто]");
-        replaceAll(sb, "</s>", "[/зачеркнуто]");
-        replaceAll(sb, "<strike>", "[зачеркнуто]");
-        replaceAll(sb, "</strike>", "[/зачеркнуто]");
+        replaceAll(sb, "<s>", "[strikethrough]");
+        replaceAll(sb, "</s>", "[/strikethrough]");
+        replaceAll(sb, "<strike>", "[strikethrough]");
+        replaceAll(sb, "</strike>", "[/strikethrough]");
 
         if (isTitle){
             replaceAll(sb, "<", "'");

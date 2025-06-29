@@ -123,27 +123,27 @@ public class GUIConfigurator {
 
 	private HashMap<String, String> fillConfigNames() {
 		HashMap<String, String> props = new HashMap<>();
-		props.put("info.stationname", "Имя узла");
-		props.put("info.location", "Расположение узла");
-		props.put("info.sysop", "Имя сисопа");
+		props.put("info.stationname", "Node name");
+		props.put("info.location", "Node location");
+		props.put("info.sysop", "Sysop name");
 		props.put("info.ndl", "NDL");
-		props.put("info.address", "Адрес узла");
-		props.put("log.level", "Уровень логирования (1-5)");
-		props.put("jdbc.url", "URL СУБД");
-		props.put("jdbc.user", "Имя пользователя СУБД");
-		props.put("jdbc.pass", "Пароль СУБД");
-		props.put("binkp.server", "Принимать соединения");
-		props.put("binkp.bind ", "Адрес для приема");
-		props.put("binkp.port", "Порт для приема");
-		props.put("binkp.inbound", "Путь к входящей почте");
-		props.put("binkp.client", "Вызывать узлы по таймеру");
-		props.put("poll.period", "Период вызова, с.");
-		props.put("poll.delay", "Задержка первого вызова, с.");
-		props.put("fileecho.enable", "Включить фэхи");
-		props.put("fileecho.path", "Путь к папке с фэхами");
-		props.put("stat.enable", "Включить статистику");
-		props.put("stat.area", "Эха для статистики");
-		props.put("jscript.enable", "Включить скрипты");
+		props.put("info.address", "Node address");
+		props.put("log.level", "Logging level (1-5)");
+		props.put("jdbc.url", "Database URL");
+		props.put("jdbc.user", "Database username");
+		props.put("jdbc.pass", "Database password");
+		props.put("binkp.server", "Accept connections");
+		props.put("binkp.bind ", "Address for receiving");
+		props.put("binkp.port", "Port for receiving");
+		props.put("binkp.inbound", "Path to incoming mail");
+		props.put("binkp.client", "Call nodes by timer");
+		props.put("poll.period", "Call period, s.");
+		props.put("poll.delay", "First call delay, s.");
+		props.put("fileecho.enable", "Enable file echoes");
+		props.put("fileecho.path", "Path to file echoes folder");
+		props.put("stat.enable", "Enable statistics");
+		props.put("stat.area", "Echo for statistics");
+		props.put("jscript.enable", "Enable scripts");
 		return props;
 	}
 
@@ -246,13 +246,13 @@ public class GUIConfigurator {
 			if (key.equals("fileecho.path") || key.equals("binkp.inbound")) {
 				comment = new FileChooserButton((TextField) comp);
 			} else {
-				comment = new JLabel("Комментарий");
+				comment = new JLabel("Comment");
 			}
 			configPanel.add(comp);
 			configPanel.add(comment);
 			configMap.put(key.toString(), comp);
 		}
-		Button saveButton = new Button("Сохранить");
+		Button saveButton = new Button("Save");
 		saveButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -282,7 +282,7 @@ public class GUIConfigurator {
 				}
 			}
 		});
-		Button defButton = new Button("По-умолчанию");
+		Button defButton = new Button("Default");
 		defButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -294,10 +294,10 @@ public class GUIConfigurator {
 		configPanel.add(saveButton);
 		configPanel.add(defButton);
 
-		tabbedPane.addTab("Конфигурация", configPanel);
+		tabbedPane.addTab("Configuration", configPanel);
 
 		linksPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-		tabbedPane.addTab("Линки", linksPanel);
+		tabbedPane.addTab("Links", linksPanel);
 	}
 
 	private void updateLinks() {
@@ -344,7 +344,7 @@ public class GUIConfigurator {
 				});
 				linksPanel.add(label);
 			}
-			Button button = new Button("Новый линк");
+			Button button = new Button("New link");
 			button.addActionListener(new ActionListener() {
 				
 				@Override
@@ -380,7 +380,7 @@ public class GUIConfigurator {
 
 		public FileChooserButton(final TextField path) throws HeadlessException {
 			super();
-			setLabel("Обзор");
+			setLabel("Browse");
 			addActionListener(new ActionListener() {
 
 				@Override
@@ -453,16 +453,16 @@ public class GUIConfigurator {
 			setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			setModal(true);
 			setBounds(30, 40, 400, 300);
-			setTitle("Управление линком");
+			setTitle("Link management");
 			setLayout(null);
 			Insets insets = getInsets();
-			JLabel l = new JLabel("Название линка");
+			JLabel l = new JLabel("Link name");
 			l.setBounds(insets.left+10, insets.top+10, 180, 20);
 			add(l);
 			linkName = new TextField(10);
 			linkName.setBounds(insets.left+190, insets.top+10, 190, 20);
 			add(linkName);
-			l = new JLabel("Адрес линка");
+			l = new JLabel("Link address");
 			l.setBounds(insets.left+10, insets.top+40, 180, 20);
 			add(l);
 			linkAddress = new JTextField(10);
@@ -483,28 +483,28 @@ public class GUIConfigurator {
 				}
 			});
 			add(linkAddress);
-			l = new JLabel("Хост линка");
+			l = new JLabel("Link host");
 			l.setBounds(insets.left+10, insets.top+80, 180, 20);
 			add(l);
 			linkHost = new TextField(10);
 			linkHost.setBounds(insets.left+190, insets.top+80, 190, 20);
 			add(linkHost);
 			
-			l = new JLabel("Порт линка");
+			l = new JLabel("Link port");
 			l.setBounds(insets.left+10, insets.top+120, 180, 20);
 			add(l);
 			linkPort = new TextField(10);
 			linkPort.setBounds(insets.left+190, insets.top+120, 190, 20);
 			add(linkPort);
 			
-			l = new JLabel("Пароль на соединение");
+			l = new JLabel("Connection password");
 			l.setBounds(insets.left+10, insets.top+160, 180, 20);
 			add(l);
 			linkPassword = new TextField(10);
 			linkPassword.setBounds(insets.left+190, insets.top+160, 190, 20);
 			add(linkPassword);
 			
-			l = new JLabel("Пароль на пакеты");
+			l = new JLabel("Packet password");
 			l.setBounds(insets.left+10, insets.top+200, 180, 20);
 			add(l);
 			
@@ -512,7 +512,7 @@ public class GUIConfigurator {
 			linkPktPassword.setBounds(insets.left+190, insets.top+200, 190, 20);
 			add(linkPktPassword);
 
-			Button save = new Button("Сохранить");
+			Button save = new Button("Save");
 			save.addActionListener(new ActionListener() {
 
 				@Override
@@ -529,7 +529,7 @@ public class GUIConfigurator {
 				}
 			});
 			
-			Button close = new Button("Отмена");
+			Button close = new Button("Cancel");
 			close.addActionListener(new ActionListener() {
 
 				@Override

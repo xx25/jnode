@@ -21,7 +21,7 @@
 package org.jnode.xmpp.commands;
 
 /**
- * Пустой "процессор" для еще несделанных фич
+ * Empty 'processor' for not yet implemented features
  * 
  * @author kreon
  * 

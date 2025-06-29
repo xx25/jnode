@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
 import static jnode.protocol.binkp.BinkpProtocolTools.*;
 
 /**
- * Абстрактный binkp через любой протокол
+ * Abstract binkp through any protocol
  * 
  * @author kreon
  * 
@@ -424,7 +424,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	}
 
 	/**
-	 * Обработка входящего M_PWD
+	 * Processing incoming M_PWD
 	 * 
 	 * @param arg
 	 */
@@ -434,7 +434,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		}
 		boolean valid = (!secure || checkPassword(arg));
 
-		//FIXME отключили проверку пароля
+		//FIXME disabled password check
 //		valid = true;
 		
 		String text;
@@ -477,7 +477,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	}
 
 	/**
-	 * Обработка входящего M_ADR
+	 * Processing incoming M_ADR
 	 * 
 	 * @param arg
 	 */

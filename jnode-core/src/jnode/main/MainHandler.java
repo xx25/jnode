@@ -27,7 +27,7 @@ import java.util.Properties;
 import jnode.install.DefaultVersion;
 
 /**
- * Хранение конфигурации
+ * Configuration storage
  * 
  * @author kreon
  * 

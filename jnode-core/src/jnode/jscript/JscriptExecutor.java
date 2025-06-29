@@ -35,7 +35,7 @@ import jnode.main.MainHandler;
 import jnode.orm.ORMManager;
 
 /**
- * Запускатель пользовательских скриптов по расписанию
+ * User scripts scheduler launcher
  * 
  * @author Manjago
  * 
@@ -151,7 +151,7 @@ public class JscriptExecutor implements Runnable {
 			if (content != null) {
 				logger.l5(MessageFormat.format("execute script {0}", content));
 				engine.eval(content, bindings);
-				// выполнились? и иксипшена не произошло? ну вот это счастье!
+				// executed? and no exception occurred? well that's happiness!
 				Schedule modItem = ORMManager.get(Schedule.class).getById(
 						item.getId());
 				modItem.setLastRunDate(new Date());
@@ -162,11 +162,11 @@ public class JscriptExecutor implements Runnable {
 	}
 
 	/**
-	 * Выполнить скрипт с идентификатором id
+	 * Execute script with identifier id
 	 * 
 	 * @param id
-	 *            идентификатор скрипта
-	 * @return отчет об ошибках
+	 *            script identifier
+	 * @return error report
 	 */
 	public static String executeScript(Long id) {
 

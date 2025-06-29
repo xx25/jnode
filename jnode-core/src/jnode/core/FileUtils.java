@@ -34,9 +34,9 @@ public final class FileUtils {
 	private static final int BLOCK_SIZE = 4096;
 
     /**
-     * Читает весь файл в строку
-     * @param path путь к файлу
-     * @return строка с содержимым файла
+     * Reads entire file into string
+     * @param path path to file
+     * @return string with file contents
      * @throws IOException
      */
 	public static String readFile(String path) throws IOException {
@@ -49,7 +49,7 @@ public final class FileUtils {
 	}
 
 	/**
-	 * Замена File.renameTo
+	 * Replacement for File.renameTo
 	 * 
 	 * @param source
 	 * @param dest

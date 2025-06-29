@@ -63,7 +63,7 @@ public class XMPPClient {
 	}
 
 	/**
-	 * Проверка соединения
+	 * Connection check
 	 * 
 	 * @return
 	 */
@@ -82,7 +82,7 @@ public class XMPPClient {
 	}
 
 	/**
-	 * Запуск
+	 * Start
 	 */
 	void run() {
 		connection = new XMPPConnection(server);
@@ -110,9 +110,9 @@ public class XMPPClient {
 	}
 
 	/**
-	 * Очищаем старые чаты
+	 * Clean old chats
 	 * 
-	 * TODO: реализовать
+	 * TODO: implement
 	 * 
 	 * @param delay
 	 */
@@ -126,7 +126,7 @@ public class XMPPClient {
 	}
 
 	/**
-	 * Атрибуты чата
+	 * Chat attributes
 	 * 
 	 * @param chat
 	 * @return
@@ -141,7 +141,7 @@ public class XMPPClient {
 	}
 
 	/**
-	 * Обработка входящего чата
+	 * Incoming chat processing
 	 * 
 	 * @author kreon
 	 * 
@@ -176,7 +176,7 @@ public class XMPPClient {
 	}
 
 	/**
-	 * Обработка входящего сообщения
+	 * Incoming message processing
 	 * 
 	 * @author kreon
 	 * 
@@ -218,7 +218,7 @@ public class XMPPClient {
 	}
 
 	/**
-	 * Аттрибуты чата
+	 * Chat attributes
 	 * 
 	 * @author kreon
 	 * 
