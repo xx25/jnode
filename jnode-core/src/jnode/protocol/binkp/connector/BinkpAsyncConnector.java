@@ -94,8 +94,7 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 				try {
 					selector.select(staticMaxTimeout);
 					loopCounter++;
-					logger.l5("=== Selector loop #" + loopCounter + ", keys=" + selector.selectedKeys().size());
-					for (SelectionKey key : selector.selectedKeys()) {
+						for (SelectionKey key : selector.selectedKeys()) {
 						SocketChannel channel = (SocketChannel) key.channel();
 						if (key.isValid()) {
 							if (key.isConnectable()) {
