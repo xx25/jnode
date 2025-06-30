@@ -22,27 +22,27 @@ package org.jnode.httpd.routes.post;
 
 import jnode.dto.Link;
 import jnode.orm.ORMManager;
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
 
-public class RoutingRoute extends Route {
+import io.javalin.http.Handler;
+
+public class RoutingRoute implements Handler {
 
 	public RoutingRoute() {
-		super("/secure/routing");
+		
 	}
 
 	@Override
-	public Object handle(Request req, Response resp) {
-		String nice = req.queryParams("nice");
-		String fa = req.queryParams("fa");
-		String fn = req.queryParams("fn");
-		String ta = req.queryParams("ta");
-		String tn = req.queryParams("tn");
-		String s = req.queryParams("s");
-		String v = req.queryParams("v");
+	public void handle(Context ctx) throws Exception {
+		String nice = ctx.queryParam("nice");
+		String fa = ctx.queryParam("fa");
+		String fn = ctx.queryParam("fn");
+		String ta = ctx.queryParam("ta");
+		String tn = ctx.queryParam("tn");
+		String s = ctx.queryParam("s");
+		String v = ctx.queryParam("v");
 		String code = null;
-		String delete = req.queryParams("did");
+		String delete = ctx.queryParam("did");
 		if (delete != null) {
 			try {
 				Long eid = Long.valueOf(delete);
@@ -72,10 +72,10 @@ public class RoutingRoute extends Route {
 				code = "INVALID";
 			}
 		}
-		resp.header("Location", "/secure/route.html"
+		ctx.redirect( "/secure/route.html"
 				+ ((code != null) ? "?code=" + code : ""));
-		halt(302);
-		return null;
+		
+		
 	}
 
 }

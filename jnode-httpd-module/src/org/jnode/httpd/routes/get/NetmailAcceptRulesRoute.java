@@ -26,26 +26,25 @@ import org.jnode.httpd.util.HTML;
 
 import jnode.dto.NetmailAcceptRule;
 import jnode.orm.ORMManager;
-import spark.Request;
-import spark.Response;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
 /**
  * Netmail acceptance rules configuration page
  * 
  * @author jnode
  */
-public class NetmailAcceptRulesRoute extends spark.Route {
+public class NetmailAcceptRulesRoute implements Handler {
 	private static String template = null;
 
 	public NetmailAcceptRulesRoute() {
-		super("/secure/netmail-accept.html");
 		if (template == null) {
 			template = HTML.getContents("/parts/netmail-accept.html");
 		}
 	}
 
 	@Override
-	public Object handle(Request req, Response resp) {
+	public void handle(Context ctx) throws Exception {
 		List<NetmailAcceptRule> rules = ORMManager.get(NetmailAcceptRule.class)
 			.getOrderAnd("nice", true);
 			
@@ -86,9 +85,9 @@ public class NetmailAcceptRulesRoute extends spark.Route {
 			));
 		}
 		
-		return HTML.start(true)
+		ctx.html(HTML.start(true)
 			.append(String.format(template, rulesTable.toString()))
-			.footer().get();
+			.footer().get());
 	}
 	
 	private String htmlEscape(String str) {

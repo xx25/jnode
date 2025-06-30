@@ -6,12 +6,12 @@ A: Это "серверная" реализация фидошного софт�
 типичного узла сети Fido.
 
 Q: А есть Wiki?
-A: Есть! https://github.com/kreon/jnode/wiki
+A: Есть! https://github.com/xx25/jnode/wiki
 
 Q: А где взять последнюю версию?
-A1: git clone git://github.com/kreon/jnode.git
+A1: git clone git://github.com/xx25/jnode.git
 Если уже есть - то зайти в папку и сделать git pull 
-A2: https://github.com/kreon/jnode/releases
+A2: https://github.com/xx25/jnode/releases
 A3: https://manjago.ci.cloudbees.com/job/jnode/
   > jnode-1.0-SNAPSHOT-release-multidb-xxxxxxxx.zip
 
@@ -93,7 +93,7 @@ Q: Я нашел баг! Что делать?
 A: 1. Сделать loglevel=5 в конфиге
    2. Воспроизвести баг и сохранить лог
    3. Написать в эху ru.jnode вырезку лога и описание бага.
-A2: Добавить ошибку сюда: https://github.com/kreon/jnode/issues
+A2: Добавить ошибку сюда: https://github.com/xx25/jnode/issues
 
 Q: Я хочу помочь проекту. Что нужно делать?
 A: Нам требуются:

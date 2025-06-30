@@ -39,7 +39,8 @@ import org.jnode.httpd.util.HTML;
  * @author kreon
  * 
  */
-import spark.Spark;
+import io.javalin.Javalin;
+import io.javalin.http.staticfiles.Location;
 
 /**
  * 
@@ -59,6 +60,7 @@ public class HttpdModule extends JnodeModule {
 	private boolean pointreg;
 	private boolean hdgpointreg;
 	private String external;
+	private Javalin app;
 
 	public HttpdModule(String configFile) throws JnodeModuleException {
 		super(configFile);
@@ -81,56 +83,75 @@ public class HttpdModule extends JnodeModule {
 	@Override
 	public void start() {
 
-		Spark.setPort(port);
-		if (external != null) {
-			Spark.externalStaticFileLocation(external);
-		}
-		Spark.staticFileLocation("/www");
+		app = Javalin.create(config -> {
+			config.staticFiles.add(staticFiles -> {
+				staticFiles.hostedPath = "/";
+				staticFiles.directory = "/www";
+				staticFiles.location = Location.CLASSPATH;
+			});
+			if (external != null) {
+				config.staticFiles.add(staticFiles -> {
+					staticFiles.hostedPath = "/";
+					staticFiles.directory = external;
+					staticFiles.location = Location.EXTERNAL;
+				});
+			}
+		}).start(port);
 
 		/**** PUBLIC LINKS *****/
-		Spark.get(new SelfRoute());
-		Spark.get(new SelfRoute("/"));
-		Spark.get(new SelfRoute(""));
-		Spark.get(new EchoareaCSVRoute());
+		app.get("/", new SelfRoute());
+		app.get("/index.html", new SelfRoute());
+		app.get("/echoareas.csv", new EchoareaCSVRoute());
 
-		Spark.post(new HDGPointRequestRoute(hdgpointreg));
+		app.post("/hdg-point-request", new HDGPointRequestRoute(hdgpointreg));
 
 		if (pointreg) {
-			Spark.get(new BecomePointRoute(true));
-			Spark.get(new PointRequestConfirmRoute());
-			Spark.post(new PointRequestRoute());
+			app.get("/become-point", new BecomePointRoute(true));
+			app.get("/requestpoint.html", new BecomePointRoute(true));
+			app.get("/point-request-confirm", new PointRequestConfirmRoute());
+			app.post("/point-request", new PointRequestRoute());
 		} else {
-			Spark.get(new BecomePointRoute(false));
+			app.get("/become-point", new BecomePointRoute(false));
+			app.get("/requestpoint.html", new BecomePointRoute(false));
 		}
 		if (linkreg) {
-			Spark.get(new BecomeLinkRoute(true));
-			Spark.post(new LinkRequestRoute());
+			app.get("/become-link", new BecomeLinkRoute(true));
+			app.get("/requestlink.html", new BecomeLinkRoute(true));
+			app.post("/link-request", new LinkRequestRoute());
 		} else {
-			Spark.get(new BecomeLinkRoute(false));
+			app.get("/become-link", new BecomeLinkRoute(false));
+			app.get("/requestlink.html", new BecomeLinkRoute(false));
 		}
 
-		Spark.before(new SecureFilter("/secure/*"));
-		Spark.after(new CharsetFilter());
+		app.before("/secure/*", new SecureFilter("/secure/*"));
+		app.after(new CharsetFilter());
 
 		/**** SECURE LINKS ****/
-		Spark.get(new HealthRoute());
-		Spark.get(new LinksRoute());
-		Spark.get(new LinkoptionsRoute());
-		Spark.get(new EchoareasRoute());
-		Spark.get(new FileareasRoute());
-		Spark.get(new RoutingsRoute());
-		Spark.get(new RewritesRoute());
-		Spark.get(new NetmailAcceptRulesRoute());
-		Spark.get(new UsersRoute());
+		app.get("/secure/index.html", new HealthRoute());
+		app.get("/secure/links", new LinksRoute());
+		app.get("/secure/links.html", new LinksRoute());
+		app.get("/secure/linkoptions", new LinkoptionsRoute());
+		app.get("/secure/echoareas", new EchoareasRoute());
+		app.get("/secure/echoes.html", new EchoareasRoute());
+		app.get("/secure/fileareas", new FileareasRoute());
+		app.get("/secure/fechoes.html", new FileareasRoute());
+		app.get("/secure/routings", new RoutingsRoute());
+		app.get("/secure/route.html", new RoutingsRoute());
+		app.get("/secure/rewrites", new RewritesRoute());
+		app.get("/secure/rewrite.html", new RewritesRoute());
+		app.get("/secure/netmail-accept-rules", new NetmailAcceptRulesRoute());
+		app.get("/secure/netmail-accept.html", new NetmailAcceptRulesRoute());
+		app.get("/secure/users", new UsersRoute());
+		app.get("/secure/users.html", new UsersRoute());
 
-		Spark.post(new LinkRoute());
-		Spark.post(new LinkoptionRoute());
-		Spark.post(new EchoareaRoute());
-		Spark.post(new FileareaRoute());
-		Spark.post(new RoutingRoute());
-		Spark.post(new RewriteRoute());
-		Spark.post(new NetmailAcceptRuleRoute());
-		Spark.post(new UserRoute());
+		app.post("/secure/link", new LinkRoute());
+		app.post("/secure/linkoption", new LinkoptionRoute());
+		app.post("/secure/echoarea", new EchoareaRoute());
+		app.post("/secure/filearea", new FileareaRoute());
+		app.post("/secure/routing", new RoutingRoute());
+		app.post("/secure/rewrite", new RewriteRoute());
+		app.post("/secure/netmail-accept-rule", new NetmailAcceptRuleRoute());
+		app.post("/secure/user", new UserRoute());
 
 		try {
 			WebAdmin admin = ORMManager.get(WebAdmin.class).getFirstAnd();
@@ -149,6 +170,12 @@ public class HttpdModule extends JnodeModule {
 				logger.l1("Admin created\n" + text);
 			}
 		} catch (RuntimeException e) {
+		}
+	}
+
+	public void stop() {
+		if (app != null) {
+			app.stop();
 		}
 	}
 }

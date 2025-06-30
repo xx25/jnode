@@ -22,33 +22,33 @@ package org.jnode.httpd.routes.post;
 
 import jnode.dto.Rewrite;
 import jnode.orm.ORMManager;
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
 
-public class RewriteRoute extends Route {
+import io.javalin.http.Handler;
+
+public class RewriteRoute implements Handler {
 
 	public RewriteRoute() {
-		super("/secure/rewrite");
+		
 	}
 
 	@Override
-	public Object handle(Request req, Response resp) {
-		String n = req.queryParams("n");
-		String l = req.queryParams("l");
-		String t = req.queryParams("t");
-		String ofa = req.queryParams("ofa");
-		String nfa = req.queryParams("nfa");
-		String ofn = req.queryParams("ofn");
-		String nfn = req.queryParams("nfn");
-		String ota = req.queryParams("ota");
-		String nta = req.queryParams("nta");
-		String otn = req.queryParams("otn");
-		String ntn = req.queryParams("ntn");
-		String os = req.queryParams("os");
-		String ns = req.queryParams("ns");
+	public void handle(Context ctx) throws Exception {
+		String n = ctx.queryParam("n");
+		String l = ctx.queryParam("l");
+		String t = ctx.queryParam("t");
+		String ofa = ctx.queryParam("ofa");
+		String nfa = ctx.queryParam("nfa");
+		String ofn = ctx.queryParam("ofn");
+		String nfn = ctx.queryParam("nfn");
+		String ota = ctx.queryParam("ota");
+		String nta = ctx.queryParam("nta");
+		String otn = ctx.queryParam("otn");
+		String ntn = ctx.queryParam("ntn");
+		String os = ctx.queryParam("os");
+		String ns = ctx.queryParam("ns");
 
-		String did = req.queryParams("did");
+		String did = ctx.queryParam("did");
 
 		String code = null;
 
@@ -94,9 +94,9 @@ public class RewriteRoute extends Route {
 				code = "ERROR";
 			}
 		}
-		resp.header("Location", "/secure/rewrite.html"
+		ctx.redirect( "/secure/rewrite.html"
 				+ ((code != null) ? "?code=" + code : ""));
-		halt(302);
-		return null;
+		
+		
 	}
 }

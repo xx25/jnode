@@ -34,24 +34,24 @@ import jnode.orm.ORMManager;
 
 import org.jnode.httpd.dto.LinkRequest;
 
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
 
-public class LinkRequestRoute extends Route {
+import io.javalin.http.Handler;
+
+public class LinkRequestRoute implements Handler {
 
 	public LinkRequestRoute() {
-		super("/linkrequest/:type");
+		
 	}
 
 	@Override
-	public Object handle(Request req, Response resp) {
-		String type = req.params(":type");
+	public void handle(Context ctx) throws Exception {
+		String type = ctx.pathParam("type");
 		String code = null;
 		if (!"confirm".equals(type)) {
-			String addr = req.queryParams("addr");
-			String host = req.queryParams("host");
-			String port = req.queryParams("port");
+			String addr = ctx.queryParam("addr");
+			String host = ctx.queryParam("host");
+			String port = ctx.queryParam("port");
 			if (addr != null && host != null && port != null) {
 				LinkRequest lr = new LinkRequest();
 				try {
@@ -101,7 +101,7 @@ public class LinkRequestRoute extends Route {
 							String akey = FtnTools.generate8d();
 							lr.setAkey(akey);
 							ORMManager.get(LinkRequest.class).save(lr);
-							writeKey(req,lr);
+							writeKey(ctx,lr);
 						} else {
 							code = "EXISTS";
 						}
@@ -111,8 +111,8 @@ public class LinkRequestRoute extends Route {
 				code = "ERROR";
 			}
 		} else {
-			String akey = req.queryParams("key");
-			String id = req.queryParams("id");
+			String akey = ctx.queryParam("key");
+			String id = ctx.queryParam("id");
 			try {
 				LinkRequest lr = ORMManager.get(LinkRequest.class).getById(id);
 				if (lr != null && lr.getAkey().equals(akey)) { // valid
@@ -144,10 +144,10 @@ public class LinkRequestRoute extends Route {
 				code = "ERROR";
 			}
 		}
-		resp.header("Location", "/requestlinkresult.html"
+		ctx.redirect( "/requestlinkresult.html"
 				+ ((code != null) ? "?code=" + code : ""));
-		halt(302);
-		return null;
+		
+		
 	}
 
 	private void writeGreets(Link link) {
@@ -169,7 +169,7 @@ public class LinkRequestRoute extends Route {
 						+ "Please, follow the Fidonet rules and keep your connection stable\n");
 	}
 
-	private void writeKey(Request req, LinkRequest lr) {
+	private void writeKey(Context ctx, LinkRequest lr) {
 		// write to our email
 		FtnTools.writeNetmail(FtnTools.getPrimaryFtnAddress(),
 				FtnTools.getPrimaryFtnAddress(), MainHandler
@@ -185,7 +185,7 @@ public class LinkRequestRoute extends Route {
 				lr.getName(),
 				"Link instructions",
 				"Somebody have just started a linkage proccess from your address.\n"
-						+ "If this was you, visit "+req.url()+"/confirmlink.html on our site and fill fields as described below:\n"
+						+ "If this was you, visit "+ctx.url()+"/confirmlink.html on our site and fill fields as described below:\n"
 						+ " > Request Id: " + lr.getId() + "\n"
 						+ " > Request Key: " + lr.getAkey() + "\n");
 	}

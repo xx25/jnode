@@ -11,9 +11,9 @@
     <inceptionYear>2012</inceptionYear>
 
     <scm>
-        <connection>scm:git:https://github.com/kreon/jnode.git</connection>
-        <developerConnection>scm:git:https://github.com/kreon/jnode.git</developerConnection>
-        <url>https://github.com/kreon/jnode</url>
+        <connection>scm:git:https://github.com/xx25/jnode.git</connection>
+        <developerConnection>scm:git:https://github.com/xx25/jnode.git</developerConnection>
+        <url>https://github.com/xx25/jnode</url>
         <tag>HEAD</tag>
     </scm>
 

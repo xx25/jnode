@@ -25,16 +25,14 @@ import jnode.main.MainHandler;
 
 import org.jnode.httpd.util.HTML;
 
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public class BecomePointRoute extends Route {
+public class BecomePointRoute implements Handler {
 	private static String requestPoint = null;
 	private boolean enabled;
 
 	public BecomePointRoute(boolean enabled) {
-		super("/requestpoint.html");
 		this.enabled = enabled;
 		if (enabled) {
 			if (requestPoint == null) {
@@ -44,21 +42,22 @@ public class BecomePointRoute extends Route {
 	}
 
 	@Override
-	public Object handle(Request arg0, Response arg1) {
+	public void handle(Context ctx) throws Exception {
 		if (!enabled) {
-			return HTML
+			ctx.html(HTML
 					.start(false)
 					.append("<b>Unfortunately, point requests are disabled by sysop</b>")
-					.footer().get();
+					.footer().get());
+			return;
 		}
 		StringBuilder sb = new StringBuilder();
 		for (FtnAddress a : MainHandler.getCurrentInstance().getInfo()
 				.getAddressList()) {
 			sb.append("<option>" + a.toString() + "</option>");
 		}
-		return HTML.start(false)
+		ctx.html(HTML.start(false)
 				.append(String.format(requestPoint, sb.toString())).footer()
-				.get();
+				.get());
 	}
 
 }

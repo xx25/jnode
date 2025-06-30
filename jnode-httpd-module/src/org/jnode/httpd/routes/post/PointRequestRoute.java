@@ -28,23 +28,23 @@ import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnAddress;
 import jnode.main.MainHandler;
 import jnode.orm.ORMManager;
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
 
-public class PointRequestRoute extends Route {
+import io.javalin.http.Handler;
+
+public class PointRequestRoute implements Handler {
 	public PointRequestRoute() {
-		super("/pointrequest");
+		
 	}
 
 	@Override
-	public Object handle(Request req, Response resp) {
+	public void handle(Context ctx) throws Exception {
 		String code = null;
-		String node = req.queryParams("node");
-		String point = req.queryParams("point");
-		String fname = req.queryParams("fname");
-		String lname = req.queryParams("lname");
-		String email = req.queryParams("email");
+		String node = ctx.queryParam("node");
+		String point = ctx.queryParam("point");
+		String fname = ctx.queryParam("fname");
+		String lname = ctx.queryParam("lname");
+		String email = ctx.queryParam("email");
 
 		PointRequest pr = new PointRequest();
 		// check node
@@ -94,17 +94,17 @@ public class PointRequestRoute extends Route {
 				} else {
 					ORMManager.get(PointRequest.class).save(pr);
 					writeRequestNetmail(pr);
-					writeConfirmEmail(req, pr);
+					writeConfirmEmail(ctx, pr);
 				}
 			}
 		}
-		resp.header("Location", "/requestpointresult.html"
+		ctx.redirect( "/requestpointresult.html"
 				+ ((code != null) ? "?code=" + code : ""));
-		halt(302);
-		return null;
+		
+		
 	}
 
-	private void writeConfirmEmail(Request req, PointRequest pr) {
+	private void writeConfirmEmail(Context ctx, PointRequest pr) {
 
 		String text = "Somebody reuested a point AKA from your email address.\n"
 				+ "If that was you, click the link below to complete your registration\n"
@@ -112,7 +112,7 @@ public class PointRequestRoute extends Route {
 				+"Point's Name: "+pr.getName()+"\n"
 				+"Point's AKA: "+pr.getAddr()+"\n"
 				+ " Link: "
-				+ req.url()
+				+ ctx.url()
 				+ "?key="
 				+ pr.getId()
 				+ "  \n"

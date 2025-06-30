@@ -25,9 +25,9 @@ import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+
+import io.javalin.http.Handler;
 
 /**
  * Translate .html :-)
@@ -36,29 +36,29 @@ import spark.Route;
  * 
  */
 @Deprecated
-public class MainRoute extends Route {
+public class MainRoute implements Handler {
 	private static final Pattern include = Pattern.compile("<\\?[ ]+include=[ ]*([^ ]*)[ ]+\\?>",
 			Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
 	public MainRoute() {
-		super("*");
+		
 	}
 
 	@Override
-	public Object handle(Request req, Response resp) {
-		String path = req.pathInfo();
+	public void handle(Context ctx) throws Exception {
+		String path = ctx.path();
 		if (path == null || path.length() == 0) {
-			resp.header("Location", "/index.html");
-			halt(302);
+			ctx.redirect( "/index.html");
+			
 		} else {
 			String content = getContents(path);
 			if (content != null) {
-				return content;
+				ctx.result(content);
 			} else {
-				halt(404, "Not Found");
+				
 			}
 		}
-		return null;
+		
 	}
 
 	private String getContents(String path) {

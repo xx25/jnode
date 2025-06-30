@@ -25,27 +25,26 @@ import java.util.regex.PatternSyntaxException;
 
 import jnode.dto.NetmailAcceptRule;
 import jnode.orm.ORMManager;
-import spark.Request;
-import spark.Response;
-import spark.Route;
-import spark.Spark;
+import io.javalin.http.Context;
+
+import io.javalin.http.Handler;
 
 /**
  * Netmail acceptance rule form processing
  * 
  * @author jnode
  */
-public class NetmailAcceptRuleRoute extends Route {
+public class NetmailAcceptRuleRoute implements Handler {
 	public NetmailAcceptRuleRoute() {
-		super("/secure/netmail-accept");
+		
 	}
 
 	@Override
-	public Object handle(Request req, Response resp) {
+	public void handle(Context ctx) throws Exception {
 		String code = null;
 		
 		// Handle deletion
-		String deleteId = req.queryParams("did");
+		String deleteId = ctx.queryParam("did");
 		if (deleteId != null) {
 			try {
 				Long id = Long.valueOf(deleteId);
@@ -62,7 +61,7 @@ public class NetmailAcceptRuleRoute extends Route {
 		} else {
 			// Handle create/update
 			try {
-				String idParam = req.queryParams("id");
+				String idParam = ctx.queryParam("id");
 				Long id = (idParam != null) ? Long.valueOf(idParam) : 0L;
 				NetmailAcceptRule rule;
 				
@@ -76,25 +75,25 @@ public class NetmailAcceptRuleRoute extends Route {
 				}
 				
 				// Set form values
-				String priorityParam = req.queryParams("priority");
+				String priorityParam = ctx.queryParam("priority");
 				if (priorityParam != null) {
 					rule.setPriority(Long.valueOf(priorityParam));
 				}
 				
-				rule.setEnabled("on".equals(req.queryParams("enabled")));
-				rule.setFromAddress(normalizePattern(req.queryParams("from_addr")));
-				rule.setToAddress(normalizePattern(req.queryParams("to_addr")));
-				rule.setFromName(normalizePattern(req.queryParams("from_name")));
-				rule.setToName(normalizePattern(req.queryParams("to_name")));
-				rule.setSubject(normalizePattern(req.queryParams("subject")));
+				rule.setEnabled("on".equals(ctx.queryParam("enabled")));
+				rule.setFromAddress(normalizePattern(ctx.queryParam("from_addr")));
+				rule.setToAddress(normalizePattern(ctx.queryParam("to_addr")));
+				rule.setFromName(normalizePattern(ctx.queryParam("from_name")));
+				rule.setToName(normalizePattern(ctx.queryParam("to_name")));
+				rule.setSubject(normalizePattern(ctx.queryParam("subject")));
 				
-				String actionParam = req.queryParams("action");
+				String actionParam = ctx.queryParam("action");
 				if (actionParam != null) {
 					rule.setAction(NetmailAcceptRule.Action.valueOf(actionParam));
 				}
 				
-				rule.setStopProcessing("on".equals(req.queryParams("stop_processing")));
-				rule.setDescription(req.queryParams("description"));
+				rule.setStopProcessing("on".equals(ctx.queryParam("stop_processing")));
+				rule.setDescription(ctx.queryParam("description"));
 				
 				// Validate regex patterns
 				if (!validateRegexPatterns(rule)) {
@@ -109,15 +108,15 @@ public class NetmailAcceptRuleRoute extends Route {
 			}
 		}
 		
-		resp.header("Location", "/secure/netmail-accept.html" + 
+		ctx.redirect( "/secure/netmail-accept.html" + 
 			(code != null ? "?code=" + code : ""));
-		resp.status(302);
-		return null;
+		
+		
 	}
 	
 	private String normalizePattern(String pattern) {
 		if (pattern == null || pattern.trim().isEmpty()) {
-			return "*";
+			
 		}
 		return pattern.trim();
 	}

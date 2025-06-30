@@ -27,22 +27,20 @@ import jnode.orm.ORMManager;
 import org.jnode.httpd.dto.WebAdmin;
 import org.jnode.httpd.util.HTML;
 
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public class UsersRoute extends Route {
+public class UsersRoute implements Handler {
 	private static String request = null;
 
 	public UsersRoute() {
-		super("/secure/users.html");
 		if (request == null) {
 			request = HTML.getContents("/parts/users.html");
 		}
 	}
 
 	@Override
-	public Object handle(Request req, Response resp) {
+	public void handle(Context ctx) throws Exception {
 		List<WebAdmin> admins = ORMManager.get(WebAdmin.class).getAll();
 		StringBuilder sb = new StringBuilder();
 		for (WebAdmin admin : admins) {
@@ -53,7 +51,7 @@ public class UsersRoute extends Route {
 							admin.getUsername(), admin.getId(), admin.getId()));
 		}
 
-		return HTML.start(true).append(String.format(request, sb.toString()))
-				.footer().get();
+		ctx.html(HTML.start(true).append(String.format(request, sb.toString()))
+				.footer().get());
 	}
 }

@@ -28,21 +28,20 @@ import jnode.orm.ORMManager;
 
 import org.jnode.httpd.util.HTML;
 
-import spark.Request;
-import spark.Response;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public class RoutingsRoute extends spark.Route {
+public class RoutingsRoute implements Handler {
 	private static String routings = null;
 
 	public RoutingsRoute() {
-		super("/secure/route.html");
 		if (routings == null) {
 			routings = HTML.getContents("/parts/route.html");
 		}
 	}
 
 	@Override
-	public Object handle(Request req, Response resp) {
+	public void handle(Context ctx) throws Exception {
 		List<Route> routes = ORMManager.get(Route.class).getOrderAnd("nice",
 				true);
 		StringBuilder sb = new StringBuilder();
@@ -64,9 +63,9 @@ public class RoutingsRoute extends spark.Route {
 						+ l.getLinkAddress() + "</option>");
 			}
 		}
-		return HTML.start(true)
+		ctx.html(HTML.start(true)
 				.append(String.format(routings, sb.toString(), sb2.toString()))
-				.footer().get();
+				.footer().get());
 	}
 
 }

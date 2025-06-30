@@ -5,11 +5,11 @@ Q: What is jNode?
 A: This is a Fidonet Technical Network ( FTN ) software platform which covers typical needs of Fidonet node.
 
 Q: Do you have a Wiki?
-A: https://github.com/kreon/jnode/wiki
+A: https://github.com/xx25/jnode/wiki
 
 Q: Where can I get jNode?
-A1: For persons whom know what is git and maven: git clone git://github.com/kreon/jnode.git && mvn package
-A2: Stable releases: https://github.com/kreon/jnode/releases
+A1: For persons whom know what is git and maven: git clone git://github.com/xx25/jnode.git && mvn package
+A2: Stable releases: https://github.com/xx25/jnode/releases
 A3: Unstable (nighly builds): https://manjago.ci.cloudbees.com/job/jnode/
   > jnode-1.0-SNAPSHOT-release-multidb-xxxxxxxx.zip
 
@@ -61,7 +61,7 @@ SELECT l.ftn_address FROM echoarea e RIGHT JOIN subscription s ON (s.echoarea_id
 Q: I've found a bug!
 A: 1. Send me logfile ( with log.level = 5 if possible )
    2. Write to this echoarea with bug description.
-A2: Create new issue there: https://github.com/kreon/jnode/issues
+A2: Create new issue there: https://github.com/xx25/jnode/issues
 
 Q: I want to help your project. What can I do?
 A: We are needed in:

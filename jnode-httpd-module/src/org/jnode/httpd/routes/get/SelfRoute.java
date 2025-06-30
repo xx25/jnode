@@ -28,27 +28,19 @@ import jnode.main.SystemInfo;
 
 import org.jnode.httpd.util.HTML;
 
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public class SelfRoute extends Route {
+public class SelfRoute implements Handler {
 	private final String FORMAT_TABLE = "<table class=\"info\">%s</table>";
 	private final String FORMAT_TR = "<tr><th>%s</th><td>%s</td></tr>";
 
-	public SelfRoute() {
-		super("/index.html");
-	}
-
-	public SelfRoute(String path) {
-		super(path);
-	}
-
 	@Override
-	public Object handle(Request req, Response resp) {
+	public void handle(Context ctx) throws Exception {
 		String index = HTML.getContents("index.html");
 		if (index.length() > 0) {
-			return index;
+			ctx.html(index);
+			return;
 		}
 		SystemInfo info = MainHandler.getCurrentInstance().getInfo();
 
@@ -63,7 +55,7 @@ public class SelfRoute extends Route {
 						+ String.format(FORMAT_TR, "Software version",
 								MainHandler.getVersion())
 						+ String.format(FORMAT_TR, "OS", getOS()));
-		return HTML.start(false).append(text).footer().get();
+		ctx.html(HTML.start(false).append(text).footer().get());
 	}
 
 	private String getOS() {
