@@ -353,6 +353,19 @@ public class InstallUtil {
 				logger.l1("Exception while updating to " + ver.getMajorVersion() + "." + (ver.getMinorVersion() + 1), e);
 			}
 		}
+		if (VersionComparator.isEqual(ver, 1L, 5L)) {
+			try {
+				logger.l5("Adding performance index for RESCAN command");
+				execQuery("CREATE INDEX idx_echomail_area_id ON echomail (echoarea_id, id);");
+				logger.l5("CREATE INDEX idx_echomail_area_id ON echomail (echoarea_id, id); -- ok");
+				ver.setMinorVersion(6L);
+				ver.setInstalledAt(new Date());
+				ORMManager.get(Version.class).save(ver);
+				logger.l1(String.format("Upgraded to %s", ver.toString()));
+			} catch (Exception e) {
+				logger.l1("Exception while updating to " + ver.getMajorVersion() + "." + (ver.getMinorVersion() + 1), e);
+			}
+		}
 	}
 
     private void runCustomScript() throws IOException {
