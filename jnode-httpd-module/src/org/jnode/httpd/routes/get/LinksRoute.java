@@ -70,12 +70,12 @@ public class LinksRoute implements Handler {
 			sortLinks(links);
 			for (Link object : links) {
 				sb.append(String
-						.format("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href=\"#edit\" class=\"css-link-1\" onclick=\"edit(%d)\">Edit</a>&nbsp;<a href=\"#options\" class=\"css-link-1\" onclick=\"options(%d)\">Settings</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d)\">Delete</a></td></tr>",
+						.format("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href=\"#edit\" class=\"css-link-1\" onclick=\"edit(%d)\">Edit</a>&nbsp;<a href=\"#options\" class=\"css-link-1\" onclick=\"options(%d)\">Settings</a>&nbsp;<a href=\"/secure/link-echoes.html?link=%d\" class=\"css-link-1\">View echoes</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d)\">Delete</a></td></tr>",
 								object.getLinkName(), object.getLinkAddress(),
 								object.getProtocolAddress(),
 								object.getProtocolPassword(),
 								object.getPaketPassword(), object.getId(),
-								object.getId(), object.getId()));
+								object.getId(), object.getId(), object.getId()));
 			}
 			ctx.html(HTML.start(true)
 					.append(String.format(LinksRoute.links, sb.toString()))

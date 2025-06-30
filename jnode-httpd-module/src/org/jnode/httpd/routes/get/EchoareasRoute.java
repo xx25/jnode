@@ -46,10 +46,10 @@ public class EchoareasRoute implements Handler {
 			for (Echoarea e : ORMManager.get(Echoarea.class).getOrderAnd(
 					"name", true)) {
 				sb.append(String
-						.format("<tr><td>%s</td><td>%s</td><td>r:%d|w:%d|g:%s</td><td><a href=\"#new\" class=\"css-link-1\" onclick=\"edit(%d);\">Edit</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">Delete</a></td></tr>",
+						.format("<tr><td>%s</td><td>%s</td><td>r:%d|w:%d|g:%s</td><td><a href=\"#new\" class=\"css-link-1\" onclick=\"edit(%d);\">Edit</a>&nbsp;<a href=\"/secure/echo-links.html?echo=%d\" class=\"css-link-1\">View links</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">Delete</a></td></tr>",
 								e.getName(), e.getDescription(),
 								e.getReadlevel(), e.getWritelevel(),
-								e.getGroup(), e.getId(), e.getId()));
+								e.getGroup(), e.getId(), e.getId(), e.getId()));
 			}
 			ctx.html(HTML.start(true)
 					.append(String.format(echoareas, sb.toString())).footer()

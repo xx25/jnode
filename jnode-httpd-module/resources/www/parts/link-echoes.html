@@ -1,0 +1,45 @@
+<div id="content">
+    <h2>Echo Subscriptions for %s (%s)</h2>
+    
+    <form id="echo-subscription-form" method="post" action="/secure/link-echoes-save">
+        <input type="hidden" name="link_id" value="%s" />
+        
+        <h3>Subscribed Echoes</h3>
+        <div id="subscribed-echoes">
+            <table class="links">
+                <thead>
+                    <tr>
+                        <th width="30"></th>
+                        <th>Echo Name</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    %s
+                </tbody>
+            </table>
+        </div>
+        
+        <br/>
+        
+        <h3>Available Echoes</h3>
+        <div id="unsubscribed-echoes">
+            <table class="links">
+                <thead>
+                    <tr>
+                        <th width="30"></th>
+                        <th>Echo Name</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    %s
+                </tbody>
+            </table>
+        </div>
+        
+        <br/>
+        <input type="submit" value="Save" class="button" />
+        <a href="/secure/links.html" class="css-link-1">Cancel</a>
+    </form>
+</div>
