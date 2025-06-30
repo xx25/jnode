@@ -73,11 +73,13 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	private static final String BINKP_TEMP = "binkp.temp";
 	private static final String BINKP_SIZE = "binkp.size";
 	private static final String BINKP_TIMEOUT = "binkp.timeout";
+	private static final String BINKP_CONNECT_TIMEOUT = "binkp.connect.timeout";
 	protected static Integer staticMemMaxSize = null;
 	protected static Integer staticBufMaxSize = null;
 	protected static File staticTempDirectory = null;
 	protected static String staticNetworkName = null;
 	protected static Long staticMaxTimeout = null;
+	protected static Long staticConnectTimeout = null;
 
 	protected static void init() {
 		if (staticTempDirectory == null) {
@@ -104,6 +106,11 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			staticMaxTimeout = (long) MainHandler.getCurrentInstance()
 					.getIntegerProperty(BINKP_TIMEOUT, 30);
 			staticMaxTimeout *= 1000;
+		}
+		if (staticConnectTimeout == null) {
+			staticConnectTimeout = (long) MainHandler.getCurrentInstance()
+					.getIntegerProperty(BINKP_CONNECT_TIMEOUT, 10);
+			staticConnectTimeout *= 1000;
 		}
 	}
 
@@ -157,16 +164,21 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	protected void error(String text) {
 		frames.clear();
 		frames.addLast(new BinkpFrame(BinkpCommand.M_ERR, text));
-		logger.l2("Local error: " + text);
+		long elapsed = new Date().getTime() - time;
+		String duration = String.format("%.2f", elapsed / 1000.0);
+		String addressInfo = foreignAddress.isEmpty() ? "unknown" : foreignAddress.get(0).toString();
+		logger.l2("Local error connecting to " + addressInfo + " after " + duration + " seconds: " + text);
 		connectionState = STATE_ERROR;
 	}
 
 	protected void error(String text, Exception e) {
 		frames.clear();
 		frames.addLast(new BinkpFrame(BinkpCommand.M_ERR, text));
-		logger.l2("Local error: " + text);
+		long elapsed = new Date().getTime() - time;
+		String duration = String.format("%.2f", elapsed / 1000.0);
+		String addressInfo = foreignAddress.isEmpty() ? "unknown" : foreignAddress.get(0).toString();
+		logger.l2("Local error connecting to " + addressInfo + " after " + duration + " seconds: " + text, e);
 		connectionState = STATE_ERROR;
-		e.printStackTrace(System.out);
 	}
 
 	protected void proccessFrame(BinkpFrame frame) {
@@ -650,7 +662,9 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 	protected void finish(String reason) {
 		time = new Date().getTime() - time;
-		logger.l4("Finishing: " + reason);
+		String duration = String.format("%.2f", time / 1000.0);
+		String addressInfo = foreignAddress.isEmpty() ? "unknown" : foreignAddress.get(0).toString();
+		logger.l4("Finishing connection to " + addressInfo + " after " + duration + " seconds: " + reason);
 		for (FtnAddress addr : foreignAddress) {
 			PollQueue.getSelf().end(addr);
 		}
