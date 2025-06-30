@@ -5,15 +5,10 @@ Q: А что это вообще такое?
 A: Это "серверная" реализация фидошного софта на Java, покрывающая нужды 
 типичного узла сети Fido.
 
-Q: А есть Wiki?
-A: Есть! https://github.com/xx25/jnode/wiki
-
 Q: А где взять последнюю версию?
 A1: git clone git://github.com/xx25/jnode.git
 Если уже есть - то зайти в папку и сделать git pull 
 A2: https://github.com/xx25/jnode/releases
-A3: Сборки для разработчиков доступны через GitHub Actions
-  > jnode-1.0-SNAPSHOT-release-multidb-xxxxxxxx.zip
 
 Q: А как поставить?
 A: Читайте docs/*
@@ -60,34 +55,19 @@ A2: примеры
 
 Q: А на XXX работает?
 A: Теоретически должно работать везде, где есть Java 11+.
-Проверялось на различных дистрибутивах Linux, Windows 10/11 и macOS.
-Работает как на официальном JRE от Oracle так и на OpenJDK.
-A2: http://tinyurl.com/ob9uwhh
 
 Q: А какую СУБД лучше выбрать?
 A: Какую угодно ;) будет повод проверить как она работает %)
 A2: список проверенных есть в предыдущем вопросе.
-
-
 
 Q: А я ничего не понимаю в SQL! Как сделать XXX?
 A: Спросить в эхе. То, что уже спросили, добавляется в F.A.Q. 
  DB> Как создать/удалить линка
 Воспользоваться веб-мордой.
 
- DB> Как подписать/отписать линка на эху/эхи?
-INSERT INTO subscription SELECT l.id AS lid,e.id AS eid FROM links l,echoarea e WHERE NOT EXISTS (SELECT link_id FROM subscription WHERE link_id=l.id AND echoarea_id=e.id) AND e.name='Имя эхи' AND l.ftn_address='Адрес узла';
-
  DB> Как узнать эхи, на которые никто не подписан?
 SELECT e.name FROM echoarea e WHERE (SELECT COUNT(*) FROM subscription WHERE echoarea_id=e.id)=1;
 1 - подписан только аплинк, 0 - вообще нет подписки.
-
- DB> Как вывести всю подписку линка?
-SELECT e.name FROM echoarea e RIGHT JOIN subscription s ON (s.echoarea_id=e.id) RIGHT JOIN links l ON (l.id=s.link_id) WHERE l.ftn_address='Адрес линка';
-
- DB> Как вывести всех линков с подпиской на конкретную эху?
-SELECT l.ftn_address FROM echoarea e RIGHT JOIN subscription s ON (s.echoarea_id=e.id) RIGHT JOIN links l ON (l.id=s.link_id) WHERE e.name='Имя эхи';
-
 
 Q: Я нашел баг! Что делать?
 A: 1. Сделать loglevel=5 в конфиге
