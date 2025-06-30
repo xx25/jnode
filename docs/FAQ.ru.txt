@@ -12,14 +12,14 @@ Q: А где взять последнюю версию?
 A1: git clone git://github.com/xx25/jnode.git
 Если уже есть - то зайти в папку и сделать git pull 
 A2: https://github.com/xx25/jnode/releases
-A3: https://manjago.ci.cloudbees.com/job/jnode/
+A3: Сборки для разработчиков доступны через GitHub Actions
   > jnode-1.0-SNAPSHOT-release-multidb-xxxxxxxx.zip
 
 Q: А как поставить?
 A: Читайте docs/*
-A2: Поставить JRE1.7, скачать архив, распаковать, 
+A2: Поставить JRE 11+, скачать архив, распаковать, 
  отредактировать etc/jnode.XXX.conf ( где XXX - win или nix ),
- запустить bin/run.*, подключиться техническим пойнтом,
+ запустить linux/jnode.service или windows/jnode.bat, подключиться техническим пойнтом,
  зайти на веб-морду и настроить остальное.
 
 Q: А как читать почту на узле?
@@ -59,9 +59,9 @@ A2: примеры
 Итд
 
 Q: А на XXX работает?
-A: Теоретически должно работать везде, где есть Java 1.7 и старше.
-Проверялось на Linux i686 и x86_64 и Windows 64-bit, СУБД mySQL 5, PostgreSQL 9 и H2 1.3.
-Работает как на официальном JRE от Oracle так и на openjdk.
+A: Теоретически должно работать везде, где есть Java 11+.
+Проверялось на различных дистрибутивах Linux, Windows 10/11 и macOS.
+Работает как на официальном JRE от Oracle так и на OpenJDK.
 A2: http://tinyurl.com/ob9uwhh
 
 Q: А какую СУБД лучше выбрать?

@@ -10,12 +10,12 @@ A: https://github.com/xx25/jnode/wiki
 Q: Where can I get jNode?
 A1: For persons whom know what is git and maven: git clone git://github.com/xx25/jnode.git && mvn package
 A2: Stable releases: https://github.com/xx25/jnode/releases
-A3: Unstable (nighly builds): https://manjago.ci.cloudbees.com/job/jnode/
+A3: Development builds available from GitHub Actions
   > jnode-1.0-SNAPSHOT-release-multidb-xxxxxxxx.zip
 
 Q: How do I install jNode?
 A1: Just read docs/*
-A2: Typical install: Install JRE 1.7, download & unpack -multidb- release, edit etc/jnode.xxx.conf where xxx is "win" if you're using Windows or OS/2 and "nix" if you're running Linux/BSD/Mac OS X, run bin/run.***, look for web interface password and configure your node via web.
+A2: Typical install: Install JRE 11+, download & unpack -multidb- release, edit etc/jnode.xxx.conf where xxx is "win" if you're using Windows and "nix" if you're running Linux/BSD/macOS, run linux/jnode.service or windows/jnode.bat, look for web interface password and configure your node via web.
 
 Q: Can I read netmail & echomail via jNode?
 A: No. jNode stores all data in SQL Database and there's no Fidonet editors could read databases.
@@ -26,15 +26,15 @@ A2: Since 1.0 version jNode automatically creates technical point .1 for each ne
 
 Q: How do I create a "rewrite" ?
 A: Use web interface. Remember that Origin fields are regular expressions, but new fields is not. 
-A2: Exampples:
+A2: Examples:
 Forward all mail from 2:5020/848 to 2:5020/848.1:
 1	NETMAIL/true	^2:5020\/848$ -> 2:5020/848.1	* -> *	* -> *	* -> *	* -> *
 Rewrite netmail from technical point to areafix of uplink.
 10	NETMAIL/true	^2:5020\/848\.1$ -> 2:5020/848	* -> *	^2:5020\/848$ -> 2:5020/4441	afix4441 -> AreaFix	* -> password
 
-Q: Does it works on XXX?
-A: It should works on every system has Java 1.7+ implementation, but really nobody knows.
-It was tested on Windows XP, Windows 7, Linux (various) and OS/2 ( special build for OS/2 JVM )
+Q: Does it work on XXX?
+A: It should work on every system that has Java 11+ implementation.
+It has been tested on Windows 10/11, various Linux distributions, and macOS.
 
 Q: On what SQL database does it works?
 A: It may work with all databases have jdbc driver. I tested mySQL5, PostgreSQL9 and H2 1.3. PostgeSQL is the best IMHO.
@@ -72,5 +72,4 @@ A: We are needed in:
   - Testers
 A2: Also you can always send us some money :-)
 
-P.S. Feel free mail me about mistakes or additionals in this F.A.Q., Im not very familliar with English.
 
