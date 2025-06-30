@@ -94,7 +94,8 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 				try {
 					selector.select(staticMaxTimeout);
 					loopCounter++;
-						for (SelectionKey key : selector.selectedKeys()) {
+					logger.l5("=== Selector loop #" + loopCounter + ", keys=" + selector.selectedKeys().size());
+					for (SelectionKey key : selector.selectedKeys()) {
 						SocketChannel channel = (SocketChannel) key.channel();
 						if (key.isValid()) {
 							if (key.isConnectable()) {
@@ -166,6 +167,7 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 							}
 							// CRITICAL: Only process reads AFTER all writes are complete
 							if (key.isReadable()) {
+								logger.l5("=== Key is READABLE, frames.isEmpty()=" + frames.isEmpty());
 								if (!frames.isEmpty()) {
 									logger.l2("=== SKIPPING READ: Still have " + frames.size() + " frames to send");
 								} else {
@@ -210,6 +212,8 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 							finish("Key is invalid");
 						}
 					}
+					// CRITICAL: Clear selected keys after processing to prevent re-processing
+					selector.selectedKeys().clear();
 				} catch (IOException e) {
 					error("IOException");
 

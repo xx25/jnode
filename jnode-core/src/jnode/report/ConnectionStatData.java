@@ -49,11 +49,18 @@ public class ConnectionStatData {
 
     public List<ConnectionStatDataElement> loadAndDrop() {
         synchronized (ConnectionStatData.class) {
+            logger.l4("ConnectionStatData: Loading and dropping statistics from file: " + statPath);
+            
             List<ConnectionStatDataElement> result = internalLoad();
+            logger.l5("ConnectionStatData: Loaded " + result.size() + " elements before dropping");
+            
             try {
                 XMLSerializer.write(new ArrayList<ConnectionStatDataElement>(), statPath);
+                logger.l4("ConnectionStatData: Successfully cleared statistics file: " + statPath);
             } catch (FileNotFoundException e) {
-                logger.l2(MessageFormat.format("file {0} not found, fail clear data", statPath), e);
+                logger.l1(MessageFormat.format("ConnectionStatData: Failed to clear data, file {0} not found", statPath), e);
+            } catch (Exception e) {
+                logger.l1("ConnectionStatData: Unexpected exception while clearing statistics file: " + statPath, e);
             }
             return result;
         }
@@ -61,50 +68,145 @@ public class ConnectionStatData {
 
     public void store(FtnAddress ftnAddress, ConnectionStatDataElement element) {
         synchronized (ConnectionStatData.class) {
+            logger.l5("ConnectionStatData: Storing statistics for address: " + 
+                     (ftnAddress != null ? ftnAddress.toString() : "null"));
+            
             List<ConnectionStatDataElement> elements = internalLoad();
             int pos = findPos(ftnAddress, elements);
+            
+            if (element == null) {
+                logger.l1("ConnectionStatData: Attempting to store null element for address: " + 
+                         (ftnAddress != null ? ftnAddress.toString() : "null"));
+                return;
+            }
+            
+            element.linkStr = (ftnAddress != null) ? ftnAddress.toString() : null;
+            
             if (pos == -1) {
+                logger.l5("ConnectionStatData: Adding new element for address: " + element.linkStr);
                 elements.add(element);
             } else {
+                logger.l5("ConnectionStatData: Updating existing element at position " + pos + 
+                         " for address: " + element.linkStr);
                 elements.set(pos, element);
             }
+            
+            logger.l5("ConnectionStatData: Total elements to write: " + elements.size());
+            
             try {
                 XMLSerializer.write(elements, statPath);
+                logger.l5("ConnectionStatData: Successfully stored statistics to file: " + statPath);
             } catch (FileNotFoundException e) {
-                logger.l2(MessageFormat.format("file {0} not found, fail store data", statPath), e);
+                logger.l1(MessageFormat.format("ConnectionStatData: Failed to store data, file {0} not found", statPath), e);
+            } catch (Exception e) {
+                logger.l1("ConnectionStatData: Unexpected exception while storing statistics to file: " + statPath, e);
             }
         }
     }
 
     public int findPos(FtnAddress ftnAddress, List<ConnectionStatDataElement> elements) {
+        String searchAddress = (ftnAddress != null) ? ftnAddress.toString() : null;
+        logger.l5("ConnectionStatData: Searching for position of address: " + searchAddress);
+        
         int pos = -1;
         for (int i = 0; i < elements.size(); ++i) {
             ConnectionStatDataElement element = elements.get(i);
+            
+            if (element == null) {
+                logger.l2("ConnectionStatData: Found null element at position " + i + " while searching");
+                continue;
+            }
+            
             if (ftnAddress == null) {
                 if (element.linkStr == null) {
                     pos = i;
+                    logger.l5("ConnectionStatData: Found null address match at position " + i);
                     break;
                 }
             } else if (element.linkStr != null) {
-                if (element.linkStr.equals(ftnAddress.toString())) {
+                if (element.linkStr.equals(searchAddress)) {
                     pos = i;
+                    logger.l5("ConnectionStatData: Found address match at position " + i + " for: " + searchAddress);
                     break;
                 }
             }
         }
+        
+        if (pos == -1) {
+            logger.l5("ConnectionStatData: Address not found: " + searchAddress);
+        }
+        
         return pos;
     }
 
     @SuppressWarnings("unchecked")
 	private List<ConnectionStatDataElement> internalLoad() {
+        logger.l5("ConnectionStatData: Loading statistics from file: " + statPath);
+        
+        File statFile = new File(statPath);
+        if (!statFile.exists()) {
+            logger.l4("ConnectionStatData: Statistics file does not exist yet: " + statPath + ", returning empty list");
+            return new ArrayList<ConnectionStatDataElement>();
+        }
+        
+        if (!statFile.canRead()) {
+            logger.l1("ConnectionStatData: Cannot read statistics file: " + statPath + ", returning empty list");
+            return new ArrayList<ConnectionStatDataElement>();
+        }
+        
         List<ConnectionStatDataElement> result;
         try {
-            result = new File(statPath).exists() ?
-                    (List<ConnectionStatDataElement>) XMLSerializer.read(statPath) :
-                    new ArrayList<ConnectionStatDataElement>();
+            logger.l5("ConnectionStatData: File size: " + statFile.length() + " bytes");
+            
+            Object loaded = XMLSerializer.read(statPath);
+            if (loaded == null) {
+                logger.l2("ConnectionStatData: XMLSerializer returned null for file: " + statPath);
+                return new ArrayList<ConnectionStatDataElement>();
+            }
+            
+            if (!(loaded instanceof List)) {
+                logger.l1("ConnectionStatData: Loaded object is not a List but " + loaded.getClass().getName() + 
+                         " for file: " + statPath);
+                return new ArrayList<ConnectionStatDataElement>();
+            }
+            
+            result = (List<ConnectionStatDataElement>) loaded;
+            logger.l5("ConnectionStatData: Successfully loaded " + result.size() + " elements from file: " + statPath);
+            
+            // Validate loaded elements
+            for (int i = 0; i < result.size(); i++) {
+                ConnectionStatDataElement element = result.get(i);
+                if (element == null) {
+                    logger.l2("ConnectionStatData: Found null element at index " + i + " in file: " + statPath);
+                } else {
+                    logger.l5("ConnectionStatData: Element " + i + ": linkStr=" + element.linkStr + 
+                             ", bytesReceived=" + element.bytesReceived + ", bytesSended=" + element.bytesSended);
+                }
+            }
+            
         } catch (FileNotFoundException e) {
-            logger.l2("file with stat connection ACCIDENTALLY not found", e);
-            return new ArrayList<>();
+            logger.l2("ConnectionStatData: Statistics file not found: " + statPath, e);
+            return new ArrayList<ConnectionStatDataElement>();
+        } catch (ClassCastException e) {
+            logger.l1("ConnectionStatData: Failed to cast loaded object to List<ConnectionStatDataElement> from file: " + 
+                     statPath, e);
+            return new ArrayList<ConnectionStatDataElement>();
+        } catch (RuntimeException e) {
+            logger.l1("ConnectionStatData: Runtime exception while loading statistics from file: " + statPath + 
+                     ". File may be corrupted.", e);
+            // Try to backup the corrupted file
+            try {
+                File backupFile = new File(statPath + ".corrupted." + System.currentTimeMillis());
+                if (statFile.renameTo(backupFile)) {
+                    logger.l2("ConnectionStatData: Backed up corrupted file to: " + backupFile.getAbsolutePath());
+                }
+            } catch (Exception backupEx) {
+                logger.l2("ConnectionStatData: Failed to backup corrupted file", backupEx);
+            }
+            return new ArrayList<ConnectionStatDataElement>();
+        } catch (Exception e) {
+            logger.l1("ConnectionStatData: Unexpected exception while loading statistics from file: " + statPath, e);
+            return new ArrayList<ConnectionStatDataElement>();
         }
         return result;
     }
@@ -117,6 +219,19 @@ public class ConnectionStatData {
         public int incomingFailed;
         public int outgoingOk;
         public int outgoingFailed;
+        
+        @Override
+        public String toString() {
+            return "ConnectionStatDataElement{" +
+                    "linkStr='" + linkStr + '\'' +
+                    ", bytesReceived=" + bytesReceived +
+                    ", bytesSended=" + bytesSended +
+                    ", incomingOk=" + incomingOk +
+                    ", incomingFailed=" + incomingFailed +
+                    ", outgoingOk=" + outgoingOk +
+                    ", outgoingFailed=" + outgoingFailed +
+                    '}';
+        }
     }
 
     @Override
