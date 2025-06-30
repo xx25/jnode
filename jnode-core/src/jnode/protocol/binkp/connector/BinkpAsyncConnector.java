@@ -24,7 +24,10 @@ import static jnode.protocol.binkp.BinkpProtocolTools.getCommand;
 import static jnode.protocol.binkp.BinkpProtocolTools.write;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -45,6 +48,8 @@ import jnode.protocol.binkp.types.BinkpFrame;
 public class BinkpAsyncConnector extends BinkpAbstractConnector {
 	static final Logger logger = Logger.getLogger(BinkpAsyncConnector.class);
 	private Selector selector;
+	private long connectionStartTime;
+	private boolean connectionEstablished = false;
 
 	/**
 	 * accept ()
@@ -83,6 +88,8 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 		socket.configureBlocking(false);
 		selector = Selector.open();
 		socket.register(selector, socket.validOps());
+		connectionStartTime = System.currentTimeMillis();
+		connectionEstablished = socket.isConnected();
 	}
 
 	@Override
@@ -92,23 +99,53 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 			int loopCounter = 0;
 			while (true) {
 				try {
-					selector.select(staticMaxTimeout);
+					long timeoutToUse = connectionEstablished ? staticMaxTimeout : staticConnectTimeout;
+					selector.select(timeoutToUse);
+					
+					// Check for connection timeout
+					if (!connectionEstablished) {
+						long elapsed = System.currentTimeMillis() - connectionStartTime;
+						if (elapsed > staticConnectTimeout) {
+							finish("Connection establishment timeout after " + (elapsed / 1000) + " seconds");
+						}
+					}
+					
 					loopCounter++;
 					// logger.l5("=== Selector loop #" + loopCounter + ", keys=" + selector.selectedKeys().size());
 					for (SelectionKey key : selector.selectedKeys()) {
 						SocketChannel channel = (SocketChannel) key.channel();
 						if (key.isValid()) {
 							if (key.isConnectable()) {
-								if (!channel.finishConnect()) {
+								try {
+									if (!channel.finishConnect()) {
+										key.cancel();
+										InetSocketAddress addr = (InetSocketAddress) channel
+												.getLocalAddress();
+										String host = addr != null ? addr.getHostString() : "unknown";
+										finish("Connection failed to " + host + " - unable to complete connection");
+									} else {
+										connectionEstablished = true;
+										InetSocketAddress addr = (InetSocketAddress) channel
+												.getRemoteAddress();
+										long elapsed = System.currentTimeMillis() - connectionStartTime;
+										logger.l2(String.format(
+												"Connected with %s:%d in %d ms",
+												addr.getHostString(),
+												addr.getPort(),
+												elapsed));
+									}
+								} catch (ConnectException e) {
 									key.cancel();
-									finish("Connect failed");
-								} else {
 									InetSocketAddress addr = (InetSocketAddress) channel
-											.getRemoteAddress();
-									logger.l2(String.format(
-											"Connected with %s:%d",
-											addr.getHostString(),
-											addr.getPort()));
+											.getLocalAddress();
+									String host = addr != null ? addr.getHostString() : "unknown";
+									finish("Connection timed out to " + host + ": " + e.getLocalizedMessage());
+								} catch (IOException e) {
+									key.cancel();
+									InetSocketAddress addr = (InetSocketAddress) channel
+											.getLocalAddress();
+									String host = addr != null ? addr.getHostString() : "unknown";
+									finish("IO error connecting to " + host + ": " + e.getLocalizedMessage());
 								}
 							}
 							if (key.isWritable()) {
@@ -214,9 +251,14 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 					}
 					// CRITICAL: Clear selected keys after processing to prevent re-processing
 					selector.selectedKeys().clear();
+				} catch (ConnectException e) {
+					error("Connection timeout: " + e.getLocalizedMessage());
+				} catch (SocketTimeoutException e) {
+					error("Socket timeout: " + e.getLocalizedMessage());
+				} catch (UnknownHostException e) {
+					error("Unknown host: " + e.getLocalizedMessage());
 				} catch (IOException e) {
-					error("IOException");
-
+					error("IO error: " + e.getLocalizedMessage());
 				}
 			}
 		} catch (ConnectionEndException e) {

@@ -21,6 +21,9 @@
 package jnode.protocol.binkp;
 
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 
 import jnode.dto.Link;
 import jnode.logger.Logger;
@@ -67,8 +70,18 @@ public class BinkpAsyncClientPool implements Runnable {
 				ThreadPool.execute(conn);
 			} catch (RuntimeException e) {
 				logger.l2("Runtime exception: " + e.getLocalizedMessage(), e);
+			} catch (ConnectException e) {
+				String host = extractHostFromProtocolAddress(l.getProtocolAddress());
+				logger.l2("Connection timed out to " + host + ": " + e.getLocalizedMessage(), e);
+			} catch (SocketTimeoutException e) {
+				String host = extractHostFromProtocolAddress(l.getProtocolAddress());
+				logger.l2("Socket timeout connecting to " + host + ": " + e.getLocalizedMessage(), e);
+			} catch (UnknownHostException e) {
+				String host = extractHostFromProtocolAddress(l.getProtocolAddress());
+				logger.l2("Unknown host " + host + ": " + e.getLocalizedMessage(), e);
 			} catch (IOException e) {
-				logger.l2(e.getLocalizedMessage(), e);
+				String host = extractHostFromProtocolAddress(l.getProtocolAddress());
+				logger.l2("IO error connecting to " + host + ": " + e.getLocalizedMessage(), e);
 			}
 		}
 	}
@@ -85,5 +98,16 @@ public class BinkpAsyncClientPool implements Runnable {
 					+ connectorClass.getName() + " ( " + protocolAddress
 					+ " ) ", e);
 		}
+	}
+
+	private String extractHostFromProtocolAddress(String protocolAddress) {
+		if (protocolAddress == null) {
+			return "unknown";
+		}
+		int portIndex = protocolAddress.lastIndexOf(':');
+		if (portIndex > 0) {
+			return protocolAddress.substring(0, portIndex);
+		}
+		return protocolAddress;
 	}
 }
