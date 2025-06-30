@@ -605,13 +605,16 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 	protected void checkForMessages() {
 		checkTimeout();
-		logger.l5("=== checkForMessages: state=" + connectionState + 
-			", flag_leob=" + flag_leob + ", messages.size=" + messages.size() +
-			", currentInputStream=" + (currentInputStream != null));
+		// logger.l5("=== checkForMessages: state=" + connectionState + 
+		//	", flag_leob=" + flag_leob + ", messages.size=" + messages.size() +
+		//	", currentInputStream=" + (currentInputStream != null));
 		if (connectionState != STATE_TRANSFER) {
 			return;
 		}
 		if (flag_leob) {
+			return;
+		}
+		if (messages.size() > 0 && currentInputStream == null) {
 			return;
 		}
 		if (messages.size() > 0) {
