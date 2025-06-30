@@ -35,7 +35,7 @@ public class UserRoute implements Handler {
 		String action = ctx.pathParam("action");
 		String code = null;
 		if ("delete".equals(action)) {
-			String id = ctx.queryParam("id");
+			String id = ctx.formParam("id");
 			try {
 				Long lid = Long.valueOf(id);
 				WebAdmin admin = ORMManager.get(WebAdmin.class).getById(lid);
@@ -46,8 +46,8 @@ public class UserRoute implements Handler {
 				e.printStackTrace();
 			}
 		} else if ("password".equals(action)) {
-			String id = ctx.queryParam("id");
-			String password = ctx.queryParam("password");
+			String id = ctx.formParam("id");
+			String password = ctx.formParam("password");
 			try {
 				Long lid = Long.valueOf(id);
 				WebAdmin admin = ORMManager.get(WebAdmin.class).getById(lid);
@@ -60,8 +60,8 @@ public class UserRoute implements Handler {
 				e.printStackTrace();
 			}
 		} else if ("create".equals(action)) {
-			String username = ctx.queryParam("username");
-			String password = ctx.queryParam("password");
+			String username = ctx.formParam("username");
+			String password = ctx.formParam("password");
 			WebAdmin admin = new WebAdmin();
 			admin.setUsername(username);
 			admin.setPassword(FtnTools.md5(password));

@@ -35,14 +35,14 @@ public class EchoareaRoute implements Handler {
 
 	@Override
 	public void handle(Context ctx) throws Exception {
-		String id = ctx.queryParam("id");
-		String name = ctx.queryParam("name");
-		String descr = ctx.queryParam("descr");
-		String rl = ctx.queryParam("rl");
-		String wl = ctx.queryParam("wl");
-		String gr = ctx.queryParam("gr");
+		String id = ctx.formParam("id");
+		String name = ctx.formParam("name");
+		String descr = ctx.formParam("descr");
+		String rl = ctx.formParam("rl");
+		String wl = ctx.formParam("wl");
+		String gr = ctx.formParam("gr");
 		String code = null;
-		String delete = ctx.queryParam("did");
+		String delete = ctx.formParam("did");
 		if (delete != null) {
 			try {
 				Long eid = Long.valueOf(delete);

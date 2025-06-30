@@ -44,7 +44,7 @@ public class NetmailAcceptRuleRoute implements Handler {
 		String code = null;
 		
 		// Handle deletion
-		String deleteId = ctx.queryParam("did");
+		String deleteId = ctx.formParam("did");
 		if (deleteId != null) {
 			try {
 				Long id = Long.valueOf(deleteId);
@@ -61,7 +61,7 @@ public class NetmailAcceptRuleRoute implements Handler {
 		} else {
 			// Handle create/update
 			try {
-				String idParam = ctx.queryParam("id");
+				String idParam = ctx.formParam("id");
 				Long id = (idParam != null) ? Long.valueOf(idParam) : 0L;
 				NetmailAcceptRule rule;
 				
@@ -75,25 +75,25 @@ public class NetmailAcceptRuleRoute implements Handler {
 				}
 				
 				// Set form values
-				String priorityParam = ctx.queryParam("priority");
+				String priorityParam = ctx.formParam("priority");
 				if (priorityParam != null) {
 					rule.setPriority(Long.valueOf(priorityParam));
 				}
 				
-				rule.setEnabled("on".equals(ctx.queryParam("enabled")));
-				rule.setFromAddress(normalizePattern(ctx.queryParam("from_addr")));
-				rule.setToAddress(normalizePattern(ctx.queryParam("to_addr")));
-				rule.setFromName(normalizePattern(ctx.queryParam("from_name")));
-				rule.setToName(normalizePattern(ctx.queryParam("to_name")));
-				rule.setSubject(normalizePattern(ctx.queryParam("subject")));
+				rule.setEnabled("on".equals(ctx.formParam("enabled")));
+				rule.setFromAddress(normalizePattern(ctx.formParam("from_addr")));
+				rule.setToAddress(normalizePattern(ctx.formParam("to_addr")));
+				rule.setFromName(normalizePattern(ctx.formParam("from_name")));
+				rule.setToName(normalizePattern(ctx.formParam("to_name")));
+				rule.setSubject(normalizePattern(ctx.formParam("subject")));
 				
-				String actionParam = ctx.queryParam("action");
+				String actionParam = ctx.formParam("action");
 				if (actionParam != null) {
 					rule.setAction(NetmailAcceptRule.Action.valueOf(actionParam));
 				}
 				
-				rule.setStopProcessing("on".equals(ctx.queryParam("stop_processing")));
-				rule.setDescription(ctx.queryParam("description"));
+				rule.setStopProcessing("on".equals(ctx.formParam("stop_processing")));
+				rule.setDescription(ctx.formParam("description"));
 				
 				// Validate regex patterns
 				if (!validateRegexPatterns(rule)) {
