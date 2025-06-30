@@ -20,35 +20,26 @@
 
 package org.jnode.httpd.routes;
 
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public abstract class JsRoute extends Route {
-
-	protected JsRoute(String path) {
-		super(path);
-	}
-
-	public JsRoute(String path, String acceptType) {
-		super(path, acceptType);
-	}
+public abstract class JsRoute implements Handler {
 
 	@Override
-	public final Object handle(Request req, Response resp) {
+	public final void handle(Context ctx) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		String cb = req.queryParams("cb");
+		String cb = ctx.queryParam("cb");
 		if (cb != null) {
 			sb.append(cb + "(");
 		}
-		sb.append(_handle(req, resp));
+		sb.append(_handle(ctx));
 		if (cb != null) {
 			sb.append(")");
 		}
-		resp.type("text/javascript");
-		return sb.toString();
+		ctx.contentType("text/javascript");
+		ctx.result(sb.toString());
 	}
 
-	protected abstract Object _handle(Request req, Response resp);
+	protected abstract Object _handle(Context ctx) throws Exception;
 
 }

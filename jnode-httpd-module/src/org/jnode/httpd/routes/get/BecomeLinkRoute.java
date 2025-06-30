@@ -22,16 +22,14 @@ package org.jnode.httpd.routes.get;
 
 import org.jnode.httpd.util.HTML;
 
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public class BecomeLinkRoute extends Route {
+public class BecomeLinkRoute implements Handler {
 	private static String request = null;
 	private boolean enabled;
 
 	public BecomeLinkRoute(boolean enabled) {
-		super("/requestlink.html");
 		this.enabled = enabled;
 		if (enabled) {
 			if (request == null) {
@@ -41,14 +39,15 @@ public class BecomeLinkRoute extends Route {
 	}
 
 	@Override
-	public Object handle(Request arg0, Response arg1) {
+	public void handle(Context ctx) throws Exception {
 		if (!enabled) {
-			return HTML
+			ctx.html(HTML
 					.start(false)
 					.append("<b>Unfortunately, link requests are disabled by sysop</b>")
-					.footer().get();
+					.footer().get());
+			return;
 		}
-		return HTML.start(false).append(request).footer().get();
+		ctx.html(HTML.start(false).append(request).footer().get());
 	}
 
 }

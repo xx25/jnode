@@ -11,21 +11,16 @@ import com.j256.ormlite.dao.GenericRawResults;
 import jnode.dto.Echoarea;
 import jnode.logger.Logger;
 import jnode.orm.ORMManager;
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public class EchoareaCSVRoute extends Route {
+public class EchoareaCSVRoute implements Handler {
 	private static final long MAX_CACHE_TIME = 3600000;
 	private long latest = 0;
 
-	public EchoareaCSVRoute() {
-		super("/echoarea.csv");
-	}
-
 	@Override
-	public Object handle(Request req, Response resp) {
-		resp.type("text/plain; charset=utf-8");
+	public void handle(Context ctx) throws Exception {
+		ctx.contentType("text/plain; charset=utf-8");
 		long now = new Date().getTime();
 		StringBuilder sb = new StringBuilder();
 		if (now - latest > MAX_CACHE_TIME) {
@@ -52,7 +47,8 @@ public class EchoareaCSVRoute extends Route {
 			} catch (SQLException e) {
 				Logger.getLogger(EchoareaCSVRoute.class)
 						.l1("Echoarea Error", e);
-				return "error,0,0,SQLError\r\n";
+				ctx.result("error,0,0,SQLError\r\n");
+				return;
 			}
 		} else {
 			List<EchoareaCSV> list = ORMManager.get(EchoareaCSV.class)
@@ -62,6 +58,6 @@ public class EchoareaCSVRoute extends Route {
 						+ csv.getNum() + "," + csv.getDescription() + "\r\n");
 			}
 		}
-		return sb.toString();
+		ctx.result(sb.toString());
 	}
 }

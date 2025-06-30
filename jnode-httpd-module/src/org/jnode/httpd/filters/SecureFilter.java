@@ -28,29 +28,25 @@ import jnode.orm.ORMManager;
 import org.jnode.httpd.dto.WebAdmin;
 import org.jnode.httpd.util.Base64Util;
 
-import spark.Filter;
-import spark.Request;
-import spark.Response;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public class SecureFilter extends Filter {
+public class SecureFilter implements Handler {
 	private HashMap<String, Boolean> cache = new HashMap<>();
 
 	public SecureFilter() {
-		super();
 	}
 
 	public SecureFilter(String path, String acceptType) {
-		super(path, acceptType);
 	}
 
 	public SecureFilter(String path) {
-		super(path);
 	}
 
 	@Override
-	public void handle(Request req, Response resp) {
+	public void handle(Context ctx) throws Exception {
 		boolean authenticated = false;
-		String authBase64 = req.headers("Authorization");
+		String authBase64 = ctx.header("Authorization");
 		if (authBase64 != null) {
 			Boolean test = cache.get(authBase64);
 			if (test != null && test) {
@@ -74,9 +70,9 @@ public class SecureFilter extends Filter {
 			}
 		}
 		if (!authenticated) {
-			resp.header("WWW-Authenticate",
+			ctx.header("WWW-Authenticate",
 					"Basic realm=\"Secure area for operators only\"");
-			halt(401);
+			ctx.status(401);
 		}
 	}
 

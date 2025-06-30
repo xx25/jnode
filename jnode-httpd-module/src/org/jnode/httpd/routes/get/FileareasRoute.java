@@ -26,23 +26,21 @@ import jnode.orm.ORMManager;
 import org.jnode.httpd.util.HTML;
 import org.jnode.httpd.util.JSONUtil;
 
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public class FileareasRoute extends Route {
+public class FileareasRoute implements Handler {
 	private static String echoareas = null;
 
 	public FileareasRoute() {
-		super("/secure/fechoes.html");
 		if (echoareas == null) {
 			echoareas = HTML.getContents("/parts/fechoes.html");
 		}
 	}
 
 	@Override
-	public Object handle(Request req, Response resp) {
-		String id = req.queryParams("id");
+	public void handle(Context ctx) throws Exception {
+		String id = ctx.queryParam("id");
 		StringBuilder sb = new StringBuilder();
 		if (id == null) {
 			for (Filearea e : ORMManager.get(Filearea.class).getOrderAnd(
@@ -53,12 +51,13 @@ public class FileareasRoute extends Route {
 								e.getReadlevel(), e.getWritelevel(),
 								e.getGroup(), e.getId(), e.getId()));
 			}
-			return HTML.start(true)
+			ctx.html(HTML.start(true)
 					.append(String.format(echoareas, sb.toString())).footer()
-					.get();
+					.get());
+			return;
 		} else {
 			try {
-				String cb = req.queryParams("cb");
+				String cb = ctx.queryParam("cb");
 				if (cb != null) {
 					sb.append(cb + "(");
 				}
@@ -68,12 +67,12 @@ public class FileareasRoute extends Route {
 				if (cb != null) {
 					sb.append(")");
 				}
-				resp.type("text/javascript");
-				return sb.toString();
+				ctx.contentType("text/javascript");
+				ctx.result(sb.toString());
+				return;
 			} catch (RuntimeException e) {
 			}
 		}
-		return null;
 	}
 
 }

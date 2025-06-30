@@ -22,20 +22,15 @@ package org.jnode.httpd.routes.get;
 
 import org.jnode.httpd.util.HTML;
 
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public class HealthRoute extends Route {
+public class HealthRoute implements Handler {
 	private final String FORMAT_TABLE = "<table class=\"info\">%s</table>";
 	private final String FORMAT_TR = "<tr><th>%s</th><td>%s</td></tr>";
 
-	public HealthRoute() {
-		super("/secure/index.html");
-	}
-
 	@Override
-	public Object handle(Request req, Response resp) {
+	public void handle(Context ctx) throws Exception {
 		Runtime runtime = Runtime.getRuntime();
 		int free = Math.round(runtime.freeMemory() / (1024 * 1024));
 		int max = Math.round(runtime.maxMemory() / (1024 * 1024));
@@ -49,6 +44,6 @@ public class HealthRoute extends Route {
 						+ String.format(FORMAT_TR, "Memory usage",
 								"Available: " + max + "MB / Used: "
 										+ (total - free) + " MB"));
-		return HTML.start(true).append(text).footer().get();
+		ctx.html(HTML.start(true).append(text).footer().get());
 	}
 }

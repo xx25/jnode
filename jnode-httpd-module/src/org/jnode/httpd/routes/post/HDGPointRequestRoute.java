@@ -9,28 +9,28 @@ import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnAddress;
 import jnode.main.MainHandler;
 import jnode.orm.ORMManager;
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
 
-public class HDGPointRequestRoute extends Route {
+import io.javalin.http.Handler;
+
+public class HDGPointRequestRoute implements Handler {
 
 	private boolean enabled = false;
 
 	public HDGPointRequestRoute(boolean enabled) {
-		super("/hdgpntrequest");
+		
 		this.enabled = enabled;
 	}
 
 	@Override
-	public Object handle(Request req, Response resp) {
+	public void handle(Context ctx) throws Exception {
 		if (!enabled) {
-			return "ERROR\r\nAUTOPOINT DISABLED\r\n";
+			
 		}
-		String name = req.queryParams("_name");
-		String email = req.queryParams("_email");
-		String password = req.queryParams("_password");
-		String about = req.queryParams("_about");
+		String name = ctx.queryParam("_name");
+		String email = ctx.queryParam("_email");
+		String password = ctx.queryParam("_password");
+		String about = ctx.queryParam("_about");
 		String error = "";
 		// check this shit
 		{
@@ -51,14 +51,15 @@ public class HDGPointRequestRoute extends Route {
 			}
 			if (error.length() > 0) {
 				error(error);
-				return "ERROR\r\n" + error;
+				ctx.result("ERROR\r\n" + error);
+				return;
 			}
 		}
 		// seems ok
 		FtnAddress guessedAddress = guessNewPointAddress();
 		if (guessedAddress == null) {
 			error("NO_PNT_ADDRESS_SPACE");
-			return "ERROR\r\nNO_PNT_ADDRESS_SPACE";
+			
 		}
 		// do point request
 		PointRequest pReq = new PointRequest();
@@ -92,7 +93,7 @@ public class HDGPointRequestRoute extends Route {
 					"New HTDG point", text);
 			ok(text);
 		}
-		return "OK\r\n" + guessedAddress;
+		ctx.result("OK\r\n" + guessedAddress);
 	}
 
 	private void error(String error) {
@@ -106,7 +107,7 @@ public class HDGPointRequestRoute extends Route {
 	private FtnAddress guessNewPointAddress() {
 		FtnAddress baseNodeAddr = FtnTools.getPrimaryFtnAddress().clone();
 		if (baseNodeAddr.getPoint() != 0) {
-			return null;
+			
 		}
 		// from 100 to 10000
 		for (int i = 100; i < 10000; i++) {

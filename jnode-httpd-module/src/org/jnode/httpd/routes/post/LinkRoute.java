@@ -24,25 +24,21 @@ import jnode.dto.Link;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnAddress;
 import jnode.orm.ORMManager;
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public class LinkRoute extends Route {
-	public LinkRoute() {
-		super("/secure/link");
-	}
+public class LinkRoute implements Handler {
 
 	@Override
-	public Object handle(Request req, Response resp) {
-		String _id = req.queryParams("id");
-		String name = req.queryParams("name");
-		String _ftn = req.queryParams("addr");
-		String pass = req.queryParams("password");
-		String pktpass = req.queryParams("pktpassword");
-		String address = req.queryParams("address");
+	public void handle(Context ctx) throws Exception {
+		String _id = ctx.queryParam("id");
+		String name = ctx.queryParam("name");
+		String _ftn = ctx.queryParam("addr");
+		String pass = ctx.queryParam("password");
+		String pktpass = ctx.queryParam("pktpassword");
+		String address = ctx.queryParam("address");
 		String code = null;
-		String delete = req.queryParams("did");
+		String delete = ctx.queryParam("did");
 		if (delete != null) {
 			try {
 				Long eid = Long.valueOf(delete);
@@ -74,9 +70,7 @@ public class LinkRoute extends Route {
 				code = "ERROR";
 			}
 		}
-		resp.header("Location", "/secure/links.html"
+		ctx.redirect("/secure/links.html"
 				+ ((code != null) ? "?error=" + code : ""));
-		halt(302);
-		return null;
 	}
 }

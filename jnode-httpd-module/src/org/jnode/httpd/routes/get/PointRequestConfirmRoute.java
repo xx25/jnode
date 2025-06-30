@@ -30,19 +30,14 @@ import jnode.orm.ORMManager;
 import org.jnode.httpd.dto.PointRequest;
 import org.jnode.httpd.util.HTML;
 
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public class PointRequestConfirmRoute extends Route {
-
-	public PointRequestConfirmRoute() {
-		super("/pointrequest");
-	}
+public class PointRequestConfirmRoute implements Handler {
 
 	@Override
-	public Object handle(Request req, Response resp) {
-		String key = req.queryParams("key");
+	public void handle(Context ctx) throws Exception {
+		String key = ctx.queryParam("key");
 		String text = "";
 		if (key != null) {
 			PointRequest pr = ORMManager.get(PointRequest.class).getById(key);
@@ -71,9 +66,9 @@ public class PointRequestConfirmRoute extends Route {
 		} else {
 			text = "Invalid request";
 		}
-		return HTML.start(false)
+		ctx.html(HTML.start(false)
 				.append("<b>Status: " + text + "</b>")
-				.footer().get();
+				.footer().get());
 	}
 
 	private void writeMails(PointRequest pr) {

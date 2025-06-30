@@ -27,21 +27,20 @@ import jnode.orm.ORMManager;
 
 import org.jnode.httpd.util.HTML;
 
-import spark.Request;
-import spark.Response;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public class RewritesRoute extends spark.Route {
+public class RewritesRoute implements Handler {
 	private static String rewrites = null;
 
 	public RewritesRoute() {
-		super("/secure/rewrite.html");
 		if (rewrites == null) {
 			rewrites = HTML.getContents("/parts/rewrite.html");
 		}
 	}
 
 	@Override
-	public Object handle(Request req, Response resp) {
+	public void handle(Context ctx) throws Exception {
 		List<Rewrite> rewrites = ORMManager.get(Rewrite.class).getOrderAnd(
 				"nice", true);
 		StringBuilder sb = new StringBuilder();
@@ -65,9 +64,9 @@ public class RewritesRoute extends spark.Route {
 							r.getOrig_to_name(), r.getNew_to_name(),
 							r.getOrig_subject(), r.getNew_subject(), r.getId()));
 		}
-		return HTML.start(true)
+		ctx.html(HTML.start(true)
 				.append(String.format(RewritesRoute.rewrites, sb.toString()))
-				.footer().get();
+				.footer().get());
 	}
 
 }

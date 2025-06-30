@@ -25,21 +25,17 @@ import jnode.orm.ORMManager;
 
 import org.jnode.httpd.dto.WebAdmin;
 
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public class UserRoute extends Route {
-	public UserRoute() {
-		super("/secure/user/:action");
-	}
+public class UserRoute implements Handler {
 
 	@Override
-	public Object handle(Request req, Response resp) {
-		String action = req.params(":action");
+	public void handle(Context ctx) throws Exception {
+		String action = ctx.pathParam("action");
 		String code = null;
 		if ("delete".equals(action)) {
-			String id = req.queryParams("id");
+			String id = ctx.queryParam("id");
 			try {
 				Long lid = Long.valueOf(id);
 				WebAdmin admin = ORMManager.get(WebAdmin.class).getById(lid);
@@ -50,8 +46,8 @@ public class UserRoute extends Route {
 				e.printStackTrace();
 			}
 		} else if ("password".equals(action)) {
-			String id = req.queryParams("id");
-			String password = req.queryParams("password");
+			String id = ctx.queryParam("id");
+			String password = ctx.queryParam("password");
 			try {
 				Long lid = Long.valueOf(id);
 				WebAdmin admin = ORMManager.get(WebAdmin.class).getById(lid);
@@ -64,8 +60,8 @@ public class UserRoute extends Route {
 				e.printStackTrace();
 			}
 		} else if ("create".equals(action)) {
-			String username = req.queryParams("username");
-			String password = req.queryParams("password");
+			String username = ctx.queryParam("username");
+			String password = ctx.queryParam("password");
 			WebAdmin admin = new WebAdmin();
 			admin.setUsername(username);
 			admin.setPassword(FtnTools.md5(password));
@@ -73,9 +69,7 @@ public class UserRoute extends Route {
 		} else {
 			code = "ERROR";
 		}
-		resp.header("Location", "/secure/users.html"
+		ctx.redirect("/secure/users.html"
 				+ ((code != null) ? "?code=" + code : ""));
-		halt(302);
-		return null;
 	}
 }

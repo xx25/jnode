@@ -23,32 +23,27 @@ package org.jnode.httpd.routes.post;
 import jnode.dto.Link;
 import jnode.dto.LinkOption;
 import jnode.orm.ORMManager;
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public class LinkoptionRoute extends Route {
-
-	public LinkoptionRoute() {
-		super("/secure/linkoption");
-	}
+public class LinkoptionRoute implements Handler {
 
 	@Override
-	public Object handle(Request req, Response resp) {
-		String id = req.queryParams("_id");
+	public void handle(Context ctx) throws Exception {
+		String id = ctx.queryParam("_id");
 		if (id != null) {
 			try {
 				Long lid = Long.valueOf(id);
 				Link link = ORMManager.get(Link.class).getById(lid);
 				if (link != null) {
-					for (String name : req.queryParams()) {
+					for (String name : ctx.queryParamMap().keySet()) {
 						if (name.startsWith("_")) {
 							continue;
 						}
 						LinkOption option = ORMManager.get(LinkOption.class)
 								.getFirstAnd("link_id", "=", link, "name", "=",
 										name);
-						String value = req.queryParams(name);
+						String value = ctx.queryParam(name);
 						if (value != null && value.length() > 0) {
 							if (option == null) {
 								option = new LinkOption();
@@ -68,8 +63,6 @@ public class LinkoptionRoute extends Route {
 			} catch (RuntimeException e) {
 			}
 		}
-		resp.header("Location", "/secure/links.html");
-		halt(302);
-		return null;
+		ctx.redirect("/secure/links.html");
 	}
 }

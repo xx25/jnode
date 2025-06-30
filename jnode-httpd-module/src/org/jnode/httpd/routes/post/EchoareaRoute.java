@@ -23,26 +23,26 @@ package org.jnode.httpd.routes.post;
 import jnode.dto.Echoarea;
 import jnode.ftn.FtnTools;
 import jnode.orm.ORMManager;
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
 
-public class EchoareaRoute extends Route {
+import io.javalin.http.Handler;
+
+public class EchoareaRoute implements Handler {
 
 	public EchoareaRoute() {
-		super("/secure/echoarea");
+		
 	}
 
 	@Override
-	public Object handle(Request req, Response resp) {
-		String id = req.queryParams("id");
-		String name = req.queryParams("name");
-		String descr = req.queryParams("descr");
-		String rl = req.queryParams("rl");
-		String wl = req.queryParams("wl");
-		String gr = req.queryParams("gr");
+	public void handle(Context ctx) throws Exception {
+		String id = ctx.queryParam("id");
+		String name = ctx.queryParam("name");
+		String descr = ctx.queryParam("descr");
+		String rl = ctx.queryParam("rl");
+		String wl = ctx.queryParam("wl");
+		String gr = ctx.queryParam("gr");
 		String code = null;
-		String delete = req.queryParams("did");
+		String delete = ctx.queryParam("did");
 		if (delete != null) {
 			try {
 				Long eid = Long.valueOf(delete);
@@ -85,10 +85,10 @@ public class EchoareaRoute extends Route {
 				code = "INVALID";
 			}
 		}
-		resp.header("Location", "/secure/echoes.html"
+		ctx.redirect( "/secure/echoes.html"
 				+ ((code != null) ? "?code=" + code : ""));
-		halt(302);
-		return null;
+		
+		
 	}
 
 }

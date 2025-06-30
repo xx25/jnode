@@ -29,23 +29,15 @@ import jnode.orm.ORMManager;
 import org.jnode.httpd.routes.JsRoute;
 import org.jnode.httpd.util.JSONUtil;
 
-import spark.Request;
-import spark.Response;
+import io.javalin.http.Context;
 
 public class LinkoptionsRoute extends JsRoute {
 
-	public LinkoptionsRoute() {
-		super("/secure/linkoptions");
-	}
-
-	public LinkoptionsRoute(String path, String acceptType) {
-		super(path, acceptType);
-	}
 
 	@Override
-	public Object _handle(Request req, Response resp) {
+	protected Object _handle(Context ctx) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		String id = req.queryParams("id");
+		String id = ctx.queryParam("id");
 		if (id != null) {
 			try {
 				Long lid = Long.valueOf(id);

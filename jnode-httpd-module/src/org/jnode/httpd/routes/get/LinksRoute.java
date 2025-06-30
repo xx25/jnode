@@ -31,27 +31,25 @@ import jnode.orm.ORMManager;
 import org.jnode.httpd.util.HTML;
 import org.jnode.httpd.util.JSONUtil;
 
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public class LinksRoute extends Route {
+public class LinksRoute implements Handler {
 	private static String links = null;
 
 	public LinksRoute() {
-		super("/secure/links.html");
 		if (links == null) {
 			links = HTML.getContents("/parts/links.html");
 		}
 	}
 
 	@Override
-	public Object handle(Request req, Response resp) {
+	public void handle(Context ctx) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		String id = req.queryParams("id");
+		String id = ctx.queryParam("id");
 		if (id != null) {
 			try {
-				String cb = req.queryParams("cb");
+				String cb = ctx.queryParam("cb");
 				if (cb != null) {
 					sb.append(cb + "(");
 				}
@@ -61,8 +59,9 @@ public class LinksRoute extends Route {
 				if (cb != null) {
 					sb.append(")");
 				}
-				resp.type("text/javascript");
-				return sb.toString();
+				ctx.contentType("text/javascript");
+				ctx.result(sb.toString());
+				return;
 			} catch (NumberFormatException e) {
 
 			}
@@ -78,11 +77,11 @@ public class LinksRoute extends Route {
 								object.getPaketPassword(), object.getId(),
 								object.getId(), object.getId()));
 			}
-			return HTML.start(true)
+			ctx.html(HTML.start(true)
 					.append(String.format(LinksRoute.links, sb.toString()))
-					.footer().get();
+					.footer().get());
+			return;
 		}
-		return null;
 	}
 
 	private void sortLinks(List<Link> links) {

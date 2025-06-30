@@ -20,23 +20,21 @@
 
 package org.jnode.httpd.filters;
 
-import spark.Filter;
-import spark.Request;
-import spark.Response;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 
-public class CharsetFilter extends Filter {
+public class CharsetFilter implements Handler {
 	public CharsetFilter() {
-		super();
 	}
 
 	@Override
-	public void handle(Request request, Response response) {
-		if (request.pathInfo().endsWith(".html")) {
-			response.type("text/html; charset=utf-8");
-			response.header("Cache-Control",
+	public void handle(Context ctx) throws Exception {
+		if (ctx.path().endsWith(".html")) {
+			ctx.contentType("text/html; charset=utf-8");
+			ctx.header("Cache-Control",
 					"no-cache, no-store, must-revalidate");
-			response.header("Pragma", "no-cache");
-			response.header("Expires", "0");
+			ctx.header("Pragma", "no-cache");
+			ctx.header("Expires", "0");
 		}
 	}
 
