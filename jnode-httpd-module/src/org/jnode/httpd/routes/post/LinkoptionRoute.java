@@ -30,20 +30,20 @@ public class LinkoptionRoute implements Handler {
 
 	@Override
 	public void handle(Context ctx) throws Exception {
-		String id = ctx.queryParam("_id");
+		String id = ctx.formParam("_id");
 		if (id != null) {
 			try {
 				Long lid = Long.valueOf(id);
 				Link link = ORMManager.get(Link.class).getById(lid);
 				if (link != null) {
-					for (String name : ctx.queryParamMap().keySet()) {
+					for (String name : ctx.formParamMap().keySet()) {
 						if (name.startsWith("_")) {
 							continue;
 						}
 						LinkOption option = ORMManager.get(LinkOption.class)
 								.getFirstAnd("link_id", "=", link, "name", "=",
 										name);
-						String value = ctx.queryParam(name);
+						String value = ctx.formParam(name);
 						if (value != null && value.length() > 0) {
 							if (option == null) {
 								option = new LinkOption();

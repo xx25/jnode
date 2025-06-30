@@ -34,15 +34,15 @@ public class RoutingRoute implements Handler {
 
 	@Override
 	public void handle(Context ctx) throws Exception {
-		String nice = ctx.queryParam("nice");
-		String fa = ctx.queryParam("fa");
-		String fn = ctx.queryParam("fn");
-		String ta = ctx.queryParam("ta");
-		String tn = ctx.queryParam("tn");
-		String s = ctx.queryParam("s");
-		String v = ctx.queryParam("v");
+		String nice = ctx.formParam("nice");
+		String fa = ctx.formParam("fa");
+		String fn = ctx.formParam("fn");
+		String ta = ctx.formParam("ta");
+		String tn = ctx.formParam("tn");
+		String s = ctx.formParam("s");
+		String v = ctx.formParam("v");
 		String code = null;
-		String delete = ctx.queryParam("did");
+		String delete = ctx.formParam("did");
 		if (delete != null) {
 			try {
 				Long eid = Long.valueOf(delete);

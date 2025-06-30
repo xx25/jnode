@@ -49,9 +49,9 @@ public class LinkRequestRoute implements Handler {
 		String type = ctx.pathParam("type");
 		String code = null;
 		if (!"confirm".equals(type)) {
-			String addr = ctx.queryParam("addr");
-			String host = ctx.queryParam("host");
-			String port = ctx.queryParam("port");
+			String addr = ctx.formParam("addr");
+			String host = ctx.formParam("host");
+			String port = ctx.formParam("port");
 			if (addr != null && host != null && port != null) {
 				LinkRequest lr = new LinkRequest();
 				try {
@@ -111,8 +111,8 @@ public class LinkRequestRoute implements Handler {
 				code = "ERROR";
 			}
 		} else {
-			String akey = ctx.queryParam("key");
-			String id = ctx.queryParam("id");
+			String akey = ctx.formParam("key");
+			String id = ctx.formParam("id");
 			try {
 				LinkRequest lr = ORMManager.get(LinkRequest.class).getById(id);
 				if (lr != null && lr.getAkey().equals(akey)) { // valid

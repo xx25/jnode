@@ -31,14 +31,14 @@ public class LinkRoute implements Handler {
 
 	@Override
 	public void handle(Context ctx) throws Exception {
-		String _id = ctx.queryParam("id");
-		String name = ctx.queryParam("name");
-		String _ftn = ctx.queryParam("addr");
-		String pass = ctx.queryParam("password");
-		String pktpass = ctx.queryParam("pktpassword");
-		String address = ctx.queryParam("address");
+		String _id = ctx.formParam("id");
+		String name = ctx.formParam("name");
+		String _ftn = ctx.formParam("addr");
+		String pass = ctx.formParam("password");
+		String pktpass = ctx.formParam("pktpassword");
+		String address = ctx.formParam("address");
 		String code = null;
-		String delete = ctx.queryParam("did");
+		String delete = ctx.formParam("did");
 		if (delete != null) {
 			try {
 				Long eid = Long.valueOf(delete);

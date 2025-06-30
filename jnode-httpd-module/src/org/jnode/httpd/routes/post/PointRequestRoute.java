@@ -40,11 +40,11 @@ public class PointRequestRoute implements Handler {
 	@Override
 	public void handle(Context ctx) throws Exception {
 		String code = null;
-		String node = ctx.queryParam("node");
-		String point = ctx.queryParam("point");
-		String fname = ctx.queryParam("fname");
-		String lname = ctx.queryParam("lname");
-		String email = ctx.queryParam("email");
+		String node = ctx.formParam("node");
+		String point = ctx.formParam("point");
+		String fname = ctx.formParam("fname");
+		String lname = ctx.formParam("lname");
+		String email = ctx.formParam("email");
 
 		PointRequest pr = new PointRequest();
 		// check node

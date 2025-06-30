@@ -27,10 +27,10 @@ public class HDGPointRequestRoute implements Handler {
 		if (!enabled) {
 			
 		}
-		String name = ctx.queryParam("_name");
-		String email = ctx.queryParam("_email");
-		String password = ctx.queryParam("_password");
-		String about = ctx.queryParam("_about");
+		String name = ctx.formParam("_name");
+		String email = ctx.formParam("_email");
+		String password = ctx.formParam("_password");
+		String about = ctx.formParam("_about");
 		String error = "";
 		// check this shit
 		{

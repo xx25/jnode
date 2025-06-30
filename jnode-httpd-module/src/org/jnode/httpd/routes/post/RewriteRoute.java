@@ -34,21 +34,21 @@ public class RewriteRoute implements Handler {
 
 	@Override
 	public void handle(Context ctx) throws Exception {
-		String n = ctx.queryParam("n");
-		String l = ctx.queryParam("l");
-		String t = ctx.queryParam("t");
-		String ofa = ctx.queryParam("ofa");
-		String nfa = ctx.queryParam("nfa");
-		String ofn = ctx.queryParam("ofn");
-		String nfn = ctx.queryParam("nfn");
-		String ota = ctx.queryParam("ota");
-		String nta = ctx.queryParam("nta");
-		String otn = ctx.queryParam("otn");
-		String ntn = ctx.queryParam("ntn");
-		String os = ctx.queryParam("os");
-		String ns = ctx.queryParam("ns");
+		String n = ctx.formParam("n");
+		String l = ctx.formParam("l");
+		String t = ctx.formParam("t");
+		String ofa = ctx.formParam("ofa");
+		String nfa = ctx.formParam("nfa");
+		String ofn = ctx.formParam("ofn");
+		String nfn = ctx.formParam("nfn");
+		String ota = ctx.formParam("ota");
+		String nta = ctx.formParam("nta");
+		String otn = ctx.formParam("otn");
+		String ntn = ctx.formParam("ntn");
+		String os = ctx.formParam("os");
+		String ns = ctx.formParam("ns");
 
-		String did = ctx.queryParam("did");
+		String did = ctx.formParam("did");
 
 		String code = null;
 
