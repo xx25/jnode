@@ -13,7 +13,6 @@ public class QuitProcessor implements Processor {
 
     @Override
     public Collection<String> process(Collection<String> params, Long id, Long selectedArticleId, Auth auth) {
-        // The response will be sent by NntpClient before the exception is caught
         throw new EndOfSessionException();
     }
 }

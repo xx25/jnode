@@ -94,8 +94,8 @@ public class NntpClient implements Runnable {
         String line = StringUtils.EMPTY;
 
         try {
-            // Send greetings indicating authentication is required
-            send(Arrays.asList(NntpResponse.InitialGreetings.SERVICE_AVAILABLE_POSTING_PROHIBITED));
+            // Send greetings - authentication will be enforced on actual commands
+            send(Arrays.asList(NntpResponse.InitialGreetings.SERVICE_AVAILABLE_POSTING_ALLOWED));
 
             while ((line = in.readLine()) != null) {
                 logger.l4("[C] " + line);
@@ -155,7 +155,8 @@ public class NntpClient implements Runnable {
     private void send(Collection<String> response) throws IOException {
         for (String message : response) {
             logger.l4("[S] " + message);
-            out.println(message);
+            out.print(message + "\r\n");
+            out.flush();
         }
     }
 

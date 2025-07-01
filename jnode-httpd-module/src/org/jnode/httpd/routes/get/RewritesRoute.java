@@ -42,6 +42,39 @@ public class RewritesRoute implements Handler {
 
 	@Override
 	public void handle(Context ctx) throws Exception {
+		String id = ctx.queryParam("id");
+		if (id != null) {
+			// AJAX call for editing
+			String cb = ctx.queryParam("cb");
+			StringBuilder sb = new StringBuilder();
+			
+			if (cb != null) {
+				sb.append(cb + "(");
+			}
+			
+			Rewrite rewrite = ORMManager.get(Rewrite.class).getById(Long.valueOf(id));
+			if (rewrite != null) {
+				sb.append(String.format(
+					"{\"id\":%d,\"nice\":%d,\"type\":\"%s\",\"last\":%b,\"origFromAddr\":\"%s\",\"newFromAddr\":\"%s\",\"origFromName\":\"%s\",\"newFromName\":\"%s\",\"origToAddr\":\"%s\",\"newToAddr\":\"%s\",\"origToName\":\"%s\",\"newToName\":\"%s\",\"origSubject\":\"%s\",\"newSubject\":\"%s\"}",
+					rewrite.getId(), rewrite.getNice(), rewrite.getType().name(), rewrite.isLast(),
+					jsonEscape(rewrite.getOrig_from_addr()), jsonEscape(rewrite.getNew_from_addr()),
+					jsonEscape(rewrite.getOrig_from_name()), jsonEscape(rewrite.getNew_from_name()),
+					jsonEscape(rewrite.getOrig_to_addr()), jsonEscape(rewrite.getNew_to_addr()),
+					jsonEscape(rewrite.getOrig_to_name()), jsonEscape(rewrite.getNew_to_name()),
+					jsonEscape(rewrite.getOrig_subject()), jsonEscape(rewrite.getNew_subject())));
+			} else {
+				sb.append("null");
+			}
+			
+			if (cb != null) {
+				sb.append(")");
+			}
+			
+			ctx.contentType("text/javascript");
+			ctx.result(sb.toString());
+			return;
+		}
+		
 		HTMLi18n html = HTMLi18n.create(ctx, true);
 		List<Rewrite> rewrites = ORMManager.get(Rewrite.class).getOrderAnd(
 				"nice", true);
@@ -56,7 +89,7 @@ public class RewritesRoute implements Handler {
 							+ "<td><b>%s</b> -&gt; <b>%s</b></td>"
 							+ "<td><b>%s</b> -&gt; <b>%s</b></td>"
 							+ "<td><b>%s</b> -&gt; <b>%s</b></td>"
-							+ "<td><a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">%s</a></td>"
+							+ "<td><a href=\"#\" class=\"css-link-1\" onclick=\"edit(%d);\">%s</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">%s</a></td>"
 							+ "</tr>", r.getNice(), r.getType().name(),
 							r.isLast(),
 
@@ -64,11 +97,18 @@ public class RewritesRoute implements Handler {
 							r.getOrig_from_name(), r.getNew_from_name(),
 							r.getOrig_to_addr(), r.getNew_to_addr(),
 							r.getOrig_to_name(), r.getNew_to_name(),
-							r.getOrig_subject(), r.getNew_subject(), r.getId(), html.t("action.delete")));
+							r.getOrig_subject(), r.getNew_subject(), 
+							r.getId(), html.t("action.edit"),
+							r.getId(), html.t("action.delete")));
 		}
 		ctx.html(html
 				.append(String.format(RewritesRoute.rewrites, sb.toString()))
 				.footer().get());
+	}
+	
+	private String jsonEscape(String str) {
+		if (str == null) return "";
+		return str.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");
 	}
 
 }

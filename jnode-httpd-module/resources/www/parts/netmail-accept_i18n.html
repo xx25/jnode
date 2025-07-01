@@ -12,7 +12,8 @@
 </div>
 
 <!-- Add/Edit Form -->
-<form action="/secure/netmail-accept" method="post" id="ruleForm">
+<span class="info" id="_error"></span>
+<form action="/secure/netmail-accept-rule" method="post" id="ruleForm">
     <input type="hidden" name="id" id="_id" value="0" />
     
     <table class="info" id="editForm">
@@ -62,13 +63,9 @@
             <th>{{netmail.description}}:</th>
             <td><input type="text" name="description" id="_description" placeholder="Human-readable description" size="50" /></td>
         </tr>
-        <tr>
-            <td colspan="2">
-                <input type="submit" value="{{netmail.save_rule}}" class="button" />
-                <input type="button" value="{{action.cancel}}" class="button" onclick="clearForm()" />
-            </td>
-        </tr>
     </table>
+    <input type="submit" value="{{netmail.save_rule}}" class="button" />
+    <input type="button" value="{{action.cancel}}" class="button" onclick="clearForm()" />
 </form>
 
 <!-- Rules Table -->
@@ -82,7 +79,7 @@
 </table>
 
 <!-- Delete Form -->
-<form action="/secure/netmail-accept" method="post" id="_delete" style="display:none">
+<form action="/secure/netmail-accept-rule" method="post" id="_delete" style="display:none">
     <input type="hidden" id="_did" name="did" />
 </form>
 
@@ -139,32 +136,24 @@ function clearForm() {
     document.getElementById("_stop_processing").checked = false;
 }
 
-// Status messages
-var code = getUrlParameter('code');
-if (code == '200') {
-    showMessage('Rule saved successfully', 'success');
-} else if (code == '400') {
-    showMessage('Invalid regular expression pattern', 'error');
-} else if (code == '404') {
-    showMessage('Rule not found', 'error');
-} else if (code == '500') {
-    showMessage('Error saving rule', 'error');
-}
-
-// Helper functions (assuming they exist in jnode.js)
-function getUrlParameter(name) {
-    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-    var results = regex.exec(location.search);
-    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-}
-
-function showMessage(message, type) {
-    // Simple alert - could be enhanced with better UI
-    if (type === 'error') {
-        alert('Error: ' + message);
-    } else {
-        alert(message);
+// Status messages  
+var code = _getParameterByName('code');
+if (code) {
+    _fill("_error", "");
+    var text = "Unknown error occurred";
+    if (code == '400') {
+        text = "Invalid regular expression pattern";
+    } else if (code == '404') {
+        text = "Rule not found";
+    } else if (code == '500') {
+        text = "Error saving rule";
+    } else if (code == 'NOTFOUND') {
+        text = "Rule not found";
+    } else if (code == 'INVALID') {
+        text = "Invalid parameters";
+    }
+    if (code != '200') {
+        _fill("_error", "Error: " + text);
     }
 }
 </script>

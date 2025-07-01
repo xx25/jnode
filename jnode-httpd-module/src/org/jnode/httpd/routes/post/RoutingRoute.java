@@ -41,6 +41,7 @@ public class RoutingRoute implements Handler {
 		String tn = ctx.formParam("tn");
 		String s = ctx.formParam("s");
 		String v = ctx.formParam("v");
+		String id = ctx.formParam("id");
 		String code = null;
 		String delete = ctx.formParam("did");
 		if (delete != null) {
@@ -56,17 +57,30 @@ public class RoutingRoute implements Handler {
 			}
 		} else {
 			try {
-				jnode.dto.Route route = new jnode.dto.Route();
-				route.setNice(Long.valueOf(nice));
-				route.setFromAddr(fa);
-				route.setFromName(fn);
-				route.setToAddr(ta);
-				route.setToName(tn);
-				route.setSubject(s);
-				Link l = ORMManager.get(Link.class).getById(Long.valueOf(v));
-				if (l != null) {
-					route.setRouteVia(l);
-					ORMManager.get(jnode.dto.Route.class).save(route);
+				jnode.dto.Route route;
+				if (id != null && !id.equals("0")) {
+					// Edit existing route
+					route = ORMManager.get(jnode.dto.Route.class).getById(Long.valueOf(id));
+					if (route == null) {
+						code = "NOTFOUND";
+					}
+				} else {
+					// Create new route
+					route = new jnode.dto.Route();
+				}
+				
+				if (route != null) {
+					route.setNice(Long.valueOf(nice));
+					route.setFromAddr(fa);
+					route.setFromName(fn);
+					route.setToAddr(ta);
+					route.setToName(tn);
+					route.setSubject(s);
+					Link l = ORMManager.get(Link.class).getById(Long.valueOf(v));
+					if (l != null) {
+						route.setRouteVia(l);
+						ORMManager.get(jnode.dto.Route.class).saveOrUpdate(route);
+					}
 				}
 			} catch (RuntimeException e) {
 				code = "INVALID";
