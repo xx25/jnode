@@ -5,7 +5,7 @@ import jnode.module.JnodeModuleException;
 import jnode.orm.ORMManager;
 import org.jnode.nntp.model.NewsGroup;
 import org.jnode.nntp.model.NewsMessage;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import java.util.Date;
 import java.util.Random;
 
@@ -15,7 +15,7 @@ public class DataProviderService {
     NewsGroup ng2;
     NewsGroup ng3;
 
-    @Before
+    @BeforeEach
     public void prepare() throws JnodeModuleException {
         new NntpModule("/tmp/bla.properties");
 

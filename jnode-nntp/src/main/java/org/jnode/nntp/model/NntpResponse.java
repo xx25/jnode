@@ -81,4 +81,13 @@ public class NntpResponse {
         public static final String NO_ARTICLE_SELECTED = "420 No article(s) selected";
         public static final String NO_PERMISSION = "502 no permission";
     }
+    
+    public static class Quit {
+        public static final String CONNECTION_CLOSING = "205 Connection closing";
+    }
+    
+    public static class Error {
+        public static final String UNKNOWN_COMMAND = "500 Unknown command";
+        public static final String SYNTAX_ERROR = "501 Syntax error in parameters or arguments";
+    }
 }

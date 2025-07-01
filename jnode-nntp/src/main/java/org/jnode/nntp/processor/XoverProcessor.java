@@ -11,7 +11,7 @@ import org.jnode.nntp.model.NntpResponse;
 
 import java.util.Collection;
 
-public class XoverProcessor implements Processor {
+public class XoverProcessor extends BaseProcessor implements Processor {
 
     private DataProvider dataProvider = new DataProviderImpl();
 
@@ -19,6 +19,12 @@ public class XoverProcessor implements Processor {
 
     @Override
     public Collection<String> process(Collection<String> params, Long selectedGroupId, Long selectedArticleId, Auth auth) {
+        // Check authentication
+        if (!isAuthorized(auth)) {
+            Collection<String> response = Lists.newLinkedList();
+            response.add(NntpResponse.AuthInfo.AUTHENTIFICATION_REQUIRED);
+            return response;
+        }
 
         String range = params.iterator().next();
 
