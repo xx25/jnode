@@ -1,25 +1,24 @@
-
 <form action="/pointrequest" method="post">
 	<table class="info">
 		<tr>
-			<th>Select point address</th>
+			<th>{{point.select_address}}</th>
 			<td><nobr>
 					<select id="_node" name="node"> %s
 					</select>. <input type="text" size="5" name="point" />
 				</nobr></td>
 		</tr>
 		<tr>
-			<th>First name:</th>
+			<th>{{point.first_name}}:</th>
 			<td><input type="text" size="20" name="fname" /></td>
 		</tr>
 		<tr>
-			<th>Last name:</th>
+			<th>{{point.last_name}}:</th>
 			<td><input type="text" size="20" name="lname" /></td>
 		</tr>
 		<tr>
-			<th>Email:</th>
+			<th>{{point.email}}:</th>
 			<td><input type="text" size="20" name="email" /></td>
 		</tr>
 	</table>
-	<input type="submit" name="_s" value="Submit" class="button" />
+	<input type="submit" name="_s" value="{{action.submit}}" class="button" />
 </form>

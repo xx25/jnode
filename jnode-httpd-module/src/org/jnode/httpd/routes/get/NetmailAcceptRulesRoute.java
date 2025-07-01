@@ -23,6 +23,7 @@ package org.jnode.httpd.routes.get;
 import java.util.List;
 
 import org.jnode.httpd.util.HTML;
+import org.jnode.httpd.util.HTMLi18n;
 
 import jnode.dto.NetmailAcceptRule;
 import jnode.orm.ORMManager;
@@ -39,12 +40,13 @@ public class NetmailAcceptRulesRoute implements Handler {
 
 	public NetmailAcceptRulesRoute() {
 		if (template == null) {
-			template = HTML.getContents("/parts/netmail-accept.html");
+			template = HTML.getContents("/parts/netmail-accept_i18n.html");
 		}
 	}
 
 	@Override
 	public void handle(Context ctx) throws Exception {
+		HTMLi18n html = HTMLi18n.create(ctx, true);
 		List<NetmailAcceptRule> rules = ORMManager.get(NetmailAcceptRule.class)
 			.getOrderAnd("nice", true);
 			
@@ -64,13 +66,13 @@ public class NetmailAcceptRulesRoute implements Handler {
 				"<td>%s</td>" +
 				"<td>%s</td>" +
 				"<td>" +
-				"<a href=\"javascript:edit(%d)\">Edit</a> | " +
-				"<a href=\"javascript:del(%d)\">Delete</a>" +
+				"<a href=\"javascript:edit(%d)\">%s</a> | " +
+				"<a href=\"javascript:del(%d)\">%s</a>" +
 				"</td>" +
 				"</tr>",
 				rule.getEnabled() ? "enabled" : "disabled",
 				rule.getPriority(),
-				rule.getEnabled() ? "Yes" : "No",
+				rule.getEnabled() ? html.t("label.yes") : html.t("label.no"),
 				htmlEscape(rule.getFromAddress()),
 				htmlEscape(rule.getToAddress()), 
 				htmlEscape(rule.getFromName()),
@@ -78,14 +80,14 @@ public class NetmailAcceptRulesRoute implements Handler {
 				htmlEscape(rule.getSubject()),
 				rule.getAction().toString().toLowerCase(),
 				rule.getAction(),
-				rule.getStopProcessing() ? "Yes" : "No",
+				rule.getStopProcessing() ? html.t("label.yes") : html.t("label.no"),
 				htmlEscape(rule.getDescription()),
-				rule.getId(),
-				rule.getId()
+				rule.getId(), html.t("action.edit"),
+				rule.getId(), html.t("action.delete")
 			));
 		}
 		
-		ctx.html(HTML.start(true)
+		ctx.html(html
 			.append(String.format(template, rulesTable.toString()))
 			.footer().get());
 	}

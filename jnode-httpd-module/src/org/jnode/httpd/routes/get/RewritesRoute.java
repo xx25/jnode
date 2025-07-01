@@ -26,6 +26,7 @@ import jnode.dto.Rewrite;
 import jnode.orm.ORMManager;
 
 import org.jnode.httpd.util.HTML;
+import org.jnode.httpd.util.HTMLi18n;
 
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
@@ -35,12 +36,13 @@ public class RewritesRoute implements Handler {
 
 	public RewritesRoute() {
 		if (rewrites == null) {
-			rewrites = HTML.getContents("/parts/rewrite.html");
+			rewrites = HTML.getContents("/parts/rewrite_i18n.html");
 		}
 	}
 
 	@Override
 	public void handle(Context ctx) throws Exception {
+		HTMLi18n html = HTMLi18n.create(ctx, true);
 		List<Rewrite> rewrites = ORMManager.get(Rewrite.class).getOrderAnd(
 				"nice", true);
 		StringBuilder sb = new StringBuilder();
@@ -54,7 +56,7 @@ public class RewritesRoute implements Handler {
 							+ "<td><b>%s</b> -&gt; <b>%s</b></td>"
 							+ "<td><b>%s</b> -&gt; <b>%s</b></td>"
 							+ "<td><b>%s</b> -&gt; <b>%s</b></td>"
-							+ "<td><a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">Delete</a></td>"
+							+ "<td><a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">%s</a></td>"
 							+ "</tr>", r.getNice(), r.getType().name(),
 							r.isLast(),
 
@@ -62,9 +64,9 @@ public class RewritesRoute implements Handler {
 							r.getOrig_from_name(), r.getNew_from_name(),
 							r.getOrig_to_addr(), r.getNew_to_addr(),
 							r.getOrig_to_name(), r.getNew_to_name(),
-							r.getOrig_subject(), r.getNew_subject(), r.getId()));
+							r.getOrig_subject(), r.getNew_subject(), r.getId(), html.t("action.delete")));
 		}
-		ctx.html(HTML.start(true)
+		ctx.html(html
 				.append(String.format(RewritesRoute.rewrites, sb.toString()))
 				.footer().get());
 	}

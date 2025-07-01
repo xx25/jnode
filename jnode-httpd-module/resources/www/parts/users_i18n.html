@@ -1,7 +1,7 @@
 <table class="links" id="users">
 	<tr>
-		<th>Username</th>
-		<th>Operations</th>
+		<th>{{users.username}}</th>
+		<th>{{users.operations}}</th>
 	</tr>
 	%s
 </table>
@@ -10,22 +10,22 @@
 	onsubmit="return checkPasswords();">
 	<table class="info">
 		<tr>
-			<th colspan="2">New User</th>
+			<th colspan="2">{{users.new_user}}</th>
 		</tr>
 		<tr>
-			<th>Username</th>
+			<th>{{users.username}}</th>
 			<td><input type="text" name="username" id="user1" /></td>
 		</tr>
 		<tr>
-			<th>Password</th>
+			<th>{{users.password}}</th>
 			<td><input type="password" name="password" id="pass1" /></td>
 		</tr>
 		<tr>
-			<th>Confirmation</th>
+			<th>{{users.confirmation}}</th>
 			<td><input type="password" id="pass2" /></td>
 		</tr>
 	</table>
-	<input type="submit" name="s" value="Submit" />
+	<input type="submit" name="s" value="{{action.submit}}" />
 </form>
 
 <form action="/secure/user/password" method="post" id="pwd_form">

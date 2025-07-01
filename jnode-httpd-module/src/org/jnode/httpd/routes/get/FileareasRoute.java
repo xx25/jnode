@@ -24,6 +24,7 @@ import jnode.dto.Filearea;
 import jnode.orm.ORMManager;
 
 import org.jnode.httpd.util.HTML;
+import org.jnode.httpd.util.HTMLi18n;
 import org.jnode.httpd.util.JSONUtil;
 
 import io.javalin.http.Context;
@@ -34,7 +35,7 @@ public class FileareasRoute implements Handler {
 
 	public FileareasRoute() {
 		if (echoareas == null) {
-			echoareas = HTML.getContents("/parts/fechoes.html");
+			echoareas = HTML.getContents("/parts/fechoes_i18n.html");
 		}
 	}
 
@@ -43,15 +44,16 @@ public class FileareasRoute implements Handler {
 		String id = ctx.queryParam("id");
 		StringBuilder sb = new StringBuilder();
 		if (id == null) {
+			HTMLi18n html = HTMLi18n.create(ctx, true);
 			for (Filearea e : ORMManager.get(Filearea.class).getOrderAnd(
 					"name", true)) {
 				sb.append(String
-						.format("<tr><td>%s</td><td>%s</td><td>r:%d|w:%d|g:%s</td><td><a href=\"#new\" class=\"css-link-1\" onclick=\"edit(%d);\">Edit</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">Delete</a></td></tr>",
+						.format("<tr><td>%s</td><td>%s</td><td>r:%d|w:%d|g:%s</td><td><a href=\"#new\" class=\"css-link-1\" onclick=\"edit(%d);\">%s</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">%s</a></td></tr>",
 								e.getName(), e.getDescription(),
 								e.getReadlevel(), e.getWritelevel(),
-								e.getGroup(), e.getId(), e.getId()));
+								e.getGroup(), e.getId(), html.t("action.edit"), e.getId(), html.t("action.delete")));
 			}
-			ctx.html(HTML.start(true)
+			ctx.html(html
 					.append(String.format(echoareas, sb.toString())).footer()
 					.get());
 			return;

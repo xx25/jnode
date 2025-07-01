@@ -40,7 +40,7 @@ public class LinksRoute implements Handler {
 
 	public LinksRoute() {
 		if (links == null) {
-			links = HTML.getContents("/parts/links.html");
+			links = HTML.getContents("/parts/links_i18n.html");
 		}
 	}
 

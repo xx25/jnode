@@ -1,18 +1,18 @@
 <div id="content">
-    <h2>Link Subscriptions for Echo "%s"</h2>
+    <h2>{{echo_links.title}}</h2>
     <p>%s</p>
     
     <form id="link-subscription-form" method="post" action="/secure/echo-links-save">
         <input type="hidden" name="echo_id" value="%s" />
         
-        <h3>Subscribed Links</h3>
+        <h3>{{echo_links.subscribed_links}}</h3>
         <div id="subscribed-links">
             <table class="links">
                 <thead>
                     <tr>
                         <th width="30"></th>
-                        <th>Link Name</th>
-                        <th>FTN Address</th>
+                        <th>{{echo_links.link_name}}</th>
+                        <th>{{echo_links.ftn_address}}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -23,14 +23,14 @@
         
         <br/>
         
-        <h3>Available Links</h3>
+        <h3>{{echo_links.available_links}}</h3>
         <div id="unsubscribed-links">
             <table class="links">
                 <thead>
                     <tr>
                         <th width="30"></th>
-                        <th>Link Name</th>
-                        <th>FTN Address</th>
+                        <th>{{echo_links.link_name}}</th>
+                        <th>{{echo_links.ftn_address}}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -40,7 +40,7 @@
         </div>
         
         <br/>
-        <input type="submit" value="Save" class="button" />
-        <a href="/secure/echoes.html" class="css-link-1">Cancel</a>
+        <input type="submit" value="{{echo_links.save}}" class="button" />
+        <a href="/secure/echoes.html" class="css-link-1">{{echo_links.cancel}}</a>
     </form>
 </div>

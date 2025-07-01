@@ -34,7 +34,7 @@ public class BecomeLinkRoute implements Handler {
 		this.enabled = enabled;
 		if (enabled) {
 			if (request == null) {
-				request = HTML.getContents("/parts/requestlink.html");
+				request = HTML.getContents("/parts/requestlink_i18n.html");
 			}
 		}
 	}
@@ -44,7 +44,7 @@ public class BecomeLinkRoute implements Handler {
 		HTMLi18n html = HTMLi18n.create(ctx, false);
 		
 		if (!enabled) {
-			html.append("<b>Unfortunately, link requests are disabled by sysop</b>");
+			html.append("<b>").append(html.t("link.request_disabled")).append("</b>");
 			html.footer();
 			ctx.html(html.get());
 			return;
