@@ -52,16 +52,13 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
         
-    - name: Build distribution archives (all profile)
-      run: mvn clean package -P all
+    - name: Build distribution archives
+      run: mvn clean package
       
-    - name: Build distribution archives (stable profile)
-      run: mvn clean package -P stable
-      
-    - name: Upload distribution archives (all profile)
+    - name: Upload distribution archives
       uses: actions/upload-artifact@v4
       with:
-        name: jnode-all-distribution
+        name: jnode-distribution
         path: |
           jnode-assembly/target/jnode-*.zip
         retention-days: 30

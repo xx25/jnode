@@ -61,36 +61,16 @@
             </plugin>
         </plugins>
     </build>
-<profiles>
-    <profile>
-        <id>stable</id>
-        <modules>
-        	<module>jnode-core</module>
-        	<module>jnode-httpd-module</module>
-        	<module>jnode-mail-module</module>
-        	<module>jnode-rss-module</module>
-        	<module>jnode-dumb-module</module>
-        	<module>jnode-xmpp-module</module>
-        	<module>jnode-pointchecker-module</module>
-        </modules>
-    </profile>
-    <profile>
-        <id>all</id>
-        <activation>
-            <activeByDefault>true</activeByDefault>
-        </activation>
-        <modules>
-        	<module>jnode-core</module>
-        	<module>jnode-httpd-module</module>
-        	<module>jnode-mail-module</module>
-        	<module>jnode-rss-module</module>
-        	<module>jnode-dumb-module</module>
-        	<module>jnode-xmpp-module</module>
-        	<module>jnode-pointchecker-module</module>
-            <module>jnode-nntp</module>
-        	<module>jnode-assembly</module>            
-		    <module>jnode-telegram-channel-poster</module>
-        </modules>
-    </profile>
-</profiles>
+    <modules>
+        <module>jnode-core</module>
+        <module>jnode-httpd-module</module>
+        <module>jnode-mail-module</module>
+        <module>jnode-rss-module</module>
+        <module>jnode-dumb-module</module>
+        <module>jnode-xmpp-module</module>
+        <module>jnode-pointchecker-module</module>
+        <module>jnode-nntp</module>
+        <module>jnode-assembly</module>            
+        <module>jnode-telegram-channel-poster</module>
+    </modules>
 </project>
