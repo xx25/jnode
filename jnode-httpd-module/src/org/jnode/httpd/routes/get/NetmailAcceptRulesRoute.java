@@ -66,8 +66,8 @@ public class NetmailAcceptRulesRoute implements Handler {
 				"<td>%s</td>" +
 				"<td>%s</td>" +
 				"<td>" +
-				"<a href=\"javascript:edit(%d)\">%s</a> | " +
-				"<a href=\"javascript:del(%d)\">%s</a>" +
+				"<a href=\"javascript:edit(%d)\" class=\"css-link-1\">%s</a>&nbsp;" +
+				"<a href=\"javascript:del(%d)\" class=\"css-link-1\">%s</a>" +
 				"</td>" +
 				"</tr>",
 				rule.getEnabled() ? "enabled" : "disabled",

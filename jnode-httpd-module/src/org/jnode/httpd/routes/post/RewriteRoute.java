@@ -47,6 +47,7 @@ public class RewriteRoute implements Handler {
 		String ntn = ctx.formParam("ntn");
 		String os = ctx.formParam("os");
 		String ns = ctx.formParam("ns");
+		String id = ctx.formParam("id");
 
 		String did = ctx.formParam("did");
 
@@ -54,8 +55,8 @@ public class RewriteRoute implements Handler {
 
 		if (did != null) {
 			try {
-				Long id = Long.valueOf(did);
-				Rewrite rew = ORMManager.get(Rewrite.class).getById(id);
+				Long deleteId = Long.valueOf(did);
+				Rewrite rew = ORMManager.get(Rewrite.class).getById(deleteId);
 				if (rew != null) {
 					ORMManager.get(Rewrite.class).delete(rew);
 				}
@@ -67,28 +68,42 @@ public class RewriteRoute implements Handler {
 			try {
 				Long nice = Long.valueOf(n);
 				boolean last = Boolean.valueOf(l);
-				Rewrite rew = new Rewrite();
-				rew.setNice(nice);
-				rew.setLast(last);
+				Rewrite rew;
 				
-				rew.setType(Rewrite.Type.valueOf(t));
+				if (id != null && !id.equals("0")) {
+					// Edit existing rewrite
+					rew = ORMManager.get(Rewrite.class).getById(Long.valueOf(id));
+					if (rew == null) {
+						code = "NOTFOUND";
+					}
+				} else {
+					// Create new rewrite
+					rew = new Rewrite();
+				}
 				
-				rew.setOrig_from_addr(ofa);
-				rew.setNew_from_addr(nfa);
+				if (rew != null) {
+					rew.setNice(nice);
+					rew.setLast(last);
+					
+					rew.setType(Rewrite.Type.valueOf(t));
+					
+					rew.setOrig_from_addr(ofa);
+					rew.setNew_from_addr(nfa);
 
-				rew.setOrig_from_name(ofn);
-				rew.setNew_from_name(nfn);
+					rew.setOrig_from_name(ofn);
+					rew.setNew_from_name(nfn);
 
-				rew.setOrig_to_addr(ota);
-				rew.setNew_to_addr(nta);
+					rew.setOrig_to_addr(ota);
+					rew.setNew_to_addr(nta);
 
-				rew.setOrig_to_name(otn);
-				rew.setNew_to_name(ntn);
+					rew.setOrig_to_name(otn);
+					rew.setNew_to_name(ntn);
 
-				rew.setOrig_subject(os);
-				rew.setNew_subject(ns);
+					rew.setOrig_subject(os);
+					rew.setNew_subject(ns);
 
-				ORMManager.get(Rewrite.class).save(rew);
+					ORMManager.get(Rewrite.class).saveOrUpdate(rew);
+				}
 			} catch (RuntimeException e) {
 				e.printStackTrace();
 				code = "ERROR";

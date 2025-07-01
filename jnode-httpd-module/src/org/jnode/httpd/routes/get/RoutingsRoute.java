@@ -43,6 +43,37 @@ public class RoutingsRoute implements Handler {
 
 	@Override
 	public void handle(Context ctx) throws Exception {
+		String id = ctx.queryParam("id");
+		if (id != null) {
+			// AJAX call for editing
+			String cb = ctx.queryParam("cb");
+			StringBuilder sb = new StringBuilder();
+			
+			if (cb != null) {
+				sb.append(cb + "(");
+			}
+			
+			Route route = ORMManager.get(Route.class).getById(Long.valueOf(id));
+			if (route != null) {
+				sb.append(String.format(
+					"{\"id\":%d,\"nice\":%d,\"fromAddr\":\"%s\",\"fromName\":\"%s\",\"toAddr\":\"%s\",\"toName\":\"%s\",\"subject\":\"%s\",\"routeViaId\":%d}",
+					route.getId(), route.getNice(), 
+					jsonEscape(route.getFromAddr()), jsonEscape(route.getFromName()),
+					jsonEscape(route.getToAddr()), jsonEscape(route.getToName()),
+					jsonEscape(route.getSubject()), route.getRouteVia().getId()));
+			} else {
+				sb.append("null");
+			}
+			
+			if (cb != null) {
+				sb.append(")");
+			}
+			
+			ctx.contentType("text/javascript");
+			ctx.result(sb.toString());
+			return;
+		}
+		
 		List<Route> routes = ORMManager.get(Route.class).getOrderAnd("nice",
 				true);
 		HTMLi18n html = HTMLi18n.create(ctx, true);
@@ -51,10 +82,11 @@ public class RoutingsRoute implements Handler {
 			Link l = ORMManager.get(Link.class)
 					.getById(r.getRouteVia().getId());
 			sb.append(String
-					.format("<tr><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">%s</a></td></tr>",
+					.format("<tr><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href=\"#\" class=\"css-link-1\" onclick=\"edit(%d);\">%s</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">%s</a></td></tr>",
 							r.getNice(), r.getFromAddr(), r.getFromName(),
 							r.getToAddr(), r.getToName(), r.getSubject(),
 							(l != null) ? l.getLinkAddress() : "NULL",
+							r.getId(), html.t("action.edit"),
 							r.getId(), html.t("action.delete")));
 		}
 		StringBuilder sb2 = new StringBuilder();
@@ -68,6 +100,11 @@ public class RoutingsRoute implements Handler {
 		ctx.html(html
 				.append(String.format(routings, sb.toString(), sb2.toString()))
 				.footer().get());
+	}
+	
+	private String jsonEscape(String str) {
+		if (str == null) return "";
+		return str.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");
 	}
 
 }

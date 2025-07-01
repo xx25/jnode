@@ -21,8 +21,8 @@ public class NntpResponse {
     }
 
     public static class InitialGreetings {
-        public static final String SERVICE_AVAILABLE_POSTING_ALLOWED = "200 Service available, posting allowed";
-        public static final String SERVICE_AVAILABLE_POSTING_PROHIBITED = "201 Service available, posting prohibited";
+        public static final String SERVICE_AVAILABLE_POSTING_ALLOWED = "200 jnode NNTP Service Ready - posting ok";
+        public static final String SERVICE_AVAILABLE_POSTING_PROHIBITED = "201 jnode NNTP Service Ready - no posting";
     }
 
     public static class List {

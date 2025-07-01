@@ -190,7 +190,7 @@ public class PostProcessor extends BaseProcessor implements Processor {
             }
 
             if (isBody) {
-                message.append(param).append("\n");
+                message.append(param).append("\r\n");
                 continue;
             }
 

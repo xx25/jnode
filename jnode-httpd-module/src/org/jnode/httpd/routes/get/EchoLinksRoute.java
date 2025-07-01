@@ -96,9 +96,13 @@ public class EchoLinksRoute implements Handler {
 			links.close();
 			
 			HTMLi18n html = HTMLi18n.create(ctx, true);
+			
+			// Format the title with echo name
+			String title = html.t("echo_links.title", echo.getName());
+			
 			ctx.html(html
 					.append(String.format(echoLinks, 
-						echo.getName(), 
+						title,
 						echo.getDescription(),
 						echo.getId(),
 						subscribedLinks.toString(),

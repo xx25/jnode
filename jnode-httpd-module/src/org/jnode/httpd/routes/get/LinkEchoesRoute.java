@@ -96,10 +96,13 @@ public class LinkEchoesRoute implements Handler {
 			echoes.close();
 			
 			HTMLi18n html = HTMLi18n.create(ctx, true);
+			
+			// Format the title with link name and address
+			String title = html.t("link_echoes.title", link.getLinkName(), link.getLinkAddress());
+			
 			ctx.html(html
 					.append(String.format(linkEchoes, 
-						link.getLinkName(), 
-						link.getLinkAddress(),
+						title,
 						link.getId(),
 						subscribedEchoes.toString(),
 						unsubscribedEchoes.toString()))

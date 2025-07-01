@@ -22,7 +22,7 @@
 	<input type="hidden" name="id" id="_id" value="0" />
 	<table class="info" id="new">
 		<tr>
-			<th class="center" colspan="6">{{routing.new_route}}</th>
+			<th class="center" colspan="6"><span id="form-title">{{routing.new_route}}</span></th>
 		</tr>
 		<tr>
 			<th>{{routing.priority}}</th>
@@ -46,16 +46,38 @@
 			</select></td>
 		</tr>
 	</table>
-	<input type="submit" name="_s" value="{{action.submit}}" class="button" />
+	<input type="submit" name="_s" id="submit-btn" value="{{action.submit}}" class="button" />
 </form>
 <script>
 	function fnew() {
+		_value("_id", "0");
 		_value("_nice", "1000");
 		_value("_fa", "*");
 		_value("_fn", "*");
 		_value("_ta", "*");
 		_value("_tn", "*");
 		_value("_s", "*");
+		document.getElementById("form-title").innerHTML = "{{routing.new_route}}";
+		document.getElementById("submit-btn").value = "{{action.create}}";
+	}
+	
+	function edit(id) {
+		if (id) {
+			_jrun("/secure/route.html?id=" + id, "_edit");
+		}
+	}
+	
+	function _edit(route) {
+		_value("_id", route.id);
+		_value("_nice", route.nice);
+		_value("_fa", route.fromAddr);
+		_value("_fn", route.fromName);
+		_value("_ta", route.toAddr);
+		_value("_tn", route.toName);
+		_value("_s", route.subject);
+		_value("_v", route.routeViaId);
+		document.getElementById("form-title").innerHTML = "{{routing.edit_route}}";
+		document.getElementById("submit-btn").value = "{{action.update}}";
 	}
 	var code = _getParameterByName("code");
 	if (code) {
