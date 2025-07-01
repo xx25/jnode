@@ -11,12 +11,18 @@ import org.jnode.nntp.model.NntpResponse;
 import java.util.Collection;
 import java.util.LinkedList;
 
-public class HeadProcessor implements Processor {
+public class HeadProcessor extends BaseProcessor implements Processor {
 
     private DataProvider dataProvider = new DataProviderImpl();
 
     @Override
     public Collection<String> process(Collection<String> params, Long selectedGroupId, Long selectedArticleId, Auth auth) {
+        // Check authentication
+        if (!isAuthorized(auth)) {
+            Collection<String> response = new LinkedList<>();
+            response.add(NntpResponse.AuthInfo.AUTHENTIFICATION_REQUIRED);
+            return response;
+        }
 
         String id;
         if (params.isEmpty()) {

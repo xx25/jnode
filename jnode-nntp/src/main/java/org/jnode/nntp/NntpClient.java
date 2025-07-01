@@ -94,8 +94,8 @@ public class NntpClient implements Runnable {
         String line = StringUtils.EMPTY;
 
         try {
-            // Send greetings. Posting is not implemented yet.
-            send(Arrays.asList(NntpResponse.InitialGreetings.SERVICE_AVAILABLE_POSTING_ALLOWED));
+            // Send greetings indicating authentication is required
+            send(Arrays.asList(NntpResponse.InitialGreetings.SERVICE_AVAILABLE_POSTING_PROHIBITED));
 
             while ((line = in.readLine()) != null) {
                 logger.l4("[C] " + line);
@@ -121,6 +121,11 @@ public class NntpClient implements Runnable {
 
         } catch (UnknownCommandException uce) {
             logger.l4("Unknown line '" + line + "'.");
+            try {
+                send(Arrays.asList(NntpResponse.Error.UNKNOWN_COMMAND));
+            } catch (IOException e) {
+                logger.l4("Failed to send error response", e);
+            }
         } catch (EndOfSessionException eose) {
             logger.l4("Client cancel session.");
         } catch (Throwable e) {

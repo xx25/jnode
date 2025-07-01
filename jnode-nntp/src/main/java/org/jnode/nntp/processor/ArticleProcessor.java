@@ -13,12 +13,18 @@ import org.jnode.nntp.model.NntpResponse;
 import java.util.Collection;
 import java.util.LinkedList;
 
-public class ArticleProcessor implements Processor {
+public class ArticleProcessor extends BaseProcessor implements Processor {
 
     private DataProvider dataProvider = new DataProviderImpl();
 
     @Override
     public Collection<String> process(Collection<String> params, Long selectedGroupId, Long selectedArticleId, Auth auth) {
+        // Check authentication
+        if (!isAuthorized(auth)) {
+            Collection<String> response = new LinkedList<>();
+            response.add(NntpResponse.AuthInfo.AUTHENTIFICATION_REQUIRED);
+            return response;
+        }
 
         String id;
         if (params.isEmpty()) {
@@ -70,7 +76,9 @@ public class ArticleProcessor implements Processor {
     }
 
     private Collection<String> responseCantFind() {
-        return null;
+        Collection<String> response = new LinkedList<>();
+        response.add(NntpResponse.Article.NO_ARTICLE_WITH_THAT_NUMBER);
+        return response;
     }
 
     private Collection<String> responseArticleById(NewsMessage message) {

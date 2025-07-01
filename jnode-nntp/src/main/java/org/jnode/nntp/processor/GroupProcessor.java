@@ -13,12 +13,18 @@ import org.jnode.nntp.model.NntpResponse;
 import java.util.Collection;
 import java.util.LinkedList;
 
-public class GroupProcessor implements Processor {
+public class GroupProcessor extends BaseProcessor implements Processor {
 
     private DataProvider dataProvider = new DataProviderImpl();
 
     @Override
     public Collection<String> process(Collection<String> params, Long id, Long selectedArticleId, Auth auth) {
+        // Check authentication
+        if (!isAuthorized(auth)) {
+            Collection<String> response = new LinkedList<>();
+            response.add(NntpResponse.AuthInfo.AUTHENTIFICATION_REQUIRED);
+            return response;
+        }
 
         String groupName = params.iterator().next();
         NewsGroup group = dataProvider.newsGroup(groupName, auth);
