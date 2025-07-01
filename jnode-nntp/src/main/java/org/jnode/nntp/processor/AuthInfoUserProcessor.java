@@ -2,7 +2,7 @@ package org.jnode.nntp.processor;
 
 import com.google.common.collect.Lists;
 import jnode.event.Notifier;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jnode.nntp.Processor;
 import org.jnode.nntp.event.AuthUserEvent;
 import org.jnode.nntp.exception.UnknownCommandException;

@@ -1,7 +1,7 @@
 package org.jnode.nntp.processor;
 
 import com.google.common.collect.Lists;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jnode.nntp.DataProvider;
 import org.jnode.nntp.DataProviderImpl;
 import org.jnode.nntp.Processor;

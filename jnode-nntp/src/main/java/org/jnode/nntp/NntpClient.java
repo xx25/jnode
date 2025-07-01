@@ -6,7 +6,7 @@ import jnode.event.IEventHandler;
 import jnode.event.Notifier;
 import jnode.logger.Logger;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jnode.nntp.event.ArticleSelectedEvent;
 import org.jnode.nntp.event.AuthUserEvent;
 import org.jnode.nntp.event.GroupSelectedEvent;
