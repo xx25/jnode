@@ -20,9 +20,8 @@
 
 package jnode.core;
 
-import junit.framework.TestCase;
-
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
@@ -40,14 +39,14 @@ public class ConcurrentDateFormatAccessTest {
     public void testConvertStringToDate() throws Exception {
         ConcurrentDateFormatAccess df = new ConcurrentDateFormatAccess("dd-MM-yy HH:mm:ss");
         String s = "25-01-14 17:02:03";
-        TestCase.assertEquals(new Date(2014 - 1900, 0, 25, 17, 2, 3), df.parse(s));
+        assertEquals(new Date(2014 - 1900, 0, 25, 17, 2, 3), df.parse(s));
     }
 
     @Test
     public void testConvertDateToString() throws Exception {
         ConcurrentDateFormatAccess df = new ConcurrentDateFormatAccess("dd-MM-yy HH:mm:ss");
         Date d = new Date(2014 - 1900, 0, 25, 17, 2, 3);
-        TestCase.assertEquals("25-01-14 17:02:03", df.format(d));
+        assertEquals("25-01-14 17:02:03", df.format(d));
     }
 
     @Test
@@ -62,7 +61,7 @@ public class ConcurrentDateFormatAccessTest {
                 public void run() {
                     for (int j = 0; j < 100; ++j) {
                         Date d = new Date(2014 - 1900, 0, 25, 17, 2, 3);
-                        TestCase.assertEquals("25-01-14 17:02:03", df.format(d));
+                        assertEquals("25-01-14 17:02:03", df.format(d));
 
                     }
                 }
