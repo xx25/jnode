@@ -27,6 +27,7 @@ import jnode.dto.Route;
 import jnode.orm.ORMManager;
 
 import org.jnode.httpd.util.HTML;
+import org.jnode.httpd.util.HTMLi18n;
 
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
@@ -36,7 +37,7 @@ public class RoutingsRoute implements Handler {
 
 	public RoutingsRoute() {
 		if (routings == null) {
-			routings = HTML.getContents("/parts/route.html");
+			routings = HTML.getContents("/parts/route_i18n.html");
 		}
 	}
 
@@ -44,16 +45,17 @@ public class RoutingsRoute implements Handler {
 	public void handle(Context ctx) throws Exception {
 		List<Route> routes = ORMManager.get(Route.class).getOrderAnd("nice",
 				true);
+		HTMLi18n html = HTMLi18n.create(ctx, true);
 		StringBuilder sb = new StringBuilder();
 		for (Route r : routes) {
 			Link l = ORMManager.get(Link.class)
 					.getById(r.getRouteVia().getId());
 			sb.append(String
-					.format("<tr><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">Delete</a></td></tr>",
+					.format("<tr><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">%s</a></td></tr>",
 							r.getNice(), r.getFromAddr(), r.getFromName(),
 							r.getToAddr(), r.getToName(), r.getSubject(),
 							(l != null) ? l.getLinkAddress() : "NULL",
-							r.getId()));
+							r.getId(), html.t("action.delete")));
 		}
 		StringBuilder sb2 = new StringBuilder();
 		for (Link l : ORMManager.get(Link.class).getAll()) {
@@ -63,7 +65,7 @@ public class RoutingsRoute implements Handler {
 						+ l.getLinkAddress() + "</option>");
 			}
 		}
-		ctx.html(HTML.start(true)
+		ctx.html(html
 				.append(String.format(routings, sb.toString(), sb2.toString()))
 				.footer().get());
 	}

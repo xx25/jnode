@@ -1,14 +1,14 @@
 <form action="/linkrequest/new" method="post">
 	<table class="info">
 		<tr>
-			<th>FTN Address</th>
+			<th>{{link.ftn_address}}</th>
 			<td><input type="text" size="16" name="addr" /></td>
 		</tr>
 		<tr>
-			<th>Host:Port</th>
+			<th>{{link.host_port}}</th>
 			<td><input type="text" size="10" name="host" />:<input
 				type="text" size="5" name="port" /></td>
 		</tr>
 	</table>
-	<input type="submit" name="_s" value="Submit" class="button" />
+	<input type="submit" name="_s" value="{{action.submit}}" class="button" />
 </form>

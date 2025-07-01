@@ -1,13 +1,13 @@
-<a href="#new" onclick="fnew();" class="button">New area</a>
+<a href="#new" onclick="fnew();" class="button">{{echoareas.new_area}}</a>
 <table class="links" id="echoes">
 	<tr>
-		<th colspan="4" class="center">Echoes on Node</th>
+		<th colspan="4" class="center">{{echoareas.title}}</th>
 	</tr>
 	<tr>
-		<th>Name</th>
-		<th>Description</th>
-		<th>R/W/G</th>
-		<th>Operations</th>
+		<th>{{echoareas.name}}</th>
+		<th>{{echoareas.description}}</th>
+		<th>{{echoareas.rwg}}</th>
+		<th>{{echoareas.operations}}</th>
 	</tr>
 	%s
 </table>
@@ -18,27 +18,27 @@
 	<input type="hidden" name="id" id="_id" value="0" />
 	<table class="info" id="new">
 		<tr>
-			<th>Name</th>
+			<th>{{echoareas.name}}</th>
 			<td><input type="text" name="name" id="_name" /></td>
 		</tr>
 		<tr>
-			<th>Description</th>
+			<th>{{echoareas.description}}</th>
 			<td><input type="text" name="descr" id="_descr" /></td>
 		</tr>
 		<tr>
-			<th>Access Level (read)</th>
+			<th>{{echoareas.access_level_read}}</th>
 			<td><input type="text" size="3" name="rl" id="_rl" /></td>
 		</tr>
 		<tr>
-			<th>Access Level (write)</th>
+			<th>{{echoareas.access_level_write}}</th>
 			<td><input type="text" size="3" name="wl" id="_wl" /></td>
 		</tr>
 		<tr>
-			<th>Access Level (group)</th>
+			<th>{{echoareas.access_level_group}}</th>
 			<td><input type="text" size="5" name="gr" id="_gr" /></td>
 		</tr>
 	</table>
-	<input type="submit" name="_s" value="Submit" class="button" />
+	<input type="submit" name="_s" value="{{action.submit}}" class="button" />
 </form>
 <script>
 	function _edit(e) {

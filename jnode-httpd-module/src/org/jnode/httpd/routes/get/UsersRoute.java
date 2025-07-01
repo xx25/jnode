@@ -36,23 +36,22 @@ public class UsersRoute implements Handler {
 
 	public UsersRoute() {
 		if (request == null) {
-			request = HTML.getContents("/parts/users.html");
+			request = HTML.getContents("/parts/users_i18n.html");
 		}
 	}
 
 	@Override
 	public void handle(Context ctx) throws Exception {
+		HTMLi18n html = HTMLi18n.create(ctx, true);
 		List<WebAdmin> admins = ORMManager.get(WebAdmin.class).getAll();
 		StringBuilder sb = new StringBuilder();
 		for (WebAdmin admin : admins) {
 			sb.append(String
 					.format("<tr><td>%s</td><td>"
-							+ "<a href=\"#\" onclick=\"changePassword(%d);\" class=\"css-link-1\">Password</a>&nbsp;"
-							+ "<a href=\"#\" onclick=\"deleteUser(%d);\" class=\"css-link-1\">Delete</a>&nbsp;",
-							admin.getUsername(), admin.getId(), admin.getId()));
+							+ "<a href=\"#\" onclick=\"changePassword(%d);\" class=\"css-link-1\">%s</a>&nbsp;"
+							+ "<a href=\"#\" onclick=\"deleteUser(%d);\" class=\"css-link-1\">%s</a>&nbsp;",
+							admin.getUsername(), admin.getId(), html.t("label.password"), admin.getId(), html.t("action.delete")));
 		}
-
-		HTMLi18n html = HTMLi18n.create(ctx, true);
 		html.append(String.format(request, sb.toString()));
 		html.footer();
 		ctx.html(html.get());

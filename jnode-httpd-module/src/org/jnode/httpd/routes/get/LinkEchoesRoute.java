@@ -27,6 +27,7 @@ import jnode.dto.Echoarea;
 import jnode.orm.ORMManager;
 
 import org.jnode.httpd.util.HTML;
+import org.jnode.httpd.util.HTMLi18n;
 
 import com.j256.ormlite.dao.GenericRawResults;
 
@@ -38,7 +39,7 @@ public class LinkEchoesRoute implements Handler {
 
 	public LinkEchoesRoute() {
 		if (linkEchoes == null) {
-			linkEchoes = HTML.getContents("/parts/link-echoes.html");
+			linkEchoes = HTML.getContents("/parts/link-echoes_i18n.html");
 		}
 	}
 
@@ -94,7 +95,8 @@ public class LinkEchoesRoute implements Handler {
 			}
 			echoes.close();
 			
-			ctx.html(HTML.start(true)
+			HTMLi18n html = HTMLi18n.create(ctx, true);
+			ctx.html(html
 					.append(String.format(linkEchoes, 
 						link.getLinkName(), 
 						link.getLinkAddress(),

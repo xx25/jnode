@@ -37,7 +37,7 @@ public class BecomePointRoute implements Handler {
 		this.enabled = enabled;
 		if (enabled) {
 			if (requestPoint == null) {
-				requestPoint = HTML.getContents("/parts/requestpoint.html");
+				requestPoint = HTML.getContents("/parts/requestpoint_i18n.html");
 			}
 		}
 	}
@@ -47,7 +47,7 @@ public class BecomePointRoute implements Handler {
 		HTMLi18n html = HTMLi18n.create(ctx, false);
 		
 		if (!enabled) {
-			html.append("<b>Unfortunately, point requests are disabled by sysop</b>");
+			html.append("<b>").append(html.t("point.request_disabled")).append("</b>");
 			html.footer();
 			ctx.html(html.get());
 			return;

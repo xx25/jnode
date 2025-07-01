@@ -1,16 +1,16 @@
-<a href="#edit" onclick="createNew()" class="css-link-1">New Link</a>
+<a href="#edit" onclick="createNew()" class="css-link-1">{{links.new_link}}</a>
 
 <table id="_links" class="links">
 	<tr>
-		<th colspan="6">List of Links (points below)</th>
+		<th colspan="6">{{links.title}}</th>
 	</tr>
 	<tr>
-		<th>Link Name</th>
-		<th>FTN Address</th>
-		<th>Connection Address</th>
-		<th>Connection Password</th>
-		<th>Packet Password</th>
-		<th>Operations</th>
+		<th>{{links.link_name}}</th>
+		<th>{{links.ftn_address}}</th>
+		<th>{{links.connection_address}}</th>
+		<th>{{links.connection_password}}</th>
+		<th>{{links.packet_password}}</th>
+		<th>{{links.operations}}</th>
 	</tr>
 	%s
 </table>
@@ -18,37 +18,37 @@
 	<input type="hidden" name="id" id="_link_id" value="0" />
 	<table id="edit" class="links">
 		<tr>
-			<th colspan="2">Link Management Form</th>
+			<th colspan="2">{{links.management_form}}</th>
 		</tr>
 		<tr>
-			<th>Link Name</th>
+			<th>{{links.link_name}}</th>
 			<td><input type="text" name="name" id="_link_name" /></td>
 		</tr>
 
 		<tr>
-			<th>FTN Address</th>
+			<th>{{links.ftn_address}}</th>
 			<td><input type="text" name="addr" id="_link_ftn" /></td>
 		</tr>
 
 		<tr>
-			<th>Connection Address</th>
+			<th>{{links.connection_address}}</th>
 			<td><input type="text" name="address" id="_link_address" /></td>
 		</tr>
 
 		<tr>
-			<th>Connection Password</th>
+			<th>{{links.connection_password}}</th>
 			<td><input type="text" name="password" id="_link_password"
 				size="8" /></td>
 		</tr>
 
 		<tr>
-			<th>Packet Password</th>
+			<th>{{links.packet_password}}</th>
 			<td><input type="text" name="pktpassword" id="_link_pktpassword"
 				size="8" /></td>
 		</tr>
 	</table>
-	<input type="submit" name="s" value="Submit" class="button" /> <input
-		type="reset" value="Clear" class="button" />
+	<input type="submit" name="s" value="{{action.submit}}" class="button" /> <input
+		type="reset" value="{{form.clear}}" class="button" />
 </form>
 <script type="text/javascript">
 	function createNew() {
@@ -75,107 +75,107 @@
 	}
 </script>
 <div id="options" style="display: none">
-	<a href="#" onclick="toggle(false)" class="css-link-1">Hide</a>
+	<a href="#" onclick="toggle(false)" class="css-link-1">{{form.hide}}</a>
 	<form action="/secure/linkoption" method="post">
 		<input type="hidden" name="_id" id="_options_id" />
 		<table class="links">
 			<tr>
-				<th colspan="6" class="center">Basic Settings</th>
+				<th colspan="6" class="center">{{links.basic_settings}}</th>
 			</tr>
 			<tr>
 				<td colspan="2">&nbsp;</td>
-				<th>Our AKA</th>
+				<th>{{links.our_aka}}</th>
 				<td><input type="text" id="_opt_ouraka" name="ouraka" size="8" /></td>
 				<td colspan="2">&nbsp;</td>
 			</tr>
 			<tr>
-				<th>Don't check packet password</th>
+				<th>{{links.ignore_packet_password}}</th>
 				<td><select id="_opt_ignorepktpwd" name="ignorepktpwd">
 
-						<option value="true" selected>true</option>
-						<option value="false">false</option>
+						<option value="true" selected>{{label.yes}}</option>
+						<option value="false">{{label.no}}</option>
 				</select></td>
-				<th>Pack netmail</th>
+				<th>{{links.pack_netmail}}</th>
 				<td><select id="_opt_packnetmail" name="packnetmail"><option
-							value="true">true</option>
-						<option value="false" selected>false</option></select></td>
-				<th>Pack echomail</th>
+							value="true">{{label.yes}}</option>
+						<option value="false" selected>{{label.no}}</option></select></td>
+				<th>{{links.pack_echomail}}</th>
 				<td><select id="_opt_packechomail" name="packechomail"><option
-							value="true" selected>true</option>
-						<option value="false">false</option></select></td>
+							value="true" selected>{{label.yes}}</option>
+						<option value="false">{{label.no}}</option></select></td>
 			</tr>
 			<tr>
-				<th>Call if netmail available</th>
+				<th>{{links.call_netmail}}</th>
 				<td><select id="_opt_crashnetmail" name="crashnetmail"><option
-							value="true" selected>true</option>
-						<option value="false">false</option></select></td>
-				<th>Call if echomail available</th>
+							value="true" selected>{{label.yes}}</option>
+						<option value="false">{{label.no}}</option></select></td>
+				<th>{{links.call_echomail}}</th>
 				<td><select id="_opt_crashechomail" name="crashechomail"><option
-							value="true">true</option>
-						<option value="false" selected>false</option></select></td>
-				<th>Call if files available</th>
+							value="true">{{label.yes}}</option>
+						<option value="false" selected>{{label.no}}</option></select></td>
+				<th>{{links.call_files}}</th>
 				<td><select id="_opt_crashfilemail" name="crashfilemail"><option
-							value="true">true</option>
-						<option value="false" selected>false</option></select></td>
+							value="true">{{label.yes}}</option>
+						<option value="false" selected>{{label.no}}</option></select></td>
 			</tr>
 			<tr>
-				<th>Allow auto-creation of echoes</th>
+				<th>{{links.auto_create_echoes}}</th>
 				<td><select id="_opt_areaautocreate" name="areaautocreate"><option
-							value="true">true</option>
-						<option value="false" selected>false</option></select></td>
-				<th>Allow auto-creation of file echoes</th>
+							value="true">{{label.yes}}</option>
+						<option value="false" selected>{{label.no}}</option></select></td>
+				<th>{{links.auto_create_file_echoes}}</th>
 				<td><select id="_opt_fileautocreate" name="fileautocreate"><option
-							value="true">true</option>
-						<option value="false" selected>false</option></select></td>
-				<th>Call by timer</th>
+							value="true">{{label.yes}}</option>
+						<option value="false" selected>{{label.no}}</option></select></td>
+				<th>{{links.call_by_timer}}</th>
 				<td><select id="_opt_pollbytimeout" name="pollbytimeout"><option
-							value="true" selected>true</option>
-						<option value="false">false</option></select></td>
+							value="true" selected>{{label.yes}}</option>
+						<option value="false">{{label.no}}</option></select></td>
 			</tr>
 			<tr>
-				<th>Enable pause</th>
+				<th>{{links.enable_pause}}</th>
 				<td><select id="_opt_pause" name="pause"><option
-							value="true">true</option>
-						<option value="false" selected>false</option></select></td>
-				<th>Access level</th>
+							value="true">{{label.yes}}</option>
+						<option value="false" selected>{{label.no}}</option></select></td>
+				<th>{{links.access_level}}</th>
 				<td><input type="text" id="_opt_level" name="level" size="8" /></td>
-				<th>Access groups</th>
+				<th>{{links.access_groups}}</th>
 				<td><input type="text" id="_opt_groups" name="groups" size="8" /></td>
 			</tr>
 
 			<tr>
-				<th colspan="6" class="center">Robot Settings</th>
+				<th colspan="6" class="center">{{links.robot_settings}}</th>
 			</tr>
 			<tr>
-				<th>Enable AreaFix</th>
+				<th>{{links.enable_areafix}}</th>
 				<td><select id="_opt_areafix" name="areafix"><option
-							value="true" selected>true</option>
-						<option value="false">false</option></select></td>
+							value="true" selected>{{label.yes}}</option>
+						<option value="false">{{label.no}}</option></select></td>
 
-				<th>Enable FileFix</th>
+				<th>{{links.enable_filefix}}</th>
 				<td><select id="_opt_filefix" name="filefix"><option
-							value="true" selected>true</option>
-						<option value="false">false</option></select></td>
-				<th>Enable ScriptFix</th>
+							value="true" selected>{{label.yes}}</option>
+						<option value="false">{{label.no}}</option></select></td>
+				<th>{{links.enable_scriptfix}}</th>
 				<td><select id="_opt_scriptfix" name="scriptfix"><option
-							value="true">true</option>
-						<option value="false" selected>false</option></select></td>
+							value="true">{{label.yes}}</option>
+						<option value="false" selected>{{label.no}}</option></select></td>
 			</tr>
 			<tr>
-				<th>Password for AreaFix</th>
+				<th>{{links.password_areafix}}</th>
 				<td><input type="text" id="_opt_areafixpwd" name="areafixpwd"
 					size="8" /></td>
-				<th>Password for FileFix</th>
+				<th>{{links.password_filefix}}</th>
 				<td><input type="text" id="_opt_filefixpwd" name="filefixpwd"
 					size="8" /></td>
-				<th>Password for ScriptFix</th>
+				<th>{{links.password_scriptfix}}</th>
 				<td><input type="text" id="_opt_scriptfixpwd"
 					name="scriptfixpwd" size="8" /></td>
 			</tr>
 
 		</table>
-		<input type="submit" name="_s" value="Set" class="button" />
-		<input type="reset" class="button" name="_s" value="Default"
+		<input type="submit" name="_s" value="{{form.set}}" class="button" />
+		<input type="reset" class="button" name="_s" value="{{form.default}}"
 			onclick="_clear_options()" />
 	</form>
 </div>

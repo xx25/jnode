@@ -1,17 +1,17 @@
-<a href="#new" onclick="fnew();" class="css-link-1">New Route</a>
+<a href="#new" onclick="fnew();" class="css-link-1">{{routing.new_route}}</a>
 <table class="links" id="echoes">
 	<tr>
-		<th colspan="8" class="center">Routes</th>
+		<th colspan="8" class="center">{{routing.title}}</th>
 	</tr>
 	<tr>
-		<th>Priority</th>
-		<th>Sender Address</th>
-		<th>Sender Name</th>
-		<th>Recipient Address</th>
-		<th>Recipient Name</th>
-		<th>Subject</th>
-		<th>Target Node</th>
-		<th>Operations</th>
+		<th>{{routing.priority}}</th>
+		<th>{{routing.sender_address}}</th>
+		<th>{{routing.sender_name}}</th>
+		<th>{{routing.recipient_address}}</th>
+		<th>{{routing.recipient_name}}</th>
+		<th>{{routing.subject}}</th>
+		<th>{{routing.target_node}}</th>
+		<th>{{routing.operations}}</th>
 	</tr>
 	%s
 </table>
@@ -22,31 +22,31 @@
 	<input type="hidden" name="id" id="_id" value="0" />
 	<table class="info" id="new">
 		<tr>
-			<th class="center" colspan="6">New Route</th>
+			<th class="center" colspan="6">{{routing.new_route}}</th>
 		</tr>
 		<tr>
-			<th>Priority</th>
+			<th>{{routing.priority}}</th>
 			<td><input type="text" name="nice" id="_nice" size="5" /></td>
-			<th>Sender Address</th>
+			<th>{{routing.sender_address}}</th>
 			<td><input type="text" name="fa" id="_fa" size="15" /></td>
-			<th>Sender Name</th>
+			<th>{{routing.sender_name}}</th>
 			<td><input type="text" name="fn" id="_fn" size="15" /></td>
 		</tr>
 		<tr>
-			<th>Recipient Address</th>
+			<th>{{routing.recipient_address}}</th>
 			<td><input type="text" name="ta" id="_ta" size="15" /></td>
-			<th>Recipient Name</th>
+			<th>{{routing.recipient_name}}</th>
 			<td><input type="text" name="tn" id="_tn" size="15" /></td>
-			<th>Subject</th>
+			<th>{{routing.subject}}</th>
 			<td><input type="text" name="s" id="_s" size="15" /></td>
 		</tr>
 		<tr>
-			<th>Target Node</th>
+			<th>{{routing.target_node}}</th>
 			<td colspan="3"><select name="v" id="_v">%s
 			</select></td>
 		</tr>
 	</table>
-	<input type="submit" name="_s" value="Submit" class="button" />
+	<input type="submit" name="_s" value="{{action.submit}}" class="button" />
 </form>
 <script>
 	function fnew() {

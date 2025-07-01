@@ -36,16 +36,16 @@ public class HealthRoute implements Handler {
 		int free = Math.round(runtime.freeMemory() / (1024 * 1024));
 		int max = Math.round(runtime.maxMemory() / (1024 * 1024));
 		int total = Math.round(runtime.totalMemory() / (1024 * 1024));
+		HTMLi18n html = HTMLi18n.create(ctx, true);
 		String text = String.format(
 				FORMAT_TABLE,
-				String.format(FORMAT_TR, "Number of cores",
+				String.format(FORMAT_TR, html.t("health.number_of_cores"),
 						"" + runtime.availableProcessors())
-						+ String.format(FORMAT_TR, "Number of threads",
+						+ String.format(FORMAT_TR, html.t("health.number_of_threads"),
 								Thread.activeCount())
-						+ String.format(FORMAT_TR, "Memory usage",
-								"Available: " + max + "MB / Used: "
-										+ (total - free) + " MB"));
-		HTMLi18n html = HTMLi18n.create(ctx, true);
+						+ String.format(FORMAT_TR, html.t("health.memory_usage"),
+								html.t("health.available") + ": " + max + "MB / " + 
+								html.t("health.used") + ": " + (total - free) + " MB"));
 		html.append(text);
 		html.footer();
 		ctx.html(html.get());

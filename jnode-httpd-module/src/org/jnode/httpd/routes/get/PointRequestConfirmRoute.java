@@ -29,6 +29,7 @@ import jnode.orm.ORMManager;
 
 import org.jnode.httpd.dto.PointRequest;
 import org.jnode.httpd.util.HTML;
+import org.jnode.httpd.util.HTMLi18n;
 
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
@@ -37,8 +38,9 @@ public class PointRequestConfirmRoute implements Handler {
 
 	@Override
 	public void handle(Context ctx) throws Exception {
+		HTMLi18n html = HTMLi18n.create(ctx, false);
 		String key = ctx.queryParam("key");
-		String text = "";
+		String messageKey = "";
 		if (key != null) {
 			PointRequest pr = ORMManager.get(PointRequest.class).getById(key);
 			if (pr != null) {
@@ -55,20 +57,21 @@ public class PointRequestConfirmRoute implements Handler {
 						ORMManager.get(Link.class).save(l);
 						ORMManager.get(PointRequest.class).delete(pr);
 						writeMails(pr);
-						text = "Check your email for further instructions";
+						messageKey = "point.confirm.check_email";
 					} else {
-						text = "This point is already registered in the system";
+						messageKey = "point.confirm.already_registered";
 					}
 				}
 			} else {
-				text = "Invalid confirmation key";
+				messageKey = "point.confirm.invalid_key";
 			}
 		} else {
-			text = "Invalid request";
+			messageKey = "point.confirm.invalid_request";
 		}
-		ctx.html(HTML.start(false)
-				.append("<b>Status: " + text + "</b>")
-				.footer().get());
+		html.append("<b>").append(html.t("point.confirm.status")).append(": ")
+			.append(html.t(messageKey)).append("</b>");
+		html.footer();
+		ctx.html(html.get());
 	}
 
 	private void writeMails(PointRequest pr) {

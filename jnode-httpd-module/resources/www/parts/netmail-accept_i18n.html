@@ -1,10 +1,9 @@
-<h3>Netmail Acceptance Rules</h3>
+<h3>{{netmail.title}}</h3>
 
-<p>Configure which netmail messages are accepted from nodes that exist in nodelist but not in your LINKS table. 
-Rules are processed in priority order (lower numbers first). <strong>Netmail to your system addresses is always accepted.</strong></p>
+<p>{{netmail.configure_description}}</p>
 
 <div class="info-box">
-    <strong>Pattern Syntax:</strong> Use Java regular expressions. Use <code>*</code> to match all. Examples:
+    <strong>{{netmail.pattern_syntax}}:</strong> Use Java regular expressions. Use <code>*</code> to match all. Examples:
     <ul>
         <li><code>2:5020/.*</code> - All nodes in net 5020</li>
         <li><code>.*Robot.*</code> - Any name containing "Robot"</li>  
@@ -17,56 +16,56 @@ Rules are processed in priority order (lower numbers first). <strong>Netmail to 
     <input type="hidden" name="id" id="_id" value="0" />
     
     <table class="info" id="editForm">
-        <tr><th colspan="2">Add/Edit Rule</th></tr>
+        <tr><th colspan="2">{{netmail.add_edit_rule}}</th></tr>
         <tr>
-            <th>Priority:</th>
+            <th>{{netmail.priority}}:</th>
             <td><input type="number" name="priority" id="_priority" min="0" max="999999" value="100" /></td>
         </tr>
         <tr>
-            <th>Enabled:</th>
+            <th>{{netmail.enabled}}:</th>
             <td><input type="checkbox" name="enabled" id="_enabled" checked /></td>
         </tr>
         <tr>
-            <th>From Address:</th>
+            <th>{{netmail.from_address}}:</th>
             <td><input type="text" name="from_addr" id="_from_addr" value="*" placeholder="2:5020/.*" size="30" /></td>
         </tr>
         <tr>
-            <th>To Address:</th>
+            <th>{{netmail.to_address}}:</th>
             <td><input type="text" name="to_addr" id="_to_addr" value="*" placeholder="2:5020/841" size="30" /></td>
         </tr>
         <tr>
-            <th>From Name:</th>
+            <th>{{netmail.from_name}}:</th>
             <td><input type="text" name="from_name" id="_from_name" value="*" placeholder=".*Robot.*" size="30" /></td>
         </tr>
         <tr>
-            <th>To Name:</th>
+            <th>{{netmail.to_name}}:</th>
             <td><input type="text" name="to_name" id="_to_name" value="*" placeholder="Sysop" size="30" /></td>
         </tr>
         <tr>
-            <th>Subject:</th>
+            <th>{{netmail.subject}}:</th>
             <td><input type="text" name="subject" id="_subject" value="*" placeholder="AreaFix.*" size="30" /></td>
         </tr>
         <tr>
-            <th>Action:</th>
+            <th>{{netmail.action}}:</th>
             <td>
                 <select name="action" id="_action">
-                    <option value="ACCEPT">Accept</option>
-                    <option value="REJECT">Reject</option>
+                    <option value="ACCEPT">{{netmail.accept}}</option>
+                    <option value="REJECT">{{netmail.reject}}</option>
                 </select>
             </td>
         </tr>
         <tr>
-            <th>Stop Processing:</th>
+            <th>{{netmail.stop_processing}}:</th>
             <td><input type="checkbox" name="stop_processing" id="_stop_processing" /></td>
         </tr>
         <tr>
-            <th>Description:</th>
+            <th>{{netmail.description}}:</th>
             <td><input type="text" name="description" id="_description" placeholder="Human-readable description" size="50" /></td>
         </tr>
         <tr>
             <td colspan="2">
-                <input type="submit" value="Save Rule" class="button" />
-                <input type="button" value="Cancel" class="button" onclick="clearForm()" />
+                <input type="submit" value="{{netmail.save_rule}}" class="button" />
+                <input type="button" value="{{action.cancel}}" class="button" onclick="clearForm()" />
             </td>
         </tr>
     </table>
@@ -75,9 +74,9 @@ Rules are processed in priority order (lower numbers first). <strong>Netmail to 
 <!-- Rules Table -->
 <table class="info">
     <tr>
-        <th>Priority</th><th>Enabled</th><th>From Addr</th><th>To Addr</th>
-        <th>From Name</th><th>To Name</th><th>Subject</th>
-        <th>Action</th><th>Stop</th><th>Description</th><th>Actions</th>
+        <th>{{netmail.priority}}</th><th>{{netmail.enabled}}</th><th>{{netmail.from_addr}}</th><th>{{netmail.to_addr}}</th>
+        <th>{{netmail.from_name}}</th><th>{{netmail.to_name}}</th><th>{{netmail.subject}}</th>
+        <th>{{netmail.action}}</th><th>{{netmail.stop}}</th><th>{{netmail.description}}</th><th>{{netmail.actions}}</th>
     </tr>
     %s
 </table>
