@@ -21,6 +21,7 @@
 package org.jnode.httpd.routes.get;
 
 import org.jnode.httpd.util.HTML;
+import org.jnode.httpd.util.HTMLi18n;
 
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
@@ -44,6 +45,9 @@ public class HealthRoute implements Handler {
 						+ String.format(FORMAT_TR, "Memory usage",
 								"Available: " + max + "MB / Used: "
 										+ (total - free) + " MB"));
-		ctx.html(HTML.start(true).append(text).footer().get());
+		HTMLi18n html = HTMLi18n.create(ctx, true);
+		html.append(text);
+		html.footer();
+		ctx.html(html.get());
 	}
 }

@@ -29,6 +29,7 @@ import jnode.ftn.types.FtnAddress;
 import jnode.orm.ORMManager;
 
 import org.jnode.httpd.util.HTML;
+import org.jnode.httpd.util.HTMLi18n;
 import org.jnode.httpd.util.JSONUtil;
 
 import io.javalin.http.Context;
@@ -66,20 +67,24 @@ public class LinksRoute implements Handler {
 
 			}
 		} else {
-			List<Link> links = ORMManager.get(Link.class).getAll();
-			sortLinks(links);
-			for (Link object : links) {
+			HTMLi18n html = HTMLi18n.create(ctx, true);
+			List<Link> linksList = ORMManager.get(Link.class).getAll();
+			sortLinks(linksList);
+			for (Link object : linksList) {
 				sb.append(String
-						.format("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href=\"#edit\" class=\"css-link-1\" onclick=\"edit(%d)\">Edit</a>&nbsp;<a href=\"#options\" class=\"css-link-1\" onclick=\"options(%d)\">Settings</a>&nbsp;<a href=\"/secure/link-echoes.html?link=%d\" class=\"css-link-1\">View echoes</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d)\">Delete</a></td></tr>",
+						.format("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href=\"#edit\" class=\"css-link-1\" onclick=\"edit(%d)\">%s</a>&nbsp;<a href=\"#options\" class=\"css-link-1\" onclick=\"options(%d)\">%s</a>&nbsp;<a href=\"/secure/link-echoes.html?link=%d\" class=\"css-link-1\">%s</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d)\">%s</a></td></tr>",
 								object.getLinkName(), object.getLinkAddress(),
 								object.getProtocolAddress(),
 								object.getProtocolPassword(),
-								object.getPaketPassword(), object.getId(),
-								object.getId(), object.getId(), object.getId()));
+								object.getPaketPassword(), 
+								object.getId(), html.t("action.edit"),
+								object.getId(), html.t("label.settings"),
+								object.getId(), html.t("label.view_echoes"),
+								object.getId(), html.t("action.delete")));
 			}
-			ctx.html(HTML.start(true)
-					.append(String.format(LinksRoute.links, sb.toString()))
-					.footer().get());
+			html.append(String.format(LinksRoute.links, sb.toString()))
+				.footer();
+			ctx.html(html.get());
 			return;
 		}
 	}

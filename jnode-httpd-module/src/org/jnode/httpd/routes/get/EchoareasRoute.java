@@ -24,6 +24,7 @@ import jnode.dto.Echoarea;
 import jnode.orm.ORMManager;
 
 import org.jnode.httpd.util.HTML;
+import org.jnode.httpd.util.HTMLi18n;
 import org.jnode.httpd.util.JSONUtil;
 
 import io.javalin.http.Context;
@@ -51,9 +52,10 @@ public class EchoareasRoute implements Handler {
 								e.getReadlevel(), e.getWritelevel(),
 								e.getGroup(), e.getId(), e.getId(), e.getId()));
 			}
-			ctx.html(HTML.start(true)
-					.append(String.format(echoareas, sb.toString())).footer()
-					.get());
+			HTMLi18n html = HTMLi18n.create(ctx, true);
+			html.append(String.format(echoareas, sb.toString()));
+			html.footer();
+			ctx.html(html.get());
 			return;
 		} else {
 			try {

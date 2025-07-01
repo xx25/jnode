@@ -36,7 +36,7 @@ public class HTML {
 	private static String secureMenu = null;
 	private static String externalPath;
 
-	private StringBuilder data;
+	protected StringBuilder data;
 
 	private HTML() {
 		if (header == null) {
@@ -131,6 +131,10 @@ public class HTML {
 
 	public static void setExternalPath(String externalPath) {
 		HTML.externalPath = externalPath;
+	}
+	
+	public static String getJNodeAddress() {
+		return FtnTools.getPrimaryFtnAddress().toString();
 	}
 
 }

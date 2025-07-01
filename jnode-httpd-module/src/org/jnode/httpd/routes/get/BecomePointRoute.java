@@ -24,6 +24,7 @@ import jnode.ftn.types.FtnAddress;
 import jnode.main.MainHandler;
 
 import org.jnode.httpd.util.HTML;
+import org.jnode.httpd.util.HTMLi18n;
 
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
@@ -43,11 +44,12 @@ public class BecomePointRoute implements Handler {
 
 	@Override
 	public void handle(Context ctx) throws Exception {
+		HTMLi18n html = HTMLi18n.create(ctx, false);
+		
 		if (!enabled) {
-			ctx.html(HTML
-					.start(false)
-					.append("<b>Unfortunately, point requests are disabled by sysop</b>")
-					.footer().get());
+			html.append("<b>Unfortunately, point requests are disabled by sysop</b>");
+			html.footer();
+			ctx.html(html.get());
 			return;
 		}
 		StringBuilder sb = new StringBuilder();
@@ -55,9 +57,9 @@ public class BecomePointRoute implements Handler {
 				.getAddressList()) {
 			sb.append("<option>" + a.toString() + "</option>");
 		}
-		ctx.html(HTML.start(false)
-				.append(String.format(requestPoint, sb.toString())).footer()
-				.get());
+		html.append(String.format(requestPoint, sb.toString()));
+		html.footer();
+		ctx.html(html.get());
 	}
 
 }

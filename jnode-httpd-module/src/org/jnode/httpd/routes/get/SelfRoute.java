@@ -27,6 +27,7 @@ import jnode.main.MainHandler;
 import jnode.main.SystemInfo;
 
 import org.jnode.httpd.util.HTML;
+import org.jnode.httpd.util.HTMLi18n;
 
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
@@ -42,20 +43,59 @@ public class SelfRoute implements Handler {
 			ctx.html(index);
 			return;
 		}
+		
+		HTMLi18n html = HTMLi18n.create(ctx, false);
 		SystemInfo info = MainHandler.getCurrentInstance().getInfo();
-
-		String text = String.format(
-				FORMAT_TABLE,
-				String.format(FORMAT_TR, "Node name", info.getStationName())
-						+ String.format(FORMAT_TR, "Node location",
-								info.getLocation())
-						+ String.format(FORMAT_TR, "Sysop", info.getSysop())
-						+ String.format(FORMAT_TR, "FTN address(es)",
-								getAddrList(info.getAddressList()))
-						+ String.format(FORMAT_TR, "Software version",
-								MainHandler.getVersion())
-						+ String.format(FORMAT_TR, "OS", getOS()));
-		ctx.html(HTML.start(false).append(text).footer().get());
+		
+		try {
+			html.append("<h2>").append(html.t("about.title")).append("</h2>\n");
+			
+			String text = String.format(
+					FORMAT_TABLE,
+					String.format(FORMAT_TR, html.t("about.node_name"), info.getStationName())
+							+ String.format(FORMAT_TR, html.t("about.location"),
+									info.getLocation())
+							+ String.format(FORMAT_TR, html.t("about.sysop"), info.getSysop())
+							+ String.format(FORMAT_TR, html.t("about.ftn_addresses"),
+									getAddrList(info.getAddressList()))
+							+ String.format(FORMAT_TR, html.t("about.software") + " " + html.t("about.version"),
+									MainHandler.getVersion())
+							+ String.format(FORMAT_TR, html.t("about.system"), getOS()));
+			html.append(text);
+		} catch (Exception e) {
+			// Fallback to English labels if translations fail
+			html.append("<h2>About This Node</h2>\n");
+			
+			String text = String.format(
+					FORMAT_TABLE,
+					String.format(FORMAT_TR, "Node name", info.getStationName())
+							+ String.format(FORMAT_TR, "Location", info.getLocation())
+							+ String.format(FORMAT_TR, "Sysop", info.getSysop())
+							+ String.format(FORMAT_TR, "FTN address(es)", getAddrList(info.getAddressList()))
+							+ String.format(FORMAT_TR, "Software version", MainHandler.getVersion())
+							+ String.format(FORMAT_TR, "System", getOS()));
+			html.append(text);
+		}
+		
+		html.append("<script src=\"/js/i18n.js\"></script>\n");
+		html.footer();
+		
+		// Add language selector after footer
+		try {
+			html.addLanguageSelector();
+		} catch (Exception e) {
+			// Fallback to simple selector if translation service fails
+			html.append("<div style=\"text-align: center; margin-top: 10px; padding: 10px;\">\n");
+			html.append("<select onchange=\"window.location.href='?lang='+this.value\" style=\"padding: 5px; border: 1px solid #ccc; border-radius: 3px; font-size: 12px;\">\n");
+			html.append("<option value=\"en\">English</option>\n");
+			html.append("<option value=\"ru\">Русский</option>\n");
+			html.append("<option value=\"de\">Deutsch</option>\n");
+			html.append("<option value=\"es\">Español</option>\n");
+			html.append("</select>\n");
+			html.append("</div>\n");
+		}
+		
+		ctx.html(html.get());
 	}
 
 	private String getOS() {

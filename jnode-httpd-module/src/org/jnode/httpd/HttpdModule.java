@@ -32,6 +32,8 @@ import org.jnode.httpd.filters.*;
 import org.jnode.httpd.routes.get.*;
 import org.jnode.httpd.routes.post.*;
 import org.jnode.httpd.util.HTML;
+import org.jnode.httpd.i18n.LocaleManager;
+import org.jnode.httpd.i18n.TranslationService;
 
 /**
  * HttpdModule - module listening to port and serving pages
@@ -97,6 +99,9 @@ public class HttpdModule extends JnodeModule {
 				});
 			}
 		}).start(port);
+
+		// Set up locale filter for all routes
+		app.before("*", new LocaleFilter());
 
 		/**** PUBLIC LINKS *****/
 		app.get("/", new SelfRoute());
