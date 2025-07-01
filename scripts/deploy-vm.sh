@@ -75,24 +75,27 @@ download_artifacts() {
         # Download from specific release
         log "Downloading from release: $RELEASE_TAG"
         DOWNLOAD_URL="https://github.com/$GITHUB_REPO/releases/download/$RELEASE_TAG/jnode-lib-h2-$H2_VERSION.tar.gz"
+        
+        if ! wget -O "jnode-lib-h2-$H2_VERSION.tar.gz" "$DOWNLOAD_URL"; then
+            error "Failed to download from release $RELEASE_TAG"
+        fi
     else
-        # Download from latest release
-        log "Downloading from latest release..."
+        # Try latest release first
+        log "Trying latest release..."
         DOWNLOAD_URL=$(curl -s "https://api.github.com/repos/$GITHUB_REPO/releases/latest" | \
                        grep "browser_download_url.*jnode-lib-h2-$H2_VERSION.tar.gz" | \
                        cut -d '"' -f 4)
         
-        if [ -z "$DOWNLOAD_URL" ]; then
-            # Fallback: try to get from Actions artifacts (requires authentication)
-            warn "No release found, checking for workflow artifacts..."
-            error "Cannot download from workflow artifacts without authentication. Please create a release first."
+        if [ -n "$DOWNLOAD_URL" ]; then
+            log "Found in latest release: $DOWNLOAD_URL"
+            if ! wget -O "jnode-lib-h2-$H2_VERSION.tar.gz" "$DOWNLOAD_URL"; then
+                error "Failed to download from latest release"
+            fi
+        else
+            # Fallback: Download from CI artifacts (latest build)
+            log "No release found, downloading from latest CI build..."
+            download_from_ci_artifacts
         fi
-    fi
-    
-    log "Download URL: $DOWNLOAD_URL"
-    
-    if ! wget -O "jnode-lib-h2-$H2_VERSION.tar.gz" "$DOWNLOAD_URL"; then
-        error "Failed to download artifacts from GitHub"
     fi
     
     # Extract the archive
@@ -101,6 +104,69 @@ download_artifacts() {
     fi
     
     success "Downloaded and extracted artifacts"
+}
+
+# Download from CI build artifacts (when no release exists)
+download_from_ci_artifacts() {
+    log "Downloading from CI build artifacts..."
+    
+    # Download the full distribution from CI
+    log "Getting latest CI build..."
+    LATEST_RUN=$(curl -s "https://api.github.com/repos/$GITHUB_REPO/actions/workflows/ci.yml/runs?status=success&per_page=1" | \
+                 grep -o '"id":[0-9]*' | head -1 | cut -d':' -f2)
+    
+    if [ -z "$LATEST_RUN" ]; then
+        error "No successful CI runs found. Please check GitHub Actions."
+    fi
+    
+    log "Latest successful CI run: $LATEST_RUN"
+    
+    # Download the distribution zip from CI artifacts
+    ARTIFACT_URL="https://github.com/$GITHUB_REPO/suites/$LATEST_RUN/artifacts"
+    log "Trying alternative: download full distribution and extract lib..."
+    
+    # Alternative approach: use GitHub's raw file access
+    log "Downloading latest build from GitHub repository..."
+    
+    # Download the built distribution directly from the latest successful run
+    DIST_URL="https://api.github.com/repos/$GITHUB_REPO/actions/artifacts"
+    if wget -O "jnode-distribution.zip" "$DIST_URL"; then
+        log "Downloaded CI distribution, extracting lib directory..."
+        
+        # Extract and process the distribution
+        unzip -q "jnode-distribution.zip"
+        INNER_ZIP=$(ls jnode-*.zip 2>/dev/null | head -1)
+        
+        if [ -n "$INNER_ZIP" ]; then
+            log "Found inner zip: $INNER_ZIP"
+            mkdir -p temp-extract
+            unzip -j "$INNER_ZIP" "jnode/lib/*" -d temp-extract/
+            
+            # Create the lib directory with selected H2 version
+            mkdir -p "lib-h2-$H2_VERSION"
+            cp temp-extract/* "lib-h2-$H2_VERSION/"
+            
+            # Replace H2 jar with the requested version
+            rm -f "lib-h2-$H2_VERSION"/h2-*.jar
+            case "$H2_VERSION" in
+                "1.3.174")
+                    wget -O "lib-h2-$H2_VERSION/h2-1.3.174.jar" "https://github.com/$GITHUB_REPO/raw/master/jdbc-drivers/old-drivers/h2-1.3.174.jar" ;;
+                "1.4.200")
+                    wget -O "lib-h2-$H2_VERSION/h2-1.4.200.jar" "https://github.com/$GITHUB_REPO/raw/master/jdbc-drivers/old-drivers/h2-1.4.200.jar" ;;
+                *)
+                    wget -O "lib-h2-$H2_VERSION/h2-2.3.232.jar" "https://github.com/$GITHUB_REPO/raw/master/jdbc-drivers/h2-2.3.232.jar" ;;
+            esac
+            
+            # Create the expected tar.gz structure
+            tar -czf "jnode-lib-h2-$H2_VERSION.tar.gz" "lib-h2-$H2_VERSION/"
+            
+            log "Created lib archive with H2 version $H2_VERSION"
+        else
+            error "Could not find distribution zip inside artifact"
+        fi
+    else
+        error "Failed to download from CI artifacts. Please create a release or check if CI build exists."
+    fi
 }
 
 # Backup current installation
