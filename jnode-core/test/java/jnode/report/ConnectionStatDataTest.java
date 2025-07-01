@@ -21,10 +21,12 @@
 package jnode.report;
 
 import jnode.ftn.types.FtnAddress;
-import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.net.URL;
@@ -99,8 +101,8 @@ public class ConnectionStatDataTest {
         check(loaded);
 
         loaded = data.load();
-        TestCase.assertNotNull(loaded);
-        TestCase.assertEquals(0, loaded.size());
+        assertNotNull(loaded);
+        assertEquals(0, loaded.size());
 
     }
 
@@ -127,45 +129,45 @@ public class ConnectionStatDataTest {
 
         List<ConnectionStatData.ConnectionStatDataElement> loaded = data.load();
 
-        TestCase.assertNotNull(loaded);
-        TestCase.assertEquals(2, loaded.size());
+        assertNotNull(loaded);
+        assertEquals(2, loaded.size());
 
-        TestCase.assertEquals(1, loaded.get(0).bytesReceived);
-        TestCase.assertEquals(2, loaded.get(0).bytesSended);
-        TestCase.assertEquals(3, loaded.get(0).incomingFailed);
-        TestCase.assertEquals(4, loaded.get(0).incomingOk);
-        TestCase.assertEquals("2:5020/828.17", loaded.get(0).linkStr);
-        TestCase.assertEquals(5, loaded.get(0).outgoingFailed);
-        TestCase.assertEquals(6, loaded.get(0).outgoingOk);
+        assertEquals(1, loaded.get(0).bytesReceived);
+        assertEquals(2, loaded.get(0).bytesSended);
+        assertEquals(3, loaded.get(0).incomingFailed);
+        assertEquals(4, loaded.get(0).incomingOk);
+        assertEquals("2:5020/828.17", loaded.get(0).linkStr);
+        assertEquals(5, loaded.get(0).outgoingFailed);
+        assertEquals(6, loaded.get(0).outgoingOk);
 
-        TestCase.assertEquals(11, loaded.get(1).bytesReceived);
-        TestCase.assertEquals(21, loaded.get(1).bytesSended);
-        TestCase.assertEquals(31, loaded.get(1).incomingFailed);
-        TestCase.assertEquals(41, loaded.get(1).incomingOk);
-        TestCase.assertNull(loaded.get(1).linkStr);
-        TestCase.assertEquals(51, loaded.get(1).outgoingFailed);
-        TestCase.assertEquals(61, loaded.get(1).outgoingOk);
+        assertEquals(11, loaded.get(1).bytesReceived);
+        assertEquals(21, loaded.get(1).bytesSended);
+        assertEquals(31, loaded.get(1).incomingFailed);
+        assertEquals(41, loaded.get(1).incomingOk);
+        assertNull(loaded.get(1).linkStr);
+        assertEquals(51, loaded.get(1).outgoingFailed);
+        assertEquals(61, loaded.get(1).outgoingOk);
     }
 
     private void check(List<ConnectionStatData.ConnectionStatDataElement> loaded) {
-        TestCase.assertNotNull(loaded);
-        TestCase.assertEquals(2, loaded.size());
+        assertNotNull(loaded);
+        assertEquals(2, loaded.size());
 
-        TestCase.assertEquals(1, loaded.get(0).bytesReceived);
-        TestCase.assertEquals(2, loaded.get(0).bytesSended);
-        TestCase.assertEquals(3, loaded.get(0).incomingFailed);
-        TestCase.assertEquals(4, loaded.get(0).incomingOk);
-        TestCase.assertEquals("2:5020/828.17", loaded.get(0).linkStr);
-        TestCase.assertEquals(5, loaded.get(0).outgoingFailed);
-        TestCase.assertEquals(6, loaded.get(0).outgoingOk);
+        assertEquals(1, loaded.get(0).bytesReceived);
+        assertEquals(2, loaded.get(0).bytesSended);
+        assertEquals(3, loaded.get(0).incomingFailed);
+        assertEquals(4, loaded.get(0).incomingOk);
+        assertEquals("2:5020/828.17", loaded.get(0).linkStr);
+        assertEquals(5, loaded.get(0).outgoingFailed);
+        assertEquals(6, loaded.get(0).outgoingOk);
 
-        TestCase.assertEquals(11, loaded.get(1).bytesReceived);
-        TestCase.assertEquals(21, loaded.get(1).bytesSended);
-        TestCase.assertEquals(31, loaded.get(1).incomingFailed);
-        TestCase.assertEquals(41, loaded.get(1).incomingOk);
-        TestCase.assertEquals("2:5020/828.18", loaded.get(1).linkStr);
-        TestCase.assertEquals(51, loaded.get(1).outgoingFailed);
-        TestCase.assertEquals(61, loaded.get(1).outgoingOk);
+        assertEquals(11, loaded.get(1).bytesReceived);
+        assertEquals(21, loaded.get(1).bytesSended);
+        assertEquals(31, loaded.get(1).incomingFailed);
+        assertEquals(41, loaded.get(1).incomingOk);
+        assertEquals("2:5020/828.18", loaded.get(1).linkStr);
+        assertEquals(51, loaded.get(1).outgoingFailed);
+        assertEquals(61, loaded.get(1).outgoingOk);
     }
 
     @Test
@@ -177,11 +179,11 @@ public class ConnectionStatDataTest {
         d.add(e2);
 
         int pos = data.findPos(new FtnAddress("2:5020/828.17"), d);
-        TestCase.assertEquals(0, pos);
+        assertEquals(0, pos);
         pos = data.findPos(new FtnAddress("2:5020/828.18"), d);
-        TestCase.assertEquals(1, pos);
+        assertEquals(1, pos);
         pos = data.findPos(new FtnAddress("2:5020/828.19"), d);
-        TestCase.assertEquals(-1, pos);
+        assertEquals(-1, pos);
 
     }
 }
