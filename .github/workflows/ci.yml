@@ -76,3 +76,6 @@ jobs:
           !**/target/*-javadoc.jar
           !**/target/original-*.jar
         retention-days: 30
+        
+    # Note: This CI workflow only builds and tests
+    # Use the separate deploy.yml workflow for manual deployment
