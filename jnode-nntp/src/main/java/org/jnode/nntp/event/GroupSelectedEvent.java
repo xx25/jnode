@@ -1,7 +1,7 @@
 package org.jnode.nntp.event;
 
 import jnode.event.IEvent;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jnode.nntp.model.NewsGroup;
 
 public class GroupSelectedEvent implements IEvent {

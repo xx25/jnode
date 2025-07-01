@@ -14,6 +14,7 @@ public class NntpResponse {
     public static class AuthInfo {
         public static final String AUTHENTIFICATION_ACCEPTED = "281 Authentication accepted";
         public static final String PASSWORD_REQUIRED = "381 Password required";
+        public static final String AUTHENTIFICATION_REQUIRED = "480 Authentication required";
         public static final String AUTHENTIFICATION_FAILED_OR_REJECTED = "481 Authentication failed/rejected";
         public static final String AUTHENTIFICATION_COMMAND_ISSUED_OUT_OF_SEQUENCE = "482 Authentication commands issued out of sequence";
         public static final String COMMAND_UNAVAILABLE = "502 Command unavailable";

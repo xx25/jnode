@@ -21,12 +21,23 @@ public class ListProcessor extends BaseProcessor implements Processor {
         Collection<String> response = new LinkedList<>();
         response.add(NntpResponse.List.LIST_OF_NEWSGROUPS);
 
+        // Only provide newsgroup information to authorized users
         if (isAuthorized(auth)) {
-            addNewsGroupToList(response, dataProvider.newsGroup(Constants.NETMAIL_NEWSGROUP_NAME, auth));
-        }
-
-        for (NewsGroup newsGroup : dataProvider.newsGroups(auth)) {
-            addNewsGroupToList(response, newsGroup);
+            // Add netmail newsgroup for authorized users
+            NewsGroup netmailGroup = dataProvider.newsGroup(Constants.NETMAIL_NEWSGROUP_NAME, auth);
+            if (netmailGroup != null) {
+                addNewsGroupToList(response, netmailGroup);
+            }
+            
+            // Add regular newsgroups for authorized users
+            for (NewsGroup newsGroup : dataProvider.newsGroups(auth)) {
+                addNewsGroupToList(response, newsGroup);
+            }
+        } else {
+            // For unauthorized users, return empty list or error
+            response.clear();
+            response.add(NntpResponse.AuthInfo.AUTHENTIFICATION_REQUIRED);
+            return response;
         }
 
         response.add(NntpResponse.END);

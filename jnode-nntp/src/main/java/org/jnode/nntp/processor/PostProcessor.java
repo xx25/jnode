@@ -8,7 +8,7 @@ import jnode.dto.Netmail;
 import jnode.event.Notifier;
 import jnode.ftn.FtnTools;
 import jnode.logger.Logger;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jnode.nntp.Constants;
 import org.jnode.nntp.DataProvider;
 import org.jnode.nntp.DataProviderImpl;
@@ -24,14 +24,25 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 
-public class PostProcessor implements Processor {
+public class PostProcessor extends BaseProcessor implements Processor {
 
     private static final Logger logger = Logger.getLogger(PostProcessor.class);
+    private static final int MAX_SUBJECT_LENGTH = 72;
+    private static final int MAX_NAME_LENGTH = 36;
+    private static final int MAX_MESSAGE_LENGTH = 65536;
+    private static final int MAX_EMAIL_LENGTH = 254;
 
     private DataProvider dataProvider = new DataProviderImpl();
 
     @Override
     public Collection<String> process(Collection<String> params, Long selectedGroupId, Long selectedArticleId, Auth auth) {
+        
+        // Check authorization for posting
+        if (!isAuthorized(auth)) {
+            Collection<String> errorResponse = Lists.newLinkedList();
+            errorResponse.add(NntpResponse.AuthInfo.AUTHENTIFICATION_REQUIRED);
+            return errorResponse;
+        }
 
         Collection<String> response = Lists.newLinkedList();
 
@@ -42,6 +53,13 @@ public class PostProcessor implements Processor {
         } else {
             // end posting
             Notifier.INSTANSE.notify(new PostEndEvent());
+            
+            // Validate input parameters before processing
+            if (!validatePostParams(params)) {
+                response.add(NntpResponse.Post.POSTING_FAILED);
+                return response;
+            }
+            
             response.add(NntpResponse.Post.ARTICLE_RECEIVED_OK);
 
             if (isNetmail(params)) {
@@ -128,10 +146,16 @@ public class PostProcessor implements Processor {
                     continue;
                 }
 
-                String name = StringUtils.substring(from, 0, ind1);
-                String email = StringUtils.substring(from, ind1 + 1, ind2);
+                String name = StringUtils.trim(StringUtils.substring(from, 0, ind1));
+                String email = StringUtils.trim(StringUtils.substring(from, ind1 + 1, ind2));
 
-                mail.setFromName(name);
+                // Validate and sanitize input
+                if (!isValidName(name) || !isValidEmail(email)) {
+                    logger.l2("Invalid name or email in from field: " + from);
+                    throw new NntpException();
+                }
+
+                mail.setFromName(sanitizeName(name));
                 mail.setFromFTN(Converter.convertEmailToFtn(email));
 
                 continue;
@@ -142,7 +166,11 @@ public class PostProcessor implements Processor {
             }
             if (StringUtils.startsWithIgnoreCase(param, Constants.SUBJECT)) {
                 String subject = StringUtils.trim(StringUtils.substring(param, Constants.SUBJECT.length() + 1));
-                mail.setSubject(subject);
+                if (!isValidSubject(subject)) {
+                    logger.l2("Invalid subject: " + subject);
+                    throw new NntpException();
+                }
+                mail.setSubject(sanitizeSubject(subject));
                 continue;
             }
             if (StringUtils.trim(param).equalsIgnoreCase(StringUtils.EMPTY) && !isBody) {
@@ -168,9 +196,82 @@ public class PostProcessor implements Processor {
 
             logger.l4("Unknown message line: " + param + ".");
         }
-        mail.setText(message.toString());
+        
+        String messageText = message.toString();
+        if (!isValidMessage(messageText)) {
+            logger.l2("Invalid message content detected");
+            throw new NntpException();
+        }
+        
+        mail.setText(sanitizeMessage(messageText));
         return mail;
 
+    }
+    
+    private boolean validatePostParams(Collection<String> params) {
+        if (params == null || params.isEmpty()) {
+            return false;
+        }
+        
+        // Check for minimum required headers
+        boolean hasFrom = false;
+        boolean hasSubject = false;
+        
+        for (String param : params) {
+            if (StringUtils.startsWithIgnoreCase(param, Constants.FROM)) {
+                hasFrom = true;
+            }
+            if (StringUtils.startsWithIgnoreCase(param, Constants.SUBJECT)) {
+                hasSubject = true;
+            }
+        }
+        
+        return hasFrom && hasSubject;
+    }
+    
+    private boolean isValidName(String name) {
+        return StringUtils.isNotBlank(name) && 
+               name.length() <= MAX_NAME_LENGTH &&
+               !containsControlCharacters(name);
+    }
+    
+    private boolean isValidEmail(String email) {
+        return StringUtils.isNotBlank(email) && 
+               email.length() <= MAX_EMAIL_LENGTH &&
+               email.contains("@") &&
+               !containsControlCharacters(email);
+    }
+    
+    private boolean isValidSubject(String subject) {
+        return StringUtils.isNotBlank(subject) && 
+               subject.length() <= MAX_SUBJECT_LENGTH &&
+               !containsControlCharacters(subject);
+    }
+    
+    private boolean isValidMessage(String message) {
+        return message != null && 
+               message.length() <= MAX_MESSAGE_LENGTH;
+    }
+    
+    private boolean containsControlCharacters(String text) {
+        for (char c : text.toCharArray()) {
+            if (Character.isISOControl(c) && c != '\n' && c != '\r' && c != '\t') {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private String sanitizeName(String name) {
+        return StringUtils.left(StringUtils.trim(name), MAX_NAME_LENGTH);
+    }
+    
+    private String sanitizeSubject(String subject) {
+        return StringUtils.left(StringUtils.trim(subject), MAX_SUBJECT_LENGTH);
+    }
+    
+    private String sanitizeMessage(String message) {
+        return StringUtils.left(message, MAX_MESSAGE_LENGTH);
     }
 
     private Netmail convertToNetmail(Collection<String> params) {
@@ -196,10 +297,16 @@ public class PostProcessor implements Processor {
                     continue;
                 }
 
-                String name = StringUtils.substring(to, 0, ind1);
-                String email = StringUtils.substring(to, ind1 + 1, ind2);
+                String name = StringUtils.trim(StringUtils.substring(to, 0, ind1));
+                String email = StringUtils.trim(StringUtils.substring(to, ind1 + 1, ind2));
 
-                netmail.setToName(name);
+                // Validate and sanitize input
+                if (!isValidName(name) || !isValidEmail(email)) {
+                    logger.l2("Invalid name or email in to field: " + to);
+                    throw new NntpException();
+                }
+
+                netmail.setToName(sanitizeName(name));
                 netmail.setToFTN(Converter.convertEmailToFtn(email));
             }
         }

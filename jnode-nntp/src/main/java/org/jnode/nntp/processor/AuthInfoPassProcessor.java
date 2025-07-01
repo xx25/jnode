@@ -21,18 +21,38 @@ public class AuthInfoPassProcessor implements Processor {
         if (params == null || params.size() != 1) {
             throw new UnknownCommandException();
         }
+        
+        if (auth == null) {
+            Collection<String> errorResponse = Lists.newLinkedList();
+            errorResponse.add(NntpResponse.AuthInfo.AUTHENTIFICATION_FAILED_OR_REJECTED);
+            return errorResponse;
+        }
 
         String pass = params.iterator().next();
+        
+        // Validate password parameter
+        if (pass == null || pass.trim().isEmpty() || pass.length() > 256) {
+            Collection<String> errorResponse = Lists.newLinkedList();
+            errorResponse.add(NntpResponse.AuthInfo.AUTHENTIFICATION_FAILED_OR_REJECTED);
+            auth.reset();
+            return errorResponse;
+        }
 
-        Link link = dataProvider.link(auth, pass);
+        Link link = dataProvider.link(auth, pass.trim());
 
         Collection<String> response = Lists.newLinkedList();
 
         if (link == null) {
             response.add(NntpResponse.AuthInfo.AUTHENTIFICATION_FAILED_OR_REJECTED);
-            auth.reset();
+            // Always reset auth state on failed authentication
+            synchronized (auth) {
+                auth.reset();
+            }
         } else {
-            auth.setLinkId(link.getId());
+            // Set link ID atomically to prevent race conditions
+            synchronized (auth) {
+                auth.setLinkId(link.getId());
+            }
             response.add(NntpResponse.AuthInfo.AUTHENTIFICATION_ACCEPTED);
         }
 
