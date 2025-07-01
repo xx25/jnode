@@ -21,6 +21,7 @@
 package org.jnode.httpd.routes.get;
 
 import org.jnode.httpd.util.HTML;
+import org.jnode.httpd.util.HTMLi18n;
 
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
@@ -40,14 +41,17 @@ public class BecomeLinkRoute implements Handler {
 
 	@Override
 	public void handle(Context ctx) throws Exception {
+		HTMLi18n html = HTMLi18n.create(ctx, false);
+		
 		if (!enabled) {
-			ctx.html(HTML
-					.start(false)
-					.append("<b>Unfortunately, link requests are disabled by sysop</b>")
-					.footer().get());
+			html.append("<b>Unfortunately, link requests are disabled by sysop</b>");
+			html.footer();
+			ctx.html(html.get());
 			return;
 		}
-		ctx.html(HTML.start(false).append(request).footer().get());
+		html.append(request);
+		html.footer();
+		ctx.html(html.get());
 	}
 
 }

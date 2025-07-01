@@ -26,6 +26,7 @@ import jnode.orm.ORMManager;
 
 import org.jnode.httpd.dto.WebAdmin;
 import org.jnode.httpd.util.HTML;
+import org.jnode.httpd.util.HTMLi18n;
 
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
@@ -51,7 +52,9 @@ public class UsersRoute implements Handler {
 							admin.getUsername(), admin.getId(), admin.getId()));
 		}
 
-		ctx.html(HTML.start(true).append(String.format(request, sb.toString()))
-				.footer().get());
+		HTMLi18n html = HTMLi18n.create(ctx, true);
+		html.append(String.format(request, sb.toString()));
+		html.footer();
+		ctx.html(html.get());
 	}
 }

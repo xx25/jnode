@@ -29,8 +29,13 @@ public class CharsetFilter implements Handler {
 
 	@Override
 	public void handle(Context ctx) throws Exception {
-		if (ctx.path().endsWith(".html")) {
+		// Set UTF-8 for all text responses
+		String contentType = ctx.res().getContentType();
+		if (contentType == null || contentType.startsWith("text/")) {
 			ctx.contentType("text/html; charset=utf-8");
+		}
+		
+		if (ctx.path().endsWith(".html")) {
 			ctx.header("Cache-Control",
 					"no-cache, no-store, must-revalidate");
 			ctx.header("Pragma", "no-cache");
