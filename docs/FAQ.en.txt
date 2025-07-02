@@ -43,20 +43,9 @@ Q: I don't know SQL. How should I do <anything> ?
 A: Ask into this echoarea :-)
 A2: Below you can find some queries.
 
-Subscribe link to echoarea:
-INSERT INTO subscription SELECT l.id AS lid,e.id AS eid FROM links l,echoarea e WHERE NOT EXISTS (SELECT link_id FROM subscription WHERE link_id=l.id AND echoarea_id=e.id) AND e.name='echo_name' AND l.ftn_address='link address';
-Remove "AND l.ftn_address=..." to subscribe ALL your links to that echo;
-
 List of echoareas without subscription:
 SELECT e.name FROM echoarea e WHERE (SELECT COUNT(*) FROM subscription WHERE echoarea_id=e.id)=X;
 Where X is "0" for echoareas without subscription at all and "1" for echoareas with only one (uplink?) subscription.
-
-List of echoareas are subscribed to this link:
-SELECT e.name FROM echoarea e RIGHT JOIN subscription s ON (s.echoarea_id=e.id) RIGHT JOIN links l ON (l.id=s.link_id) WHERE l.ftn_address='link address';
-
-List of links are subscribed this echoarea:
-SELECT l.ftn_address FROM echoarea e RIGHT JOIN subscription s ON (s.echoarea_id=e.id) RIGHT JOIN links l ON (l.id=s.link_id) WHERE e.name='echoarea';
-
 
 Q: I've found a bug!
 A: 1. Send me logfile ( with log.level = 5 if possible )
