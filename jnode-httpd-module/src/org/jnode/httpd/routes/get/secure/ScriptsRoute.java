@@ -16,14 +16,20 @@ public class ScriptsRoute implements Handler {
         
         html.append("<h2>").append(html.t("scripts.title")).append("</h2>");
         
+        // Help description
+        html.append("<p>").append("Manage JavaScript automation scripts that can be executed manually or scheduled for automated execution. Scripts have access to helper classes for extended functionality.").append("</p>");
+        
         // Add new script button
         html.append("<div style='margin-bottom: 10px;'>");
-        html.append("<button onclick=\"location.href='/secure/script_edit.html?id=0'\">");
-        html.append(html.t("scripts.add_new")).append("</button>");
+        html.append("<a href='/secure/script_edit.html?id=0' class='css-link-1'>");
+        html.append(html.t("scripts.add_new")).append("</a>");
         html.append("</div>");
         
         // Scripts table
-        html.append("<table class='info'>");
+        html.append("<table class='links'>");
+        html.append("<tr>");
+        html.append("<th colspan='3' class='center'>").append(html.t("scripts.title")).append("</th>");
+        html.append("</tr>");
         html.append("<tr>");
         html.append("<th>").append(html.t("scripts.id")).append("</th>");
         html.append("<th>").append(html.t("scripts.content")).append("</th>");
@@ -38,12 +44,12 @@ public class ScriptsRoute implements Handler {
             html.append(script.getContent()).append("</pre></td>");
             html.append("<td>");
             html.append("<a href='/secure/script_edit.html?id=").append(String.valueOf(script.getId()));
-            html.append("'>").append(html.t("scripts.edit")).append("</a> | ");
+            html.append("' class='css-link-1'>").append(html.t("scripts.edit")).append("</a>&nbsp;");
             html.append("<a href='/secure/script_delete.html?id=").append(String.valueOf(script.getId()));
-            html.append("' onclick='return confirm(\"").append(html.t("scripts.confirm_delete"));
-            html.append("\");'>").append(html.t("scripts.delete")).append("</a> | ");
+            html.append("' class='css-link-1' onclick='return confirm(\"").append(html.t("scripts.confirm_delete"));
+            html.append("\");'>").append(html.t("scripts.delete")).append("</a>&nbsp;");
             html.append("<a href='/secure/script_run.html?id=").append(String.valueOf(script.getId()));
-            html.append("'>").append(html.t("scripts.run")).append("</a>");
+            html.append("' class='css-link-1'>").append(html.t("scripts.run")).append("</a>");
             html.append("</td>");
             html.append("</tr>");
         }
