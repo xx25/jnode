@@ -53,7 +53,7 @@ public class FileareaRoute implements Handler {
 		} else {
 			try {
 				Filearea ea;
-				if (!name.matches("^[-a-zA-Z0-9_\\.]+$")) {
+				if (!name.matches("^[-a-zA-Z0-9_\\.\\$]+$")) {
 					code = "ENAME";
 				} else {
 					if (id == null || "0".equals(id)) {
