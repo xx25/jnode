@@ -27,7 +27,7 @@ log "Building JNode with H2 version: $H2_VERSION"
 
 # Build with Maven
 log "Running Maven build..."
-mvn clean package -q
+mvn clean package -Pall -q
 
 # Extract lib directory
 log "Extracting lib directory..."
