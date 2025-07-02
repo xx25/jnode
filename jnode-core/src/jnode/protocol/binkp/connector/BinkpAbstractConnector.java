@@ -497,7 +497,10 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		if (connectionState != STATE_ADDR) {
 			error("We weren't waiting for M_ADR");
 		}
-		for (String addr : arg.replace("^[ ]*", "").split(" ")) {
+		for (String addr : arg.trim().split(" ")) {
+			if (addr.trim().isEmpty()) {
+				continue; // Skip empty addresses
+			}
 			try {
 				FtnAddress a = new FtnAddress(addr);
 				Link link = FtnTools.getLinkByFtnAddress(a);
