@@ -30,7 +30,9 @@ import jnode.orm.ORMManager;
 import org.jnode.httpd.dto.WebAdmin;
 import org.jnode.httpd.filters.*;
 import org.jnode.httpd.routes.get.*;
+import org.jnode.httpd.routes.get.secure.*;
 import org.jnode.httpd.routes.post.*;
+import org.jnode.httpd.routes.post.secure.*;
 import org.jnode.httpd.util.HTML;
 import org.jnode.httpd.i18n.LocaleManager;
 import org.jnode.httpd.i18n.TranslationService;
@@ -150,6 +152,17 @@ public class HttpdModule extends JnodeModule {
 		app.get("/secure/netmail-accept.html", new NetmailAcceptRulesRoute());
 		app.get("/secure/users", new UsersRoute());
 		app.get("/secure/users.html", new UsersRoute());
+		app.get("/secure/scripts", new ScriptsRoute());
+		app.get("/secure/scripts.html", new ScriptsRoute());
+		app.get("/secure/script_edit.html", new ScriptEditRoute());
+		app.get("/secure/script_delete.html", new ScriptDeleteRoute());
+		app.get("/secure/script_run.html", new ScriptRunRoute());
+		app.get("/secure/helpers", new HelpersRoute());
+		app.get("/secure/helpers.html", new HelpersRoute());
+		app.get("/secure/helper_delete.html", new HelperDeleteRoute());
+		app.get("/secure/schedules", new SchedulesRoute());
+		app.get("/secure/schedules.html", new SchedulesRoute());
+		app.get("/secure/schedule_delete.html", new ScheduleDeleteRoute());
 
 		app.post("/secure/link", new LinkRoute());
 		app.post("/secure/linkoption", new LinkoptionRoute());
@@ -161,6 +174,9 @@ public class HttpdModule extends JnodeModule {
 		app.post("/secure/rewrite", new RewriteRoute());
 		app.post("/secure/netmail-accept-rule", new NetmailAcceptRuleRoute());
 		app.post("/secure/user", new UserRoute());
+		app.post("/secure/script_save.html", new ScriptSaveRoute());
+		app.post("/secure/helper_add.html", new HelperAddRoute());
+		app.post("/secure/schedule_add.html", new ScheduleAddRoute());
 
 		try {
 			WebAdmin admin = ORMManager.get(WebAdmin.class).getFirstAnd();
