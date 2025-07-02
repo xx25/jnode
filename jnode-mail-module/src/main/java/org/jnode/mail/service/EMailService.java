@@ -23,8 +23,8 @@ package org.jnode.mail.service;
 import java.io.IOException;
 import java.util.Properties;
 
-import javax.mail.*;
-import javax.mail.internet.*;
+import jakarta.mail.*;
+import jakarta.mail.internet.*;
 
 public class EMailService {
 	private String host;
@@ -117,7 +117,7 @@ public class EMailService {
 		return Session.getInstance(props);
 	}
 
-	private class Authenticator extends javax.mail.Authenticator {
+	private class Authenticator extends jakarta.mail.Authenticator {
 		private PasswordAuthentication authentication;
 
 		public Authenticator() {
