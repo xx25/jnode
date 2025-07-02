@@ -40,6 +40,7 @@ import jnode.dto.Link;
 import jnode.dto.LinkOption;
 import jnode.dto.Rewrite;
 import jnode.dto.Route;
+import jnode.dto.ScriptHelper;
 import jnode.dto.Subscription;
 import jnode.dto.Rewrite.Type;
 import jnode.dto.Robot;
@@ -95,6 +96,9 @@ public class InstallUtil {
 		ORMManager.get(Robot.class).save(scriptfix);
 
 		logger.l1("[+] Robots created");
+
+		// builtin script helpers
+		createBuiltinHelpers();
 
 		// owner's point
 		String ownAddr = FtnTools.getPrimaryFtnAddress().toString();
@@ -382,4 +386,22 @@ public class InstallUtil {
             }
         }
     }
+
+	private void createBuiltinHelpers() {
+		// Create builtin script helpers for fresh installation
+		createHelper("reporthelper", "jnode.jscript.ReportHelper");
+		createHelper("shellhelper", "jnode.jscript.ShellHelper");
+		createHelper("corehelper", "jnode.jscript.CoreHelper");
+		createHelper("writefilehelper", "jnode.jscript.WriteFileToEchoareaHelper");
+		createHelper("writestathelper", "jnode.jscript.WriteStatToEchoareaHelper");
+		
+		logger.l1("[+] Builtin script helpers created");
+	}
+
+	private void createHelper(String id, String className) {
+		ScriptHelper helper = new ScriptHelper();
+		helper.setId(id);
+		helper.setClassName(className);
+		ORMManager.get(ScriptHelper.class).save(helper);
+	}
 }
