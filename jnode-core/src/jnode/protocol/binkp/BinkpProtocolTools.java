@@ -62,7 +62,7 @@ public class BinkpProtocolTools {
 		logger.l5("cramText = " + cramText);
 		MessageDigest md;
 		String password = (secure) ? foreignLink.getProtocolPassword() : "-";
-		logger.l5("protocol password = " + password);
+		logger.l5("protocol password = [REDACTED]");
 		if (!secure || cramAlgo == null || cramText == null) {
 			return password;
 		} else {
