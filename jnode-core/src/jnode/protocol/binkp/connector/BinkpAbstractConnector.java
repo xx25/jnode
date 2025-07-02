@@ -504,9 +504,12 @@ public abstract class BinkpAbstractConnector implements Runnable {
 				boolean nodelist = NodelistScanner.getInstance().isExists(a) != null;
 				if (link != null || nodelist) {
 					foreignAddress.add(a);
+					logger.l5("Address " + addr + " accepted (link=" + (link != null) + ", nodelist=" + nodelist + ")");
+				} else {
+					logger.l3("Address " + addr + " not recognized: not in our links and not in nodelist");
 				}
 			} catch (NumberFormatException e) {
-				logger.l4("Invalid address " + addr);
+				logger.l2("Invalid address format: '" + addr + "' - " + e.getMessage());
 			}
 		}
 
