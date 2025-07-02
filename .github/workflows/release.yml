@@ -33,9 +33,6 @@ jobs:
       id: version
       run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
       
-    - name: Build all distribution archives
-      run: mvn clean package -P all
-      
     - name: Build stable distribution archives
       run: mvn clean package -P stable
       

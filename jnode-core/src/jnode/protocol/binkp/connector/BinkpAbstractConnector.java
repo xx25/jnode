@@ -476,12 +476,12 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		logger.l5("checkPassword(" + arg + ")");
 				
 		String password = foreignLink.getProtocolPassword();
-		logger.l5("protocol password: " + password);
+		logger.l5("protocol password: [REDACTED]");
 		if (password.equals(arg)) {
 			return true;
 		}
 		password = getAuthPassword(foreignLink, secure, cramAlgo, cramText);
-		logger.l5("auth password: " + password);
+		logger.l5("auth password: [REDACTED]");
 		if (password.endsWith(arg)) {
 			return true;
 		}
