@@ -11,15 +11,20 @@ import jnode.dto.Entity;
 import jnode.dto.Link;
 import jnode.dto.Netmail;
 import jnode.dto.Subscription;
+import jnode.logger.Logger;
 import jnode.orm.ORMManager;
 import org.jnode.nntp.model.Auth;
 import org.jnode.nntp.model.NewsGroup;
 import org.jnode.nntp.model.NewsMessage;
+import com.j256.ormlite.dao.GenericRawResults;
+import com.j256.ormlite.field.DataType;
 
 import java.util.Collection;
 
 public class DataProviderImpl implements DataProvider {
 
+	private static final Logger logger = Logger.getLogger(DataProviderImpl.class);
+	
 	private GenericDAO<Echoarea> echoareaDAO = ORMManager.get(Echoarea.class);
 	private GenericDAO<Echomail> echomailDao = ORMManager.get(Echomail.class);
 	private GenericDAO<Netmail> netmailDao = ORMManager.get(Netmail.class);
@@ -48,14 +53,23 @@ public class DataProviderImpl implements DataProvider {
 
 	private NewsGroup convert(Echoarea area, Auth auth) {
 
-		Collection<Entity> entities = retrieveEntities(area.getId(), auth);
-
+		// Use optimized queries instead of loading full entities
 		NewsGroup newsGroup = new NewsGroup();
 		newsGroup.setId(area.getId());
 		newsGroup.setName(area.getName());
-		newsGroup.setReportedLowWatermark(countLowWatermark(entities));
-		newsGroup.setReportedHighWatermark(countHighWatermark(entities));
-		newsGroup.setNumberOfArticles(countArticles(entities));
+		
+		if (Constants.NETMAIL_NEWSGROUP_ID.equals(area.getId())) {
+			// Handle netmail separately
+			newsGroup.setReportedLowWatermark(1L);
+			newsGroup.setReportedHighWatermark(getNetmailHighWatermark(auth) + 1);
+			newsGroup.setNumberOfArticles(getNetmailCount(auth));
+		} else {
+			// Handle regular echoareas
+			newsGroup.setReportedLowWatermark(1L);
+			newsGroup.setReportedHighWatermark(getEchomailHighWatermark(area.getId()) + 1);
+			newsGroup.setNumberOfArticles(getEchomailCount(area.getId()));
+		}
+		
 		return newsGroup;
 	}
 
@@ -200,15 +214,12 @@ public class DataProviderImpl implements DataProvider {
 
 	@Override
 	public NewsGroup netmail(Auth auth) {
-		Collection<Entity> entities = retrieveEntities(
-				Constants.NETMAIL_NEWSGROUP_ID, auth);
-
 		NewsGroup newsGroup = new NewsGroup();
 		newsGroup.setId(Constants.NETMAIL_NEWSGROUP_ID);
 		newsGroup.setName(Constants.NETMAIL_NEWSGROUP_NAME);
-		newsGroup.setNumberOfArticles(countArticles(entities));
-		newsGroup.setReportedLowWatermark(countLowWatermark(entities));
-		newsGroup.setReportedHighWatermark(countHighWatermark(entities));
+		newsGroup.setNumberOfArticles(getNetmailCount(auth));
+		newsGroup.setReportedLowWatermark(1L);
+		newsGroup.setReportedHighWatermark(getNetmailHighWatermark(auth) + 1);
 		return newsGroup;
 	}
 
@@ -231,5 +242,72 @@ public class DataProviderImpl implements DataProvider {
 			ORMManager.get(EchomailAwaiting.class).save(
 					new EchomailAwaiting(s.getLink(), echomail));
 		}
+	}
+	
+	// Optimized methods for watermark calculation
+	private long getEchomailHighWatermark(Long areaId) {
+		try {
+			GenericRawResults<String[]> results = echomailDao.getRaw(
+				"SELECT MAX(id) FROM echomail WHERE echoarea_id = " + areaId);
+			
+			String[] firstResult = results.getFirstResult();
+			if (firstResult != null && firstResult[0] != null) {
+				return Long.parseLong(firstResult[0]);
+			}
+			results.close();
+		} catch (Exception e) {
+			logger.l2("Error getting echomail high watermark for area " + areaId, e);
+		}
+		return 0L;
+	}
+	
+	private int getEchomailCount(Long areaId) {
+		try {
+			GenericRawResults<String[]> results = echomailDao.getRaw(
+				"SELECT COUNT(*) FROM echomail WHERE echoarea_id = " + areaId);
+			
+			String[] firstResult = results.getFirstResult();
+			if (firstResult != null && firstResult[0] != null) {
+				return Integer.parseInt(firstResult[0]);
+			}
+			results.close();
+		} catch (Exception e) {
+			logger.l2("Error getting echomail count for area " + areaId, e);
+		}
+		return 0;
+	}
+	
+	private long getNetmailHighWatermark(Auth auth) {
+		try {
+			GenericRawResults<String[]> results = netmailDao.getRaw(
+				"SELECT MAX(id) FROM netmail WHERE to_address = '" + auth.getFtnAddress() + 
+				"' OR from_address = '" + auth.getFtnAddress() + "'");
+			
+			String[] firstResult = results.getFirstResult();
+			if (firstResult != null && firstResult[0] != null) {
+				return Long.parseLong(firstResult[0]);
+			}
+			results.close();
+		} catch (Exception e) {
+			logger.l2("Error getting netmail high watermark for " + auth.getFtnAddress(), e);
+		}
+		return 0L;
+	}
+	
+	private int getNetmailCount(Auth auth) {
+		try {
+			GenericRawResults<String[]> results = netmailDao.getRaw(
+				"SELECT COUNT(*) FROM netmail WHERE to_address = '" + auth.getFtnAddress() + 
+				"' OR from_address = '" + auth.getFtnAddress() + "'");
+			
+			String[] firstResult = results.getFirstResult();
+			if (firstResult != null && firstResult[0] != null) {
+				return Integer.parseInt(firstResult[0]);
+			}
+			results.close();
+		} catch (Exception e) {
+			logger.l2("Error getting netmail count for " + auth.getFtnAddress(), e);
+		}
+		return 0;
 	}
 }

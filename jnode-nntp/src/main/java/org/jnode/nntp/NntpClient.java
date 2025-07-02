@@ -153,11 +153,18 @@ public class NntpClient implements Runnable {
      * @param response response.
      */
     private void send(Collection<String> response) throws IOException {
+        logger.l3("Sending response with " + response.size() + " lines");
+        int lineCount = 0;
         for (String message : response) {
+            lineCount++;
             logger.l4("[S] " + message);
             out.print(message + "\r\n");
             out.flush();
+            if (lineCount % 10 == 0) {
+                logger.l4("Sent " + lineCount + " lines so far...");
+            }
         }
+        logger.l3("Response send completed - total lines: " + lineCount);
     }
 
     /**

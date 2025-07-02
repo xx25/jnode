@@ -8,6 +8,7 @@ import org.jnode.nntp.Processor;
 import org.jnode.nntp.model.Auth;
 import org.jnode.nntp.model.NewsMessage;
 import org.jnode.nntp.model.NntpResponse;
+import org.jnode.nntp.util.HeaderEncodingUtil;
 
 import java.util.Collection;
 
@@ -44,8 +45,8 @@ public class XoverProcessor extends BaseProcessor implements Processor {
             StringBuilder builder = new StringBuilder();
 
             builder.append(Long.toString(message.getId())).append(DELIMITER);
-            builder.append(message.getSubject()).append(DELIMITER);
-            builder.append(message.getFrom()).append(DELIMITER);
+            builder.append(HeaderEncodingUtil.encodeSubject(message.getSubject())).append(DELIMITER);
+            builder.append(HeaderEncodingUtil.encodeFrom(message.getFrom())).append(DELIMITER);
             builder.append(message.getCreatedDate().toString()).append(DELIMITER);
             builder.append(message.getMessageId()).append(DELIMITER);
             builder.append(1).append(DELIMITER); // todo References header content

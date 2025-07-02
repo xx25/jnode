@@ -9,6 +9,7 @@ import org.jnode.nntp.event.ArticleSelectedEvent;
 import org.jnode.nntp.model.Auth;
 import org.jnode.nntp.model.NewsMessage;
 import org.jnode.nntp.model.NntpResponse;
+import org.jnode.nntp.util.HeaderEncodingUtil;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -63,9 +64,9 @@ public class ArticleProcessor extends BaseProcessor implements Processor {
 
         response.add(responseCode);
         response.add("Path: " + message.getPath());
-        response.add("From: " + message.getFrom());
+        response.add("From: " + HeaderEncodingUtil.encodeFrom(message.getFrom()));
         response.add("Newsgroup: " + message.getGroupName());
-        response.add("Subject: " + message.getSubject());
+        response.add("Subject: " + HeaderEncodingUtil.encodeSubject(message.getSubject()));
         response.add("Date: " + message.getCreatedDate());
         response.add("Message-ID: " + message.getMessageId());
         response.add(StringUtils.EMPTY);
@@ -90,9 +91,9 @@ public class ArticleProcessor extends BaseProcessor implements Processor {
 
         response.add(responseCode);
         response.add("Path: " + message.getPath());
-        response.add("From: " + message.getFrom());
+        response.add("From: " + HeaderEncodingUtil.encodeFrom(message.getFrom()));
         response.add("Newsgroup: " + message.getGroupName());
-        response.add("Subject: " + message.getSubject());
+        response.add("Subject: " + HeaderEncodingUtil.encodeSubject(message.getSubject()));
         response.add("Date: " + message.getCreatedDate());
         response.add("Message-ID: " + message.getMessageId());
         response.add(StringUtils.EMPTY);
