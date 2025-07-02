@@ -19,6 +19,9 @@ public class SchedulesRoute implements Handler {
         
         html.append("<h2>").append(html.t("schedules.title")).append("</h2>");
         
+        // Help description
+        html.append("<p>").append("Schedule JavaScript scripts for automated execution at specified intervals. You can set scripts to run hourly, daily, weekly, monthly, or annually with specific timing details.").append("</p>");
+        
         // Get all scripts for dropdown
         List<Jscript> scripts = ORMManager.get(Jscript.class).getAll();
         Map<Long, String> scriptMap = scripts.stream()
@@ -31,9 +34,12 @@ public class SchedulesRoute implements Handler {
         html.append("<div style='border: 1px solid #999; padding: 10px; margin-bottom: 20px;'>");
         html.append("<h3>").append(html.t("schedules.add_new")).append("</h3>");
         html.append("<form method='post' action='/secure/schedule_add.html'>");
-        html.append("<table>");
+        html.append("<table class='info'>");
         html.append("<tr>");
-        html.append("<td>").append(html.t("schedules.script")).append(":</td>");
+        html.append("<th class='center' colspan='2'>").append(html.t("schedules.add_new")).append("</th>");
+        html.append("</tr>");
+        html.append("<tr>");
+        html.append("<th>").append(html.t("schedules.script")).append("</th>");
         html.append("<td><select name='jscript_id' required>");
         for (Jscript script : scripts) {
             html.append("<option value='").append(String.valueOf(script.getId())).append("'>");
@@ -43,7 +49,7 @@ public class SchedulesRoute implements Handler {
         html.append("</select></td>");
         html.append("</tr>");
         html.append("<tr>");
-        html.append("<td>").append(html.t("schedules.type")).append(":</td>");
+        html.append("<th>").append(html.t("schedules.type")).append("</th>");
         html.append("<td><select name='type' required onchange='updateDetailsField(this.value)'>");
         html.append("<option value='HOURLY'>").append(html.t("schedules.hourly")).append("</option>");
         html.append("<option value='DAILY'>").append(html.t("schedules.daily")).append("</option>");
@@ -53,15 +59,13 @@ public class SchedulesRoute implements Handler {
         html.append("</select></td>");
         html.append("</tr>");
         html.append("<tr>");
-        html.append("<td>").append(html.t("schedules.details")).append(":</td>");
+        html.append("<th>").append(html.t("schedules.details")).append("</th>");
         html.append("<td><input type='number' name='details' id='details' min='0' required>");
         html.append(" <span id='details_help'>").append(html.t("schedules.details_hourly")).append("</span></td>");
         html.append("</tr>");
-        html.append("<tr>");
-        html.append("<td colspan='2'><input type='submit' value='");
-        html.append(html.t("schedules.add")).append("'></td>");
-        html.append("</tr>");
         html.append("</table>");
+        html.append("<input type='submit' value='");
+        html.append(html.t("schedules.add")).append("' class='button'>");
         html.append("</form>");
         html.append("</div>");
         
@@ -81,7 +85,10 @@ public class SchedulesRoute implements Handler {
         html.append("</script>");
         
         // Schedules table
-        html.append("<table class='info'>");
+        html.append("<table class='links'>");
+        html.append("<tr>");
+        html.append("<th colspan='5' class='center'>").append(html.t("schedules.title")).append("</th>");
+        html.append("</tr>");
         html.append("<tr>");
         html.append("<th>").append(html.t("schedules.id")).append("</th>");
         html.append("<th>").append(html.t("schedules.script")).append("</th>");
@@ -107,7 +114,7 @@ public class SchedulesRoute implements Handler {
             html.append("<td>").append(String.valueOf(schedule.getDetails())).append("</td>");
             html.append("<td>");
             html.append("<a href='/secure/schedule_delete.html?id=").append(String.valueOf(schedule.getId()));
-            html.append("' onclick='return confirm(\"").append(html.t("schedules.confirm_delete"));
+            html.append("' class='css-link-1' onclick='return confirm(\"").append(html.t("schedules.confirm_delete"));
             html.append("\");'>").append(html.t("schedules.delete")).append("</a>");
             html.append("</td>");
             html.append("</tr>");

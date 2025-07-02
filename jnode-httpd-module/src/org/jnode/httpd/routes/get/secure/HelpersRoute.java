@@ -16,33 +16,35 @@ public class HelpersRoute implements Handler {
         
         html.append("<h2>").append(html.t("helpers.title")).append("</h2>");
         
+        // Help description
+        html.append("<p>").append(html.t("helpers.description")).append("</p>");
+        
         // Add new helper form
         html.append("<div style='border: 1px solid #999; padding: 10px; margin-bottom: 20px;'>");
         html.append("<h3>").append(html.t("helpers.add_new")).append("</h3>");
         html.append("<form method='post' action='/secure/helper_add.html'>");
-        html.append("<table>");
+        html.append("<table class='info'>");
         html.append("<tr>");
-        html.append("<td>").append(html.t("helpers.name")).append(":</td>");
-        html.append("<td><input type='text' name='helper' required>");
-        html.append("<br><small>").append(html.t("scripts.helper_name_desc")).append("</small></td>");
+        html.append("<th class='center' colspan='2'>").append(html.t("helpers.add_new")).append("</th>");
         html.append("</tr>");
         html.append("<tr>");
-        html.append("<td>").append(html.t("helpers.classname")).append(":</td>");
-        html.append("<td><input type='text' name='classname' size='50' required>");
-        html.append("<br><small>").append(html.t("scripts.helper_class_desc")).append("</small></td>");
+        html.append("<th>").append(html.t("helpers.name")).append("</th>");
+        html.append("<td><input type='text' name='helper' required></td>");
         html.append("</tr>");
         html.append("<tr>");
-        html.append("<td colspan='2'>");
-        html.append("<p><strong>").append(html.t("scripts.helper_usage_note")).append("</strong></p>");
-        html.append("<input type='submit' value='").append(html.t("helpers.add")).append("'>");
-        html.append("</td>");
+        html.append("<th>").append(html.t("helpers.classname")).append("</th>");
+        html.append("<td><input type='text' name='classname' size='50' required></td>");
         html.append("</tr>");
         html.append("</table>");
+        html.append("<input type='submit' value='").append(html.t("helpers.add")).append("' class='button'>");
         html.append("</form>");
         html.append("</div>");
         
         // Helpers table
-        html.append("<table class='info'>");
+        html.append("<table class='links'>");
+        html.append("<tr>");
+        html.append("<th colspan='3' class='center'>").append(html.t("helpers.title")).append("</th>");
+        html.append("</tr>");
         html.append("<tr>");
         html.append("<th>").append(html.t("helpers.name")).append("</th>");
         html.append("<th>").append(html.t("helpers.classname")).append("</th>");
@@ -56,7 +58,7 @@ public class HelpersRoute implements Handler {
             html.append("<td>").append(helper.getClassName()).append("</td>");
             html.append("<td>");
             html.append("<a href='/secure/helper_delete.html?id=").append(helper.getId());
-            html.append("' onclick='return confirm(\"").append(html.t("helpers.confirm_delete"));
+            html.append("' class='css-link-1' onclick='return confirm(\"").append(html.t("helpers.confirm_delete"));
             html.append("\");'>").append(html.t("helpers.delete")).append("</a>");
             html.append("</td>");
             html.append("</tr>");
