@@ -2,13 +2,13 @@
 
 <p>{{netmail.configure_description}}</p>
 
-<div class="info-box">
-    <strong>{{netmail.pattern_syntax}}:</strong> Use Java regular expressions. Use <code>*</code> to match all. Examples:
-    <ul>
-        <li><code>2:5020/.*</code> - All nodes in net 5020</li>
-        <li><code>.*Robot.*</code> - Any name containing "Robot"</li>  
-        <li><code>AreaFix.*</code> - Subject starting with "AreaFix"</li>
-    </ul>
+<div style="border: 1px solid #999; padding: 10px; margin-bottom: 20px;">
+    <h3>{{netmail.pattern_syntax}}</h3>
+    <p>Use Java regular expressions. Use <code>*</code> to match all.</p>
+    <h4>Examples:</h4>
+    <pre style="white-space: pre-wrap; word-wrap: break-word; max-width: 100%%; overflow-x: auto; background-color: #f5f5f5; padding: 10px;">2:5020/.*     - All nodes in net 5020
+.*Robot.*     - Any name containing "Robot"  
+AreaFix.*     - Subject starting with "AreaFix"</pre>
 </div>
 
 <!-- Add/Edit Form -->
@@ -163,14 +163,7 @@ if (code) {
 .disabled { background-color: #f8f0f0; opacity: 0.7; }
 .action-accept { color: green; font-weight: bold; }
 .action-reject { color: red; font-weight: bold; }
-.info-box { 
-    background: #e7f3ff; 
-    padding: 10px; 
-    margin: 10px 0; 
-    border-left: 4px solid #2196F3; 
-    border-radius: 4px;
-}
-.info-box code {
+code {
     background: #f4f4f4;
     padding: 2px 4px;
     border-radius: 2px;
