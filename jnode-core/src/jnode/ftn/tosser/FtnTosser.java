@@ -932,8 +932,9 @@ public class FtnTosser {
 			// Quote all via lines at time of transit
 			sb.append("Via lines at time of transit:\n");
 			sb.append("-----------------------------\n");
-			if (netmail.getVia() != null && !netmail.getVia().isEmpty()) {
-				for (String via : netmail.getVia()) {
+			List<String> viaLines = extractViaLines(netmail);
+			if (!viaLines.isEmpty()) {
+				for (String via : viaLines) {
 					sb.append(" * ").append(via).append("\n");
 				}
 			} else {
@@ -950,6 +951,23 @@ public class FtnTosser {
 		} catch (Exception e) {
 			logger.l2("Error sending TRACE notification", e);
 		}
+	}
+
+	/**
+	 * Extract Via lines from message text
+	 * Via lines are control lines starting with \001Via
+	 */
+	private List<String> extractViaLines(FtnMessage fmsg) {
+		List<String> viaLines = new ArrayList<>();
+		if (fmsg.getText() != null) {
+			String[] lines = fmsg.getText().split("\n");
+			for (String line : lines) {
+				if (line.startsWith("\001Via")) {
+					viaLines.add(line);
+				}
+			}
+		}
+		return viaLines;
 	}
 
 }
