@@ -48,10 +48,10 @@ public class FileareasRoute implements Handler {
 			for (Filearea e : ORMManager.get(Filearea.class).getOrderAnd(
 					"name", true)) {
 				sb.append(String
-						.format("<tr><td>%s</td><td>%s</td><td>r:%d|w:%d|g:%s</td><td><a href=\"#new\" class=\"css-link-1\" onclick=\"edit(%d);\">%s</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">%s</a></td></tr>",
+						.format("<tr><td>%s</td><td>%s</td><td>r:%d|w:%d|g:%s</td><td><a href=\"#new\" class=\"css-link-1\" onclick=\"edit(%d);\">%s</a>&nbsp;<a href=\"/secure/file-links.html?filearea=%d\" class=\"css-link-1\">%s</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">%s</a></td></tr>",
 								e.getName(), e.getDescription(),
 								e.getReadlevel(), e.getWritelevel(),
-								e.getGroup(), e.getId(), html.t("action.edit"), e.getId(), html.t("action.delete")));
+								e.getGroup(), e.getId(), html.t("action.edit"), e.getId(), html.t("label.view_links"), e.getId(), html.t("action.delete")));
 			}
 			ctx.html(html
 					.append(String.format(echoareas, sb.toString())).footer()

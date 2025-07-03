@@ -72,7 +72,7 @@ public class LinksRoute implements Handler {
 			sortLinks(linksList);
 			for (Link object : linksList) {
 				sb.append(String
-						.format("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href=\"#edit\" class=\"css-link-1\" onclick=\"edit(%d)\">%s</a>&nbsp;<a href=\"#options\" class=\"css-link-1\" onclick=\"options(%d)\">%s</a>&nbsp;<a href=\"/secure/link-echoes.html?link=%d\" class=\"css-link-1\">%s</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d)\">%s</a></td></tr>",
+						.format("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td><a href=\"#edit\" class=\"css-link-1\" onclick=\"edit(%d)\">%s</a>&nbsp;<a href=\"#options\" class=\"css-link-1\" onclick=\"options(%d)\">%s</a>&nbsp;<a href=\"/secure/link-echoes.html?link=%d\" class=\"css-link-1\">%s</a>&nbsp;<a href=\"/secure/link-fileareas.html?link=%d\" class=\"css-link-1\">%s</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d)\">%s</a></td></tr>",
 								object.getLinkName(), object.getLinkAddress(),
 								object.getProtocolAddress(),
 								object.getProtocolPassword(),
@@ -80,6 +80,7 @@ public class LinksRoute implements Handler {
 								object.getId(), html.t("action.edit"),
 								object.getId(), html.t("label.settings"),
 								object.getId(), html.t("label.view_echoes"),
+								object.getId(), html.t("label.file_echoes"),
 								object.getId(), html.t("action.delete")));
 			}
 			html.append(String.format(LinksRoute.links, sb.toString()))
