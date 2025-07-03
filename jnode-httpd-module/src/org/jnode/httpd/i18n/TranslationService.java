@@ -111,6 +111,21 @@ public class TranslationService {
      */
     private ResourceBundle getBundle(Locale locale) {
         return bundleCache.computeIfAbsent(locale, loc -> {
+            // English uses the default bundle (messages.properties) to avoid duplication
+            if (Locale.ENGLISH.equals(loc)) {
+                try {
+                    return ResourceBundle.getBundle(BUNDLE_NAME, Locale.ROOT, new UTF8Control());
+                } catch (MissingResourceException e) {
+                    logger.l1("Failed to load default resource bundle", e);
+                    return new ListResourceBundle() {
+                        @Override
+                        protected Object[][] getContents() {
+                            return new Object[0][0];
+                        }
+                    };
+                }
+            }
+            
             try {
                 return ResourceBundle.getBundle(BUNDLE_NAME, loc, new UTF8Control());
             } catch (MissingResourceException e) {
