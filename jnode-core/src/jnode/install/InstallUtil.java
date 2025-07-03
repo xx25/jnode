@@ -57,6 +57,7 @@ import jnode.main.SystemInfo;
 import jnode.orm.ORMManager;
 import jnode.robot.AreaFix;
 import jnode.robot.FileFix;
+import jnode.robot.PingRobot;
 import jnode.robot.ScriptFix;
 
 public class InstallUtil {
@@ -94,6 +95,11 @@ public class InstallUtil {
 		scriptfix.setClassName(ScriptFix.class.getCanonicalName());
 		scriptfix.setRobot("scriptfix");
 		ORMManager.get(Robot.class).save(scriptfix);
+
+		Robot ping = new Robot();
+		ping.setClassName(PingRobot.class.getCanonicalName());
+		ping.setRobot("ping");
+		ORMManager.get(Robot.class).save(ping);
 
 		logger.l1("[+] Robots created");
 
