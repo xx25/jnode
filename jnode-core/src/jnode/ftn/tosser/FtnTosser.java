@@ -130,7 +130,7 @@ public class FtnTosser {
 		Echoarea area = getAreaByName(echomail.getArea(), link);
 		if (area == null) {
 			logger.l3("Echoarea " + echomail.getArea()
-					+ " is not availible for " + link.getLinkAddress());
+					+ " is not available for " + link.getLinkAddress());
 			Integer n = bad.get(echomail.getArea());
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 			return;
@@ -148,7 +148,7 @@ public class FtnTosser {
 							"Sorry, you have no enough level to post %s to this area\n%s",
 							quote(echomail), MainHandler.getVersion()));
 			logger.l3("Echoarea " + echomail.getArea()
-					+ " is not availible for " + link.getLinkAddress()
+					+ " is not available for " + link.getLinkAddress()
 					+ " (level mismatch)");
 			Integer n = bad.get(echomail.getArea());
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
@@ -319,10 +319,11 @@ public class FtnTosser {
 								markAsBad(file, "Source address not found");
 								continue;
 							}
+							logger.l4("Processing file from " + tic.getFrom() + " (link: " + source.getLinkAddress() + ") for area: " + tic.getArea());
 							Filearea area = getFileareaByName(tic.getArea(),
 									source);
 							if (area == null) {
-								markAsBad(file, "Filearea is not availible");
+								markAsBad(file, "Filearea '" + tic.getArea() + "' is not available for link " + source.getLinkAddress());
 								continue;
 							}
 							Filemail mail = new Filemail();
@@ -664,7 +665,7 @@ public class FtnTosser {
 					File attach = new File(mail.getFilepath());
 					if (!attach.canRead()) {
 						deleteFAMail(f);
-						logger.l3("File unavailible");
+						logger.l3("File unavailable");
 						continue;
 					}
 

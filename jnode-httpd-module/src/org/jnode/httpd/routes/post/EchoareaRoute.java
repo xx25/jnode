@@ -62,7 +62,7 @@ public class EchoareaRoute implements Handler {
 				} else {
 					if (id == null || "0".equals(id)) {
 						ea = new Echoarea();
-						ea.setName(name);
+						ea.setName(name.toLowerCase());
 					} else {
 						Long eid = Long.valueOf(id);
 						ea = ORMManager.get(Echoarea.class).getById(eid);
@@ -74,7 +74,7 @@ public class EchoareaRoute implements Handler {
 					synchronized (Echoarea.class) {
 						if (ea.getId() == null
 								&& ORMManager.get(Echoarea.class).getFirstAnd(
-										"name", "=", ea.getName()) != null) {
+										"name", "=", name.toLowerCase()) != null) {
 							code = "EXISTS";
 						} else {
 							ORMManager.get(Echoarea.class).saveOrUpdate(ea);

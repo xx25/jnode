@@ -58,7 +58,7 @@ public class FileareaRoute implements Handler {
 				} else {
 					if (id == null || "0".equals(id)) {
 						ea = new Filearea();
-						ea.setName(name);
+						ea.setName(name.toLowerCase());
 					} else {
 						Long eid = Long.valueOf(id);
 						ea = ORMManager.get(Filearea.class).getById(eid);
@@ -70,7 +70,7 @@ public class FileareaRoute implements Handler {
 					synchronized (Echoarea.class) {
 						if (ea.getId() == null
 								&& ORMManager.get(Filearea.class).getFirstAnd(
-										"name", "=", ea.getName()) != null) {
+										"name", "=", name.toLowerCase()) != null) {
 							code = "EXISTS";
 						} else {
 							ORMManager.get(Filearea.class).saveOrUpdate(ea);

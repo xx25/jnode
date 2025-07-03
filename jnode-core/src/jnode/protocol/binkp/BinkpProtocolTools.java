@@ -103,7 +103,7 @@ public class BinkpProtocolTools {
 		}
 	}
 
-	public static boolean availible(Socket socket) {
+	public static boolean available(Socket socket) {
 		try {
 			return socket.getInputStream().available() > 2;
 		} catch (IOException e) {

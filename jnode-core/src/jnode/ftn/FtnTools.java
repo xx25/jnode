@@ -1415,6 +1415,7 @@ public final class FtnTools {
 		Filearea ret;
 		name = name.toLowerCase();
 		ret = ORMManager.get(Filearea.class).getFirstAnd("name", "=", name);
+		logger.l5("getFileareaByName: area='" + name + "', link=" + (link != null ? link.getLinkAddress() : "null") + ", found=" + (ret != null));
 		if (ret == null) {
 			if (link == null
 					|| getOptionBooleanDefFalse(link,
@@ -1443,7 +1444,10 @@ public final class FtnTools {
 					&& ORMManager.get(FileSubscription.class).getFirstAnd(
 							"filearea_id", "=", ret.getId(), "link_id", "=",
 							link.getId()) == null) {
+				logger.l4("File area '" + name + "' exists but link " + link.getLinkAddress() + " has no subscription");
 				ret = null;
+			} else {
+				logger.l5("File area '" + name + "' exists and link has subscription");
 			}
 		}
 		return ret;
