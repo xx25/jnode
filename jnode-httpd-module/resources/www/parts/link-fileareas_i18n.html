@@ -1,0 +1,45 @@
+<div id="content">
+    <h2>%s</h2>
+    
+    <form id="filearea-subscription-form" method="post" action="/secure/link-fileareas-save">
+        <input type="hidden" name="link_id" value="%s" />
+        
+        <h3>{{link_fileareas.subscribed_fileareas}}</h3>
+        <div id="subscribed-fileareas">
+            <table class="links">
+                <thead>
+                    <tr>
+                        <th width="30"></th>
+                        <th>{{link_fileareas.filearea_name}}</th>
+                        <th>{{link_fileareas.description}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    %s
+                </tbody>
+            </table>
+        </div>
+        
+        <br/>
+        
+        <h3>{{link_fileareas.available_fileareas}}</h3>
+        <div id="unsubscribed-fileareas">
+            <table class="links">
+                <thead>
+                    <tr>
+                        <th width="30"></th>
+                        <th>{{link_fileareas.filearea_name}}</th>
+                        <th>{{link_fileareas.description}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    %s
+                </tbody>
+            </table>
+        </div>
+        
+        <br/>
+        <input type="submit" value="{{link_fileareas.save}}" class="button" />
+        <a href="/secure/links.html" class="css-link-1">{{link_fileareas.cancel}}</a>
+    </form>
+</div>

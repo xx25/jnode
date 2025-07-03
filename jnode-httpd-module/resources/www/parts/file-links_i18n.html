@@ -1,0 +1,46 @@
+<div id="content">
+    <h2>%s</h2>
+    <p>%s</p>
+    
+    <form id="file-link-subscription-form" method="post" action="/secure/file-links-save">
+        <input type="hidden" name="filearea_id" value="%s" />
+        
+        <h3>{{file_links.subscribed_links}}</h3>
+        <div id="subscribed-links">
+            <table class="links">
+                <thead>
+                    <tr>
+                        <th width="30"></th>
+                        <th>{{file_links.link_name}}</th>
+                        <th>{{file_links.ftn_address}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    %s
+                </tbody>
+            </table>
+        </div>
+        
+        <br/>
+        
+        <h3>{{file_links.available_links}}</h3>
+        <div id="unsubscribed-links">
+            <table class="links">
+                <thead>
+                    <tr>
+                        <th width="30"></th>
+                        <th>{{file_links.link_name}}</th>
+                        <th>{{file_links.ftn_address}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    %s
+                </tbody>
+            </table>
+        </div>
+        
+        <br/>
+        <input type="submit" value="{{file_links.save}}" class="button" />
+        <a href="/secure/fechoes.html" class="css-link-1">{{file_links.cancel}}</a>
+    </form>
+</div>

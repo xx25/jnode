@@ -139,11 +139,13 @@ public class HttpdModule extends JnodeModule {
 		app.get("/secure/links.html", new LinksRoute());
 		app.get("/secure/linkoptions", new LinkoptionsRoute());
 		app.get("/secure/link-echoes.html", new LinkEchoesRoute());
+		app.get("/secure/link-fileareas.html", new LinkFileareasRoute());
 		app.get("/secure/echo-links.html", new EchoLinksRoute());
 		app.get("/secure/echoareas", new EchoareasRoute());
 		app.get("/secure/echoes.html", new EchoareasRoute());
 		app.get("/secure/fileareas", new FileareasRoute());
 		app.get("/secure/fechoes.html", new FileareasRoute());
+		app.get("/secure/file-links.html", new FileLinksRoute());
 		app.get("/secure/routings", new RoutingsRoute());
 		app.get("/secure/route.html", new RoutingsRoute());
 		app.get("/secure/rewrites", new RewritesRoute());
@@ -167,7 +169,9 @@ public class HttpdModule extends JnodeModule {
 		app.post("/secure/link", new LinkRoute());
 		app.post("/secure/linkoption", new LinkoptionRoute());
 		app.post("/secure/link-echoes-save", new LinkEchoesSaveRoute());
+		app.post("/secure/link-fileareas-save", new LinkFileareasSaveRoute());
 		app.post("/secure/echo-links-save", new EchoLinksSaveRoute());
+		app.post("/secure/file-links-save", new FileLinksSaveRoute());
 		app.post("/secure/echoarea", new EchoareaRoute());
 		app.post("/secure/filearea", new FileareaRoute());
 		app.post("/secure/routing", new RoutingRoute());
