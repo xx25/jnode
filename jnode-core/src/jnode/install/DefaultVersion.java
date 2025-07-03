@@ -32,7 +32,7 @@ public class DefaultVersion extends Version {
 	private static final Logger logger = Logger.getLogger(DefaultVersion.class);
 	private static DefaultVersion self;
 	private static final String VERSION_PROPERTIES = "/version.properties";
-	private static final String DEFAULT_VERSION = "2.0.0-SNAPSHOT";
+	private static final String DEFAULT_VERSION = "2.0.0";
 
 	public static Version getSelf() {
 		if (self == null) {
