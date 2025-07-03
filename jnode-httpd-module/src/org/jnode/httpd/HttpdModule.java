@@ -181,6 +181,8 @@ public class HttpdModule extends JnodeModule {
 		app.post("/secure/script_save.html", new ScriptSaveRoute());
 		app.post("/secure/helper_add.html", new HelperAddRoute());
 		app.post("/secure/schedule_add.html", new ScheduleAddRoute());
+		app.post("/secure/settings_export.html", new SettingsExportRoute());
+		app.post("/secure/settings_import.html", new SettingsImportRoute());
 
 		try {
 			WebAdmin admin = ORMManager.get(WebAdmin.class).getFirstAnd();
