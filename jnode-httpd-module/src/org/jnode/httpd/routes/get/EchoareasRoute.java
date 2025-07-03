@@ -51,7 +51,7 @@ public class EchoareasRoute implements Handler {
 						.format("<tr><td>%s</td><td>%s</td><td>r:%d|w:%d|g:%s</td><td><a href=\"#new\" class=\"css-link-1\" onclick=\"edit(%d);\">%s</a>&nbsp;<a href=\"/secure/echo-links.html?echo=%d\" class=\"css-link-1\">%s</a>&nbsp;<a href=\"#\" class=\"css-link-1\" onclick=\"del(%d);\">%s</a></td></tr>",
 								e.getName(), e.getDescription(),
 								e.getReadlevel(), e.getWritelevel(),
-								e.getGroup(), e.getId(), html.t("action.edit"), e.getId(), html.t("label.view_echoes"), e.getId(), html.t("action.delete")));
+								e.getGroup(), e.getId(), html.t("action.edit"), e.getId(), html.t("label.view_links"), e.getId(), html.t("action.delete")));
 			}
 			html.append(String.format(echoareas, sb.toString()));
 			html.footer();
