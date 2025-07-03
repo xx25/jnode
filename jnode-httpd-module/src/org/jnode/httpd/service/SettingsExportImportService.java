@@ -189,12 +189,123 @@ public class SettingsExportImportService {
             } else {
                 entity = objectMapper.treeToValue(entityNode, entityClass);
             }
-            // Use raw cast to handle generic type
-            ((jnode.dao.GenericDAO<Object>) ORMManager.get(entityClass)).save(entity);
+            // Use upsert logic to handle existing records
+            upsertEntity(entityClass, entity);
             count++;
         }
         
         return count;
+    }
+    
+    /**
+     * Upsert entity (insert if new, update if exists)
+     */
+    @SuppressWarnings("unchecked")
+    private void upsertEntity(Class<?> entityClass, Object entity) throws Exception {
+        jnode.dao.GenericDAO<Object> dao = (jnode.dao.GenericDAO<Object>) ORMManager.get(entityClass);
+        
+        // Handle special cases for entities without single ID field
+        if (entityClass == Subscription.class) {
+            upsertSubscription(dao, (Subscription) entity);
+            return;
+        } else if (entityClass == FileSubscription.class) {
+            upsertFileSubscription(dao, (FileSubscription) entity);
+            return;
+        }
+        
+        // Standard entities with ID field
+        Object entityId = getEntityId(entity);
+        
+        if (entityId != null) {
+            // Check if entity with this ID already exists
+            Object existingEntity = dao.getById((Long) entityId);
+            
+            if (existingEntity != null) {
+                // Entity exists, update it
+                logger.l4("Updating existing " + entityClass.getSimpleName() + " with ID: " + entityId);
+                dao.update(entity);
+            } else {
+                // Entity doesn't exist, create new one
+                logger.l4("Creating new " + entityClass.getSimpleName() + " with ID: " + entityId);
+                dao.save(entity);
+            }
+        } else {
+            // No ID specified, create new entity (database will generate ID)
+            logger.l4("Creating new " + entityClass.getSimpleName() + " (auto-generated ID)");
+            dao.save(entity);
+        }
+    }
+    
+    /**
+     * Upsert Subscription (composite key: link_id + echoarea_id)
+     */
+    private void upsertSubscription(jnode.dao.GenericDAO<Object> dao, Subscription subscription) throws Exception {
+        // Check if subscription already exists based on link and echoarea
+        List<?> existing = dao.getAnd("link_id", "=", subscription.getLink().getId(), 
+                                      "echoarea_id", "=", subscription.getArea().getId());
+        
+        if (!existing.isEmpty()) {
+            // Subscription exists, no need to update (it's just a relationship record)
+            logger.l4("Subscription already exists: Link " + subscription.getLink().getId() + 
+                     " -> Echoarea " + subscription.getArea().getId());
+        } else {
+            // Create new subscription
+            logger.l4("Creating new Subscription: Link " + subscription.getLink().getId() + 
+                     " -> Echoarea " + subscription.getArea().getId());
+            dao.save(subscription);
+        }
+    }
+    
+    /**
+     * Upsert FileSubscription (composite key: link_id + filearea_id)
+     */
+    private void upsertFileSubscription(jnode.dao.GenericDAO<Object> dao, FileSubscription fileSubscription) throws Exception {
+        // Check if file subscription already exists based on link and filearea
+        List<?> existing = dao.getAnd("link_id", "=", fileSubscription.getLink().getId(), 
+                                      "filearea_id", "=", fileSubscription.getArea().getId());
+        
+        if (!existing.isEmpty()) {
+            // FileSubscription exists, no need to update (it's just a relationship record)
+            logger.l4("FileSubscription already exists: Link " + fileSubscription.getLink().getId() + 
+                     " -> Filearea " + fileSubscription.getArea().getId());
+        } else {
+            // Create new file subscription
+            logger.l4("Creating new FileSubscription: Link " + fileSubscription.getLink().getId() + 
+                     " -> Filearea " + fileSubscription.getArea().getId());
+            dao.save(fileSubscription);
+        }
+    }
+    
+    /**
+     * Get the ID field value from an entity using reflection
+     */
+    private Object getEntityId(Object entity) {
+        try {
+            // Try common ID field names and methods
+            if (entity != null) {
+                Class<?> clazz = entity.getClass();
+                
+                // Try getId() method first
+                try {
+                    java.lang.reflect.Method getIdMethod = clazz.getMethod("getId");
+                    return getIdMethod.invoke(entity);
+                } catch (NoSuchMethodException e) {
+                    // Try direct field access for entities without getId method
+                    try {
+                        java.lang.reflect.Field idField = clazz.getDeclaredField("id");
+                        idField.setAccessible(true);
+                        return idField.get(entity);
+                    } catch (NoSuchFieldException ex) {
+                        // Some entities might not have an ID field (like Subscription, FileSubscription)
+                        // For these, we'll return null and always create new records
+                        return null;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.l2("Error getting entity ID for " + entity.getClass().getSimpleName() + ": " + e.getMessage());
+        }
+        return null;
     }
     
     /**
