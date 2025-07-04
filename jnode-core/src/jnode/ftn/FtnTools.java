@@ -1827,7 +1827,7 @@ public final class FtnTools {
 	}
 
 	public static void delete(Link link) {
-		synchronized (TosserQueue.getInstanse()) {
+		synchronized (TosserQueue.getInstance()) {
 			if (link != null) {
 				ORMManager.get(LinkOption.class).delete("link_id", "=", link);
 				link.setProtocolHost("-");

@@ -199,7 +199,7 @@ public class Main {
 		@Override
 		public void run() {
 			try {
-				TosserQueue.getInstanse().toss();
+				TosserQueue.getInstance().toss();
 			} catch (RuntimeException e) {
 				logger.l1("Error while tossing", e);
 			}

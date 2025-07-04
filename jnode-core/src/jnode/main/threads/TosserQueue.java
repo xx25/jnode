@@ -36,7 +36,7 @@ public class TosserQueue {
 
 	private static TosserQueue self;
 
-	public synchronized static TosserQueue getInstanse() {
+	public synchronized static TosserQueue getInstance() {
 		if (self == null) {
 			self = new TosserQueue();
 		}
