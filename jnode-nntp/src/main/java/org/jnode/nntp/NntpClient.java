@@ -58,33 +58,33 @@ public class NntpClient implements Runnable {
 
     @Override
     public void run() {
-        Notifier.INSTANSE.register(GroupSelectedEvent.class, new IEventHandler() {
+        Notifier.INSTANCE.register(GroupSelectedEvent.class, new IEventHandler() {
             @Override
             public void handle(IEvent event) {
                 GroupSelectedEvent groupSelectedEvent = (GroupSelectedEvent) event;
                 selectedGroupId = groupSelectedEvent.getSelectedGroup().getId();
             }
         });
-        Notifier.INSTANSE.register(ArticleSelectedEvent.class, new IEventHandler() {
+        Notifier.INSTANCE.register(ArticleSelectedEvent.class, new IEventHandler() {
             @Override
             public void handle(IEvent event) {
                 selectedArticleId = ((ArticleSelectedEvent) event).getSelectedArticleId();
             }
         });
-        Notifier.INSTANSE.register(AuthUserEvent.class, new IEventHandler() {
+        Notifier.INSTANCE.register(AuthUserEvent.class, new IEventHandler() {
             @Override
             public void handle(IEvent event) {
                 auth = ((AuthUserEvent) event).getAuth();
             }
         });
-        Notifier.INSTANSE.register(PostStartEvent.class, new IEventHandler() {
+        Notifier.INSTANCE.register(PostStartEvent.class, new IEventHandler() {
             @Override
             public void handle(IEvent event) {
                 isPost = true;
                 postParams = Lists.newLinkedList();
             }
         });
-        Notifier.INSTANSE.register(PostEndEvent.class, new IEventHandler() {
+        Notifier.INSTANCE.register(PostEndEvent.class, new IEventHandler() {
             @Override
             public void handle(IEvent event) {
                 isPost = false;

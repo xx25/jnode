@@ -26,7 +26,7 @@ public class AuthInfoUserProcessor implements Processor {
         String username = StringUtils.substring(user, 0, StringUtils.indexOf(user, "@"));
         String ftnAddress = Converter.convertEmailToFtn(user);
 
-        Notifier.INSTANSE.notify(new AuthUserEvent(new Auth(user, username, ftnAddress)));
+        Notifier.INSTANCE.notify(new AuthUserEvent(new Auth(user, username, ftnAddress)));
 
         Collection<String> response = Lists.newLinkedList();
         response.add(NntpResponse.AuthInfo.PASSWORD_REQUIRED);

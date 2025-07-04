@@ -48,11 +48,11 @@ public class PostProcessor extends BaseProcessor implements Processor {
 
         if (params.isEmpty()) {
             // start posting
-            Notifier.INSTANSE.notify(new PostStartEvent());
+            Notifier.INSTANCE.notify(new PostStartEvent());
             response.add(NntpResponse.Post.SEND_ARTICLE_TO_BE_POSTED);
         } else {
             // end posting
-            Notifier.INSTANSE.notify(new PostEndEvent());
+            Notifier.INSTANCE.notify(new PostEndEvent());
             
             // Validate input parameters before processing
             if (!validatePostParams(params)) {

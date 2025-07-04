@@ -1,5 +1,5 @@
 /*
- * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * Licensed to the jNode FTN Platform Development Team (jNode Team)
  * under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for 
  * additional information regarding copyright ownership.  
@@ -73,7 +73,7 @@ public class Main {
 			return;
 		}
 		try {
-			ORMManager.INSTANSE.start();
+			ORMManager.INSTANCE.start();
 		} catch (Exception e) {
 			logger.l1("Database init failed, exiting", e);
 			System.exit(-1);
@@ -159,7 +159,7 @@ public class Main {
 							final JnodeModule jnodeModule = (JnodeModule) clazz
 									.getConstructor(String.class).newInstance(
 											config);
-							Notifier.INSTANSE.register(SharedModuleEvent.class,
+							Notifier.INSTANCE.register(SharedModuleEvent.class,
 									jnodeModule);
 							// module in new thread
 							new Thread(new Runnable() {

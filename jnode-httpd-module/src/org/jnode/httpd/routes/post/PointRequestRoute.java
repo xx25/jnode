@@ -1,5 +1,5 @@
 /*
- * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * Licensed to the jNode FTN Platform Development Team (jNode Team)
  * under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for 
  * additional information regarding copyright ownership.  
@@ -118,7 +118,7 @@ public class PointRequestRoute implements Handler {
 				+ "  \n"
 				+ "\n--\n"
 				+ MainHandler.getVersion();
-		Notifier.INSTANSE.notify(new SharedModuleEvent(
+		Notifier.INSTANCE.notify(new SharedModuleEvent(
 				"org.jnode.mail.MailModule", "to", pr.getEmail(), "subject",
 				"Point request confirmation", "text", text));
 

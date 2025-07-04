@@ -1,5 +1,5 @@
 /*
- * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * Licensed to the jNode FTN Platform Development Team (jNode Team)
  * under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for 
  * additional information regarding copyright ownership.  
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public enum Notifier {
-	INSTANSE;
+	INSTANCE;
 	private final ConcurrentHashMap<Class<? extends IEvent>, List<IEventHandler>> notifyMap;
 
 	private Notifier() {
