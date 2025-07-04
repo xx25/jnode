@@ -24,8 +24,11 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import jnode.logger.Logger;
 import jnode.orm.ORMManager;
@@ -51,13 +54,20 @@ import com.j256.ormlite.table.TableUtils;
  */
 public abstract class GenericDAO<T> {
 
-	private static HashMap<Class<?>, Dao<?, ?>> daoMap;
+	private static final int MAX_DAO_MAP_SIZE = 100;
+	private static Map<Class<?>, Dao<?, ?>> daoMap;
 
 	private final Logger logger = Logger.getLogger(getType());
 
 	protected GenericDAO() throws Exception {
 		if (daoMap == null) {
-			daoMap = new HashMap<>();
+			daoMap = Collections.synchronizedMap(
+				new LinkedHashMap<Class<?>, Dao<?, ?>>(16, 0.75f, true) {
+					@Override
+					protected boolean removeEldestEntry(Map.Entry<Class<?>, Dao<?, ?>> eldest) {
+						return size() > MAX_DAO_MAP_SIZE;
+					}
+				});
 		}
 		if (!daoMap.containsKey(getType())) {
 			Dao<?, ?> dao = DaoManager.createDao(ORMManager.getSource(),
