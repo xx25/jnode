@@ -586,13 +586,11 @@ public class FtnTosser {
 						}
 						seenby.add(link2d);
 						seenby.addAll(createSeenBy(area));
-						for (FtnAddress addr : MainHandler.getCurrentInstance()
-								.getInfo().getAddressList()) {
-							Ftn2D me = new Ftn2D(addr.getNet(), addr.getNode());
-							seenby.add(me);
-							if (!path.contains(me)) {
-								path.add(me);
-							}
+						FtnAddress ourAka = selectOurAka(link);
+						Ftn2D me = new Ftn2D(ourAka.getNet(), ourAka.getNode());
+						seenby.add(me);
+						if (!path.contains(me)) {
+							path.add(me);
 						}
 
 						FtnMessage msg = createEchomail(address, mail, area,
