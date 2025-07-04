@@ -37,7 +37,9 @@ public class BinkpAsyncServer implements Runnable {
 			.getLogger(BinkpAsyncServer.class);
 
 	private static final String BINKD_BIND = "binkp.bind";
+	private static final String BINKD_BIND6 = "binkp.bind6";
 	private static final String BINKD_PORT = "binkp.port";
+	private static final String BINKD_IPV6_ENABLE = "binkp.ipv6.enable";
 	private static final String BINKD_SERVER = "binkp.server";
 
 	@Override
@@ -47,15 +49,24 @@ public class BinkpAsyncServer implements Runnable {
 			return;
 		}
 		try {
+			boolean ipv6Enabled = MainHandler.getCurrentInstance().getBooleanProperty(BINKD_IPV6_ENABLE, false);
 			ServerSocketChannel server = ServerSocketChannel.open();
 			server.configureBlocking(false);
-			InetSocketAddress bind = new InetSocketAddress(MainHandler
-					.getCurrentInstance().getProperty(BINKD_BIND, "0.0.0.0"),
-					MainHandler.getCurrentInstance().getIntegerProperty(
-							BINKD_PORT, 24554));
+			
+			InetSocketAddress bind;
+			if (ipv6Enabled) {
+				String bindAddress = MainHandler.getCurrentInstance().getProperty(BINKD_BIND6, "::");
+				bind = new InetSocketAddress(bindAddress,
+						MainHandler.getCurrentInstance().getIntegerProperty(BINKD_PORT, 24554));
+			} else {
+				String bindAddress = MainHandler.getCurrentInstance().getProperty(BINKD_BIND, "0.0.0.0");
+				bind = new InetSocketAddress(bindAddress,
+						MainHandler.getCurrentInstance().getIntegerProperty(BINKD_PORT, 24554));
+			}
+			
 			server.bind(bind, 5);
 			logger.l1("We are listening on " + bind.getHostString() + ":"
-					+ bind.getPort());
+					+ bind.getPort() + (ipv6Enabled ? " (IPv6)" : " (IPv4)"));
 			Selector selector = Selector.open();
 			server.register(selector, server.validOps());
 			while (true) {
