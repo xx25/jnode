@@ -20,8 +20,8 @@
 
 package jnode.ftn.types;
 
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Kirill Temnenkov (ktemnenkov@intervale.ru)
@@ -37,8 +37,10 @@ public class Ftn2DTest {
         assertEquals(new Ftn2D(5020, 828), Ftn2D.fromString("05020", "0828"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testFromBadString() throws Exception {
-        Ftn2D.fromString("828", "");
+        assertThrows(IllegalArgumentException.class, () -> {
+            Ftn2D.fromString("828", "");
+        });
     }
 }

@@ -21,12 +21,12 @@
 package jnode.report;
 
 import jnode.ftn.types.FtnAddress;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.File;
 import java.net.URL;
@@ -45,7 +45,7 @@ public class ConnectionStatDataTest {
     private ConnectionStatData.ConnectionStatDataElement e1;
     private ConnectionStatData.ConnectionStatDataElement e2;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         File file = File.createTempFile("test", ".xml");
         path = file.getAbsolutePath();
@@ -70,7 +70,7 @@ public class ConnectionStatDataTest {
         e2.outgoingOk = 61;
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         new File(path).delete();
     }
