@@ -120,6 +120,7 @@ public class GUIConfigurator {
 		ret.add("stat.enable");
 		ret.add("stat.area");
 		ret.add("jscript.enable");
+		ret.add("threadpool.queue_size");
 		return ret;
 	}
 
@@ -148,6 +149,7 @@ public class GUIConfigurator {
 		props.put("stat.enable", "Enable statistics");
 		props.put("stat.area", "Echo for statistics");
 		props.put("jscript.enable", "Enable scripts");
+		props.put("threadpool.queue_size", "Thread pool queue size");
 		return props;
 	}
 

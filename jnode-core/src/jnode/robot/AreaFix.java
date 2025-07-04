@@ -154,7 +154,7 @@ public class AreaFix extends AbstractRobot {
 			ORMManager.get(Link.class).update(link);
 			return "Your packet password was changed to " + newpwd + "\n";
 		} else {
-			return "Your packet password must be between 4 and 8 chars length\n";
+			return "Your packet password must be between 4 and 8 characters long\n";
 		}
 	}
 
@@ -163,7 +163,7 @@ public class AreaFix extends AbstractRobot {
 			FtnTools.setOption(link, LinkOption.STRING_AREAFIX_PWD, newpwd);
 			return "Your AreaFix password was changed to " + newpwd + "\n";
 		} else {
-			return "Your AreaFix password must be between 4 and 16 chars length\n";
+			return "Your AreaFix password must be between 4 and 16 characters long\n";
 		}
 	}
 
@@ -175,14 +175,14 @@ public class AreaFix extends AbstractRobot {
 	protected String help() {
 		return "Available commands:\n"
 				+ "%HELP - this message\n"
-				+ "%ASLINK ftn address - proccess command as other link ( not the origin )\n"
+				+ "%ASLINK ftn address - process command as another link ( not the origin )\n"
 				+ "%LIST - list of available areas\n"
 				+ "%QUERY - list of subscribed areas\n"
 				+ "%AFXPASS password - change areafix password\n"
 				+ "%PKTPASS password - change pkt password\n"
-				+ "%IGNOREPKTPWD on|off - turn on/off checking pkt passwords in pkts from you\n"
+				+ "%IGNOREPKTPWD on|off - turn on/off checking of pkt passwords in pkts from you\n"
 				+ "+echo.area - subscribe echo.area\n"
-				+ "-echo.area - unsibscribe echo.area\n"
+				+ "-echo.area - unsubscribe echo.area\n"
 				+ "+echo.area /r=N - subscribe and rescan N messages\n"
 				+ "%RESCAN echo.area N - rescan N messages";
 

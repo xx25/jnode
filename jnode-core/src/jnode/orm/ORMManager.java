@@ -21,7 +21,9 @@
 package jnode.orm;
 
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
@@ -46,9 +48,20 @@ public enum ORMManager {
 	public final static String JDBC_URL = "jdbc.url";
 	public final static String JDBC_USER = "jdbc.user";
 	public final static String JDBC_PASS = "jdbc.pass";
+	private static final int MAX_DAO_CACHE_SIZE = 100;
 
 	private static final Logger logger = Logger.getLogger(ORMManager.class);
-	private Map<Class<?>, GenericDAO<?>> genericDAOMap = new HashMap<>();
+	private Map<Class<?>, GenericDAO<?>> genericDAOMap = Collections.synchronizedMap(
+		new LinkedHashMap<Class<?>, GenericDAO<?>>(16, 0.75f, true) {
+			@Override
+			protected boolean removeEldestEntry(Map.Entry<Class<?>, GenericDAO<?>> eldest) {
+				if (size() > MAX_DAO_CACHE_SIZE) {
+					logger.l5("Evicting DAO from cache: " + eldest.getKey().getSimpleName());
+					return true;
+				}
+				return false;
+			}
+		});
 	private ConnectionSource source;
 
 	public void start() throws Exception {

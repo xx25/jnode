@@ -25,17 +25,23 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import jnode.logger.Logger;
+import jnode.main.MainHandler;
 
 public class ThreadPool {
 	private static ThreadPool self;
 	private static final Logger logger = Logger.getLogger(ThreadPool.class);
+	private static final int DEFAULT_QUEUE_SIZE = 1000;
 	private ThreadPoolExecutor executor;
 
 	public ThreadPool(int numThreads) {
+		int queueSize = MainHandler.getCurrentInstance() != null ? 
+			MainHandler.getCurrentInstance().getIntegerProperty("threadpool.queue_size", DEFAULT_QUEUE_SIZE) : 
+			DEFAULT_QUEUE_SIZE;
+		
 		executor = new ThreadPoolExecutor(numThreads, (int) (numThreads * 1.5),
-				30, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+				30, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(queueSize));
 
-		logger.l3("Thread pool (" + numThreads + " threads) started");
+		logger.l3("Thread pool (" + numThreads + " threads) started with queue size " + queueSize);
 		self = this;
 	}
 
