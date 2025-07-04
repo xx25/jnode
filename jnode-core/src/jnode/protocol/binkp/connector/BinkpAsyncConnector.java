@@ -46,7 +46,7 @@ import jnode.protocol.binkp.types.BinkpFrame;
  * 
  */
 public class BinkpAsyncConnector extends BinkpAbstractConnector {
-	static final Logger logger = Logger.getLogger(BinkpAsyncConnector.class);
+	private static final Logger logger = Logger.getLogger(BinkpAsyncConnector.class);
 	private Selector selector;
 	private long connectionStartTime;
 	private boolean connectionEstablished = false;
@@ -111,7 +111,7 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 					}
 					
 					loopCounter++;
-					// logger.l5("=== Selector loop #" + loopCounter + ", keys=" + selector.selectedKeys().size());
+					// logger.l5("Selector loop #" + loopCounter + ", keys=" + selector.selectedKeys().size());
 					for (SelectionKey key : selector.selectedKeys()) {
 						SocketChannel channel = (SocketChannel) key.channel();
 						if (key.isValid()) {
@@ -154,19 +154,19 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 								while (!frames.isEmpty()) {
 									// DEBUG: Log queue state before sending
 									if (frames.size() > 1) {
-										logger.l2("=== BEFORE SEND: Queue has " + frames.size() + " frames");
+										logger.l5("BEFORE SEND: Queue has " + frames.size() + " frames");
 										for (int i = 0; i < Math.min(3, frames.size()); i++) {
 											BinkpFrame peek = frames.get(i);
 											if (peek.getCommand() != null) {
-												logger.l2("===   Frame[" + i + "]: " + peek.getCommand() + " " + (peek.getArg() != null ? peek.getArg() : ""));
+												logger.l5("  Frame[" + i + "]: " + peek.getCommand() + " " + (peek.getArg() != null ? peek.getArg() : ""));
 											} else {
-												logger.l2("===   Frame[" + i + "]: DATA " + (peek.getBytes().length - 2) + " bytes");
+												logger.l5("  Frame[" + i + "]: DATA " + (peek.getBytes().length - 2) + " bytes");
 											}
 										}
 									}
 									
 									BinkpFrame frame = frames.removeFirst();
-									logger.l2("=== SENDING Frame: " + frame
+									logger.l5("SENDING Frame: " + frame
 											+ ", next " + frames.size()
 											+ " frames, total sent "
 											+ total_sent_bytes);
@@ -177,7 +177,7 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 										if (frame.getCommand() == null) {
 											// Data frame
 											bytesSent = frame.getBytes().length;
-											logger.l2("=== SENDING DATA to network: " + bytesSent + " bytes");
+											logger.l5("SENDING DATA to network: " + bytesSent + " bytes");
 										}
 										
 										write(frame, channel);
@@ -189,12 +189,12 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 											for (int i = 2; i < Math.min(data.length, 18); i++) {
 												hex.append(String.format("%02X ", data[i] & 0xFF));
 											}
-											logger.l2("=== DATA SENT to network: " + (data.length - 2) + " bytes, preview: " + hex.toString());
+											logger.l5("DATA SENT to network: " + (data.length - 2) + " bytes, preview: " + hex.toString());
 										} else {
-											logger.l2("=== COMMAND SENT to network: " + frame);
+											logger.l5("COMMAND SENT to network: " + frame);
 										}
 									} catch (Exception e) {
-										logger.l2("=== SEND FAILED: " + frame + ", error: " + e.getMessage());
+										logger.l5("SEND FAILED: " + frame + ", error: " + e.getMessage());
 										throw e;
 									}
 								}
@@ -204,9 +204,9 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 							}
 							// CRITICAL: Only process reads AFTER all writes are complete
 							if (key.isReadable()) {
-								logger.l5("=== Key is READABLE, frames.isEmpty()=" + frames.isEmpty());
+								logger.l5("Key is READABLE, frames.isEmpty()=" + frames.isEmpty());
 								if (!frames.isEmpty()) {
-									logger.l2("=== SKIPPING READ: Still have " + frames.size() + " frames to send");
+									logger.l5("SKIPPING READ: Still have " + frames.size() + " frames to send");
 								} else {
 								BinkpFrame frame = null;
 								ByteBuffer head = ByteBuffer.allocate(2);

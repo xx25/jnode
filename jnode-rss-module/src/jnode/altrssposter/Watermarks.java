@@ -20,6 +20,7 @@
 
 package jnode.altrssposter;
 
+import jnode.logger.Logger;
 import jnode.store.XMLSerializer;
 
 import java.io.File;
@@ -33,6 +34,7 @@ import java.util.Map;
  */
 public class Watermarks {
 
+    private static final Logger logger = Logger.getLogger(Watermarks.class);
     private final String datafile;
 
     public Watermarks(String datafile) {
@@ -84,14 +86,13 @@ public class Watermarks {
 
                         sleep(1000);
                         int next = Integer.valueOf(value) + 1;
-                        System.out.println(MessageFormat.format("thread {0} oldvalue {1} newvalue {2}",
-                                key, value, next));
+                        logger.l4("RSS: Watermark thread " + key + " oldvalue " + value + " newvalue " + next);
                         w.storeValue(key, ""+next);
                         sleep(1000);
                     }
 
                 } catch (FileNotFoundException | InterruptedException e) {
-                    e.printStackTrace();
+                    logger.l1("RSS: Error in watermark test thread", e);
                 }
             }
         }

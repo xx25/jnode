@@ -56,7 +56,7 @@ import static jnode.protocol.binkp.BinkpProtocolTools.*;
  * 
  */
 public abstract class BinkpAbstractConnector implements Runnable {
-	static final Logger logger = Logger.getLogger(BinkpAbstractConnector.class);
+	private static final Logger logger = Logger.getLogger(BinkpAbstractConnector.class);
 
 	private static final ConcurrentDateFormatAccess format = new ConcurrentDateFormatAccess(
 			"EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
@@ -186,7 +186,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			time = new Date().getTime();
 		}
 		addTimeout(); // it's ok :-)
-		logger.l4("=== Processing frame: " + frame);
+		logger.l5("Processing frame: " + frame);
 		if (frame.getCommand() != null) {
 			switch (frame.getCommand()) {
 			case M_NUL:
@@ -232,14 +232,14 @@ public abstract class BinkpAbstractConnector implements Runnable {
 				break;
 			}
 		} else {
-			logger.l4("=== Processing DATA frame, receivingMessage=" + 
+			logger.l5("Processing DATA frame, receivingMessage=" + 
 				(receivingMessage != null ? receivingMessage.getMessageName() : "null") +
 				", bytesLeft=" + receivingBytesLeft);
 			if (receivingMessage != null) {
 				if (receivingBytesLeft > 0) {
 					byte[] data = frame.getBytes();
 					int len = data.length - 2;
-					logger.l4("=== Writing " + len + " bytes to file, bytesLeft before=" + 
+					logger.l5("Writing " + len + " bytes to file, bytesLeft before=" + 
 						receivingBytesLeft);
 					try {
 						if (receivingBytesLeft >= len) {
@@ -252,6 +252,8 @@ public abstract class BinkpAbstractConnector implements Runnable {
 						recv_bytes += len;
 						total_recv_bytes += len;
 					} catch (IOException e) {
+						logger.l3(String.format("Skipped receiving file: %s (IO error after %d bytes)",
+								receivingMessage.getMessageName(), recv_bytes));
 						logger.l5(MessageFormat.format(
 								"fail receive message {2}, recv_bytes={0}, " +
 										"total_recv_bytes={1}, skip",
@@ -275,10 +277,16 @@ public abstract class BinkpAbstractConnector implements Runnable {
 							(ret == 0) ? BinkpCommand.M_GOT
 									: BinkpCommand.M_SKIP,
 							getString(receivingMessage)));
-					logger.l3(String.format("Received file: %s (%d)",
-							receivingMessage.getMessageName(),
-							receivingMessage.getMessageLength()));
-					total_recv_files++;
+					if (ret == 0) {
+						logger.l3(String.format("Received file: %s (%d bytes)",
+								receivingMessage.getMessageName(),
+								receivingMessage.getMessageLength()));
+						total_recv_files++;
+					} else {
+						logger.l3(String.format("Skipped received file: %s (%d bytes) - tossing error",
+								receivingMessage.getMessageName(),
+								receivingMessage.getMessageLength()));
+					}
 					receivingMessage = null;
 					receivingBytesLeft = 0;
 					currentFile = null;
@@ -312,7 +320,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		Message found = null;
 		for (Message message : messages) {
 			if (messageEquals(message, arg)) {
-				logger.l3(String.format("Skip file: %s (%d)",
+				logger.l3(String.format("Skipped sending file: %s (%d bytes)",
 						message.getMessageName(), message.getMessageLength()));
 				found = message;
 				break;
@@ -349,6 +357,8 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		}
 		if (found != null) {
 			total_sent_files++;
+			logger.l3(String.format("Sent file: %s (%d bytes)",
+					found.getMessageName(), found.getMessageLength()));
 			found.delete();
 			messages.remove(found);
 		} else {
@@ -357,22 +367,24 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	}
 
 	private void m_file(String arg) {
-		logger.l3("=== M_FILE received: " + arg);
+		logger.l5("M_FILE received: " + arg);
 		String[] parts = arg.split(" ");
 		receivingMessage = createMessage(arg, secure);
 		long free_space = new File(FtnTools.getInbound()).getFreeSpace();
 		if (receivingMessage.getMessageLength() > free_space) {
 			frames.addLast(new BinkpFrame(BinkpCommand.M_SKIP,
 					getString(receivingMessage)));
-			receivingMessage = null;
+			logger.l3(String.format("Skipped receiving file: %s (%d bytes) - insufficient disk space",
+					receivingMessage.getMessageName(), receivingMessage.getMessageLength()));
 			logger.l1("No enough free space in inbound for receiving file");
+			receivingMessage = null;
 		}
-		logger.l4("=== File: " + parts[0] + ", size: " + parts[1] + 
+		logger.l5("File: " + parts[0] + ", size: " + parts[1] + 
 			", time: " + parts[2] + ", offset: " + parts[3]);
 		if (!parts[3].equals("0")) {
 			frames.addLast(new BinkpFrame(BinkpCommand.M_GET, getString(
 					receivingMessage, 0)));
-			logger.l4("=== Requesting file from offset 0");
+			logger.l5("Requesting file from offset 0");
 		} else {
 			receivingBytesLeft = receivingMessage.getMessageLength();
 			try {
@@ -390,7 +402,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 					throw new IOException();
 				}
 				currentOS = new FileOutputStream(currentFile);
-				logger.l4("=== Created temp file: " + currentFile.getAbsolutePath());
+				logger.l5("Created temp file: " + currentFile.getAbsolutePath());
 			} catch (IOException e) {
 				logger.l5(MessageFormat.format("fail process m_file message {0}," +
 						" len {1}, memMaxSize {2}",
@@ -400,8 +412,10 @@ public abstract class BinkpAbstractConnector implements Runnable {
                     logger.l5(MessageFormat.format("load {0} in memory", receivingMessage));
 					currentOS = new ByteArrayOutputStream(
 							(int) receivingMessage.getMessageLength());
-					logger.l4("=== Using ByteArrayOutputStream for small file");
+					logger.l5("Using ByteArrayOutputStream for small file");
 				} else {
+					logger.l3(String.format("Skipped receiving file: %s (%d bytes) - cannot create temp file",
+							receivingMessage.getMessageName(), receivingMessage.getMessageLength()));
 					logger.l5("skip m_file due exception - too big for load in memory");
 					frames.addLast(new BinkpFrame(BinkpCommand.M_SKIP,
 							getString(receivingMessage)));
@@ -410,10 +424,10 @@ public abstract class BinkpAbstractConnector implements Runnable {
 				}
 			}
 			if (receivingMessage != null) {
-				logger.l3(String.format("=== Ready to receive file: %s (%d bytes)",
+				logger.l5(String.format("Ready to receive file: %s (%d bytes)",
 						receivingMessage.getMessageName(),
 						receivingMessage.getMessageLength()));
-				logger.l4("=== receivingBytesLeft initialized to: " + receivingBytesLeft);
+				logger.l5("receivingBytesLeft initialized to: " + receivingBytesLeft);
 			}
 		}
 
@@ -431,7 +445,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		connectionState = STATE_TRANSFER;
 		
 		// CRITICAL: Check for messages immediately after authentication
-		logger.l2("=== Connection authenticated, checking for messages to send");
+		logger.l5("Connection authenticated, checking for messages to send");
 		checkForMessages();
 	}
 
@@ -463,7 +477,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			
 			// CRITICAL: For server connections, check for messages after sending M_OK
 			if (!clientConnection) {
-				logger.l2("=== Server authenticated client, checking for messages to send");
+				logger.l5("Server authenticated client, checking for messages to send");
 				checkForMessages();
 			}
 		} else {
@@ -623,7 +637,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 	protected void checkForMessages() {
 		checkTimeout();
-		// logger.l5("=== checkForMessages: state=" + connectionState + 
+		// logger.l5("checkForMessages: state=" + connectionState + 
 		//	", flag_leob=" + flag_leob + ", messages.size=" + messages.size() +
 		//	", currentInputStream=" + (currentInputStream != null));
 		if (connectionState != STATE_TRANSFER) {
@@ -636,15 +650,15 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			return;
 		}
 		if (messages.size() > 0) {
-			logger.l5("=== Attempting to read frame from current file");
+			logger.l5("Attempting to read frame from current file");
 			BinkpFrame frame = readFrame();
 			if (frame != null) {
-				logger.l2("=== DATA FRAME CREATED: " + (frame.getBytes().length - 2) + " bytes, adding to queue position " + frames.size());
-				logger.l5("=== Got data frame, size: " + frame.getBytes().length + 
+				logger.l5("DATA FRAME CREATED: " + (frame.getBytes().length - 2) + " bytes, adding to queue position " + frames.size());
+				logger.l5("Got data frame, size: " + frame.getBytes().length + 
 					", adding to queue");
 				frames.addLast(frame);
 			} else { // error, null
-				logger.l5("=== readFrame returned null - EOF or error");
+				logger.l5("readFrame returned null - EOF or error");
 			}
 			return;
 
@@ -654,13 +668,13 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		}
 		if (messages.isEmpty()) {
 			if (!flag_leob) {
-				logger.l4("=== No more messages, sending M_EOB");
+				logger.l5("No more messages, sending M_EOB");
 				flag_leob = true;
 				frames.addLast(new BinkpFrame(BinkpCommand.M_EOB));
 				checkEOB();
 			}
 		} else {
-			logger.l4("=== Found " + messages.size() + " messages to send");
+			logger.l5("Found " + messages.size() + " messages to send");
 			messages_index = 0;
 			startNextFile();
 		}
@@ -731,19 +745,19 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 	protected BinkpFrame readFrame() {
 		if (currentInputStream != null) {
-			logger.l5("=== readFrame: currentInputStream is not null");
+			logger.l5("readFrame: currentInputStream is not null");
 			try {
 				int available = currentInputStream.available();
-				logger.l5("=== Available bytes in stream: " + available);
+				logger.l5("Available bytes in stream: " + available);
 				byte[] buf = new byte[staticBufMaxSize];
 				int n = currentInputStream.read(buf);
-				logger.l5("=== Read " + n + " bytes from file (available was " + available + ")");
+				logger.l5("Read " + n + " bytes from file (available was " + available + ")");
 				if (n > 0) {
 					sent_bytes += n;
 					total_sent_bytes += n;
 					addTimeout();
 					BinkpFrame frame = new BinkpFrame(buf, n);
-					logger.l5("=== Created data frame with " + n + " bytes, sent_bytes=" + 
+					logger.l5("Created data frame with " + n + " bytes, sent_bytes=" + 
 						sent_bytes + ", total_sent=" + total_sent_bytes);
 					// Log first few bytes for debugging
 					if (n > 0) {
@@ -751,53 +765,53 @@ public abstract class BinkpAbstractConnector implements Runnable {
 						for (int i = 0; i < Math.min(n, 16); i++) {
 							sb.append(String.format("%02X ", buf[i] & 0xFF));
 						}
-						logger.l5("=== First bytes of frame: " + sb.toString());
+						logger.l5("First bytes of frame: " + sb.toString());
 					}
 					return frame;
 				} else {
-					logger.l5("=== EOF reached (n=" + n + "), closing input stream");
+					logger.l5("EOF reached (n=" + n + "), closing input stream");
 					currentInputStream.close();
 					currentInputStream = null;
 					messages_index++;
 					if (startNextFile()) {
-						logger.l5("=== Started next file, recursing");
+						logger.l5("Started next file, recursing");
 						return readFrame();
 					}
 				}
 			} catch (IOException e) {
-				logger.l2("=== IOException in readFrame", e);
+				logger.l5("IOException in readFrame", e);
 				error("Error reading file", e);
 			}
 		} else {
-			logger.l5("=== readFrame: currentInputStream is null");
+			logger.l5("readFrame: currentInputStream is null");
 		}
 		return null;
 	}
 
 	protected boolean startNextFile() {
-		logger.l4("=== startNextFile() called, messages_index=" + messages_index + 
+		logger.l5("startNextFile() called, messages_index=" + messages_index + 
 			", messages.size=" + messages.size());
 		try {
 			Message nextMessage = messages.get(messages_index);
-			logger.l4("=== Starting file: " + nextMessage.getMessageName());
+			logger.l5("Starting file: " + nextMessage.getMessageName());
 			sendMessage(nextMessage, 0);
 			return true;
 		} catch (IndexOutOfBoundsException e) {
-			logger.l4("=== No more files to send");
+			logger.l5("No more files to send");
 			return false;
 		}
 	}
 
 	protected void sendMessage(Message message, int skip) {
-		logger.l3("=== sendMessage(" + message.getMessageName() + ", skip=" + skip + ")");
+		logger.l5("sendMessage(" + message.getMessageName() + ", skip=" + skip + ")");
 		String fileInfo = getString(message, skip);
-		logger.l4("=== M_FILE string: " + fileInfo);
+		logger.l5("M_FILE string: " + fileInfo);
 		frames.addLast(new BinkpFrame(BinkpCommand.M_FILE, fileInfo));
-		logger.l3(String.format("=== Sending file: %s (%d bytes)",
+		logger.l3(String.format("Sending file: %s (%d bytes)",
 				message.getMessageName(), message.getMessageLength()));
 		
 		// DEBUG: Log frame queue state after M_FILE
-		logger.l2("=== After M_FILE: Queue has " + frames.size() + " frames");
+		logger.l5("After M_FILE: Queue has " + frames.size() + " frames");
 		
 		try {
 			message.getInputStream().skip(skip);
@@ -807,21 +821,21 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			}
 			currentInputStream = message.getInputStream();
 			int available = currentInputStream.available();
-			logger.l4("=== Opened input stream for file: " + message.getMessageName() + 
+			logger.l5("Opened input stream for file: " + message.getMessageName() + 
 				", available bytes: " + available + 
 				", expected length: " + message.getMessageLength());
 			
 			// CRITICAL FIX: Immediately queue at least one data frame after M_FILE
 			if (currentInputStream != null && available > 0) {
-				logger.l2("=== Immediately reading first data frame after M_FILE");
+				logger.l5("Immediately reading first data frame after M_FILE");
 				BinkpFrame dataFrame = readFrame();
 				if (dataFrame != null) {
-					logger.l2("=== Queued first data frame: " + (dataFrame.getBytes().length - 2) + " bytes");
+					logger.l5("Queued first data frame: " + (dataFrame.getBytes().length - 2) + " bytes");
 					frames.addLast(dataFrame);
 				}
 			}
 		} catch (IOException e) {
-			logger.l2("=== IOException in sendMessage", e);
+			logger.l5("IOException in sendMessage", e);
 			error("IOException opening file", e);
 			currentInputStream = null;
 		}

@@ -42,7 +42,7 @@ import jnode.protocol.binkp.types.BinkpFrame;
  * 
  */
 public class BinkpSyncConnector extends BinkpAbstractConnector {
-	static final Logger logger = Logger.getLogger(BinkpSyncConnector.class);
+	private static final Logger logger = Logger.getLogger(BinkpSyncConnector.class);
 	private volatile Socket socket;
 	private volatile boolean closed = false;
 	private volatile boolean connected = true;
@@ -73,7 +73,7 @@ public class BinkpSyncConnector extends BinkpAbstractConnector {
 
 			@Override
 			public void run() {
-				logger.l3("=== processOutputObserver thread started");
+				logger.l5("processOutputObserver thread started");
 				boolean last = false;
 				while (connected) {
 					connected = isConnected();
@@ -85,7 +85,7 @@ public class BinkpSyncConnector extends BinkpAbstractConnector {
 						last = true;
 					}
 					checkForMessages();
-					logger.l5("=== Frames queue size: " + frames.size());
+					logger.l5("Frames queue size: " + frames.size());
 					if (frames.isEmpty()) {
 						try {
 							Thread.sleep(100);
@@ -97,33 +97,33 @@ public class BinkpSyncConnector extends BinkpAbstractConnector {
 							byte[] frameBytes = frame.getBytes();
 							
 							if (frame.getCommand() != null) {
-								logger.l4("=== Sending command frame: " + frame.getCommand() + 
+								logger.l5("Sending command frame: " + frame.getCommand() + 
 									", arg: " + frame.getArg() + ", size: " + frameBytes.length);
 							} else {
-								logger.l5("=== Sending data frame, size: " + frameBytes.length);
+								logger.l5("Sending data frame, size: " + frameBytes.length);
 								// Log first few bytes
 								if (frameBytes.length > 2) {
 									StringBuilder sb = new StringBuilder();
 									for (int i = 0; i < Math.min(frameBytes.length, 18); i++) {
 										sb.append(String.format("%02X ", frameBytes[i] & 0xFF));
 									}
-									logger.l5("=== Frame bytes: " + sb.toString() + 
+									logger.l5("Frame bytes: " + sb.toString() + 
 										(frameBytes.length > 18 ? "..." : ""));
 								}
 							}
 							try {
 								socket.getOutputStream().write(frameBytes);
 								socket.getOutputStream().flush();
-								logger.l5("=== Frame sent successfully");
+								logger.l5("Frame sent successfully");
 							} catch (IOException e) {
-								logger.l2("=== IOException sending frame: " + e.getLocalizedMessage());
+								logger.l5("IOException sending frame: " + e.getLocalizedMessage());
 								break;
 							}
 						} catch (NoSuchElementException ignore) {
 						}
 					}
 				}
-				logger.l3("=== processOutputObserver thread exiting");
+				logger.l5("processOutputObserver thread exiting");
 				closed = true;
 				return;
 			}
@@ -169,7 +169,7 @@ public class BinkpSyncConnector extends BinkpAbstractConnector {
 					} else {
 						frame = new BinkpFrame(data.array());
 					}
-					logger.l5("=== Frame received: " + frame + 
+					logger.l5("Frame received: " + frame + 
 						", command=" + (command ? "yes" : "no") + 
 						", len=" + len);
 					proccessFrame(frame);

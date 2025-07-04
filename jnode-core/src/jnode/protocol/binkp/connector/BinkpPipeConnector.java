@@ -40,7 +40,7 @@ import jnode.protocol.binkp.types.BinkpFrame;
  * 
  */
 public class BinkpPipeConnector extends BinkpAbstractConnector {
-	static final Logger logger = Logger.getLogger(BinkpPipeConnector.class);
+	private static final Logger logger = Logger.getLogger(BinkpPipeConnector.class);
 
 	private volatile Process process;
 	private volatile boolean closed = false;

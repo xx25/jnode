@@ -58,7 +58,7 @@ public class HttpdModule extends JnodeModule {
 	private static final String CONFIG_HDG_REG = "hdgpointreg";
 	private static final String CONFIG_EXTERNAL = "external";
 
-	public static final Logger logger = Logger.getLogger(HttpdModule.class);
+	private static final Logger logger = Logger.getLogger(HttpdModule.class);
 	private short port;
 	private boolean linkreg;
 	private boolean pointreg;

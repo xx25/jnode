@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class NntpModule extends JnodeModule {
 
-	private Logger logger = Logger.getLogger(NntpModule.class);
+	private static final Logger logger = Logger.getLogger(NntpModule.class);
 	private ExecutorService executor;
 	private ServerSocket serverSocket;
 

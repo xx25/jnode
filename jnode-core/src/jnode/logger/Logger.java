@@ -121,19 +121,19 @@ public final class Logger {
     }
 
     public void l5(String log, Throwable e) {
-        log(LOG_L1, log + ": " + th2s(e));
+        log(LOG_L5, log + ": " + th2s(e));
     }
 
     public void l4(String log, Throwable e) {
-        log(LOG_L1, log + ": " + th2s(e));
+        log(LOG_L4, log + ": " + th2s(e));
     }
 
     public void l3(String log, Throwable e) {
-        log(LOG_L1, log + ": " + th2s(e));
+        log(LOG_L3, log + ": " + th2s(e));
     }
 
     public void l2(String log, Throwable e) {
-        log(LOG_L1, log + ": " + th2s(e));
+        log(LOG_L2, log + ": " + th2s(e));
     }
 
     public void l1(String log, Throwable e) {
