@@ -1,5 +1,5 @@
 /*
- * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * Licensed to the jNode FTN Platform Development Team (jNode Team)
  * under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for 
  * additional information regarding copyright ownership.  
@@ -36,7 +36,7 @@ public class FileareaStat implements IStatPoster, IEventHandler {
 	private StatPoster poster;
 
 	public FileareaStat() {
-		Notifier.INSTANSE.register(NewFileareaEvent.class, this);
+		Notifier.INSTANCE.register(NewFileareaEvent.class, this);
 	}
 
 	@Override

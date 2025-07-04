@@ -1,5 +1,5 @@
 /*
- * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * Licensed to the jNode FTN Platform Development Team (jNode Team)
  * under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for 
  * additional information regarding copyright ownership.  
@@ -41,7 +41,7 @@ import jnode.main.MainHandler;
  */
 
 public enum ORMManager {
-	INSTANSE;
+	INSTANCE;
 
 	public final static String JDBC_URL = "jdbc.url";
 	public final static String JDBC_USER = "jdbc.user";
@@ -159,7 +159,7 @@ public enum ORMManager {
 
 	@SuppressWarnings("unchecked")
 	public static <T> GenericDAO<T> get(final Class<? extends T> clazz) {
-		GenericDAO<T> ret = (GenericDAO<T>) INSTANSE.genericDAOMap.get(clazz);
+		GenericDAO<T> ret = (GenericDAO<T>) INSTANCE.genericDAOMap.get(clazz);
 		if (ret == null) {
 			try {
 				ret = new GenericDAO<T>() {
@@ -170,7 +170,7 @@ public enum ORMManager {
 						return clazz;
 					}
 				};
-				INSTANSE.genericDAOMap.put(clazz, ret);
+				INSTANCE.genericDAOMap.put(clazz, ret);
 			} catch (Exception e) {
 				for (int i = 0; i < 10; i++)
 					logger.l1("!!! FATAL !!! Exception while creation DAO for "
@@ -183,12 +183,12 @@ public enum ORMManager {
 	}
 
 	public static ConnectionSource getSource() throws Exception {
-		if (INSTANSE.source != null) {
-			return INSTANSE.source;
+		if (INSTANCE.source != null) {
+			return INSTANCE.source;
 		}
-		synchronized (INSTANSE) {
-			INSTANSE.start();
-			return INSTANSE.source;
+		synchronized (INSTANCE) {
+			INSTANCE.start();
+			return INSTANCE.source;
 		}
 	}
 }

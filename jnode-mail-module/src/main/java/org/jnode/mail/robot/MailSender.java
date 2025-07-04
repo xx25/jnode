@@ -1,5 +1,5 @@
 /*
- * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * Licensed to the jNode FTN Platform Development Team (jNode Team)
  * under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for 
  * additional information regarding copyright ownership.  
@@ -35,7 +35,7 @@ public class MailSender implements IRobot {
 	private Hashtable<FtnAddress, Long> timeoutMap;
 	private static final long MAIL_TIMEOUT = 3600;
 	private static final String MAIL_REGEXP = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
-	private static final String MAIL_FORMAT = "Netmail2Email Gate greets you!\nYou have received this message because somebody specified it for receiving this mail\nPlease, contact gate holder if this message annoys you\n\nNetmail from: %s <%s>\n\n%s\n\n-- "
+	private static final String MAIL_FORMAT = "Netmail2Email Gate greets you!\nYou have received this message because somebody specified your address to receive this mail\nPlease contact the gate holder if this message annoys you\n\nNetmail from: %s <%s>\n\n%s\n\n-- "
 			+ MainHandler.getVersion();
 
 	public MailSender() {
@@ -46,9 +46,9 @@ public class MailSender implements IRobot {
 	public void execute(FtnMessage fmsg) throws Exception {
 		if (checkTimeout(fmsg)) {
 			if (send(fmsg)) {
-				reply(fmsg, "Your message was transferred to mail queue");
+				reply(fmsg, "Your message was transferred to the mail queue");
 			} else {
-				reply(fmsg, "Sorry, email address you provided is wrong");
+				reply(fmsg, "Sorry, the email address you provided is wrong");
 			}
 		} else {
 			reply(fmsg, "Sorry, you can't send more than 1 message per "
@@ -74,7 +74,7 @@ public class MailSender implements IRobot {
 		}
 		if (to != null) {
 
-			Notifier.INSTANSE.notify(new SharedModuleEvent(
+			Notifier.INSTANCE.notify(new SharedModuleEvent(
 					"org.jnode.mail.MailModule", "to", to, "subject", subject,
 					"text", String.format(MAIL_FORMAT, fmsg.getFromName(), fmsg
 							.getFromAddr().toString(), text)));

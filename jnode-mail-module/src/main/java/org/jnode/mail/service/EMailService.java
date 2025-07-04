@@ -1,5 +1,5 @@
 /*
- * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * Licensed to the jNode FTN Platform Development Team (jNode Team)
  * under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for 
  * additional information regarding copyright ownership.  
@@ -102,8 +102,17 @@ public class EMailService {
 		props.setProperty("mail.transport.protocol", "smtp");
 		props.setProperty("mail.host", host);
 		props.setProperty("mail.port", port);
+		
+		// SSL/TLS configuration for port 465
 		if ("465".equals(port)) {
 			props.setProperty("mail.smtp.ssl.enable", "true");
+			props.setProperty("mail.smtp.ssl.checkserveridentity", "true");
+		}
+		
+		// STARTTLS configuration for port 587 and other common ports
+		if ("587".equals(port) || "25".equals(port) || "2587".equals(port)) {
+			props.setProperty("mail.smtp.starttls.enable", "true");
+			props.setProperty("mail.smtp.starttls.required", "true");
 		}
 		if (username != null && password != null) {
 			Authenticator authenticator = new Authenticator();

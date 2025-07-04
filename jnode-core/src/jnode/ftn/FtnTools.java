@@ -1,5 +1,5 @@
 /*
- * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * Licensed to the jNode FTN Platform Development Team (jNode Team)
  * under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for 
  * additional information regarding copyright ownership.  
@@ -1391,7 +1391,7 @@ public final class FtnTools {
 					sub.setLink(link);
 					ORMManager.get(Subscription.class).save(sub);
 				}
-				Notifier.INSTANSE.notify(new NewEchoareaEvent(name, link));
+				Notifier.INSTANCE.notify(new NewEchoareaEvent(name, link));
 			}
 		} else {
 			if (link != null
@@ -1437,7 +1437,7 @@ public final class FtnTools {
 					sub.setLink(link);
 					ORMManager.get(FileSubscription.class).save(sub);
 				}
-				Notifier.INSTANSE.notify(new NewFileareaEvent(name, link));
+				Notifier.INSTANCE.notify(new NewFileareaEvent(name, link));
 			}
 		} else {
 			if (link != null

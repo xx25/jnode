@@ -32,7 +32,7 @@ public class GroupProcessor extends BaseProcessor implements Processor {
             return responseNotFound();
         }
 
-        Notifier.INSTANSE.notify(new GroupSelectedEvent(group));
+        Notifier.INSTANCE.notify(new GroupSelectedEvent(group));
 
         return responseGroup(groupName, group);
     }

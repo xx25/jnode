@@ -1,5 +1,5 @@
 /*
- * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * Licensed to the jNode FTN Platform Development Team (jNode Team)
  * under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for 
  * additional information regarding copyright ownership.  
@@ -306,7 +306,7 @@ public class GUIConfigurator {
 
 	private void updateLinks() {
 		try {
-			ORMManager.INSTANSE.start();
+			ORMManager.INSTANCE.start();
 			List<Link> links = ORMManager.get(Link.class).getAll();
 			linksPanel.removeAll();
 			for (final Link l : links) {

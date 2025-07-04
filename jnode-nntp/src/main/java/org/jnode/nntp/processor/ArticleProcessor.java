@@ -53,7 +53,7 @@ public class ArticleProcessor extends BaseProcessor implements Processor {
     }
 
     private void markArticleAsSelected(NewsMessage message) {
-        Notifier.INSTANSE.notify(new ArticleSelectedEvent(message.getId()));
+        Notifier.INSTANCE.notify(new ArticleSelectedEvent(message.getId()));
     }
 
     private Collection<String> responseArticleByMessageId(NewsMessage message) {

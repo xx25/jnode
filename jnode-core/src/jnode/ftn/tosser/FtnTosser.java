@@ -1,5 +1,5 @@
 /*
- * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * Licensed to the jNode FTN Platform Development Team (jNode Team)
  * under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for 
  * additional information regarding copyright ownership.  
@@ -100,7 +100,7 @@ public class FtnTosser {
 			dbnm.setText(netmail.getText());
 			dbnm.setAttr(netmail.getAttribute());
 			ORMManager.get(Netmail.class).save(dbnm);
-			Notifier.INSTANSE.notify(new NewNetmailEvent(dbnm));
+			Notifier.INSTANCE.notify(new NewNetmailEvent(dbnm));
 			Integer n = tossed.get("netmail");
 			tossed.put("netmail", (n == null) ? 1 : n + 1);
 			if (routeVia == null) {
@@ -192,7 +192,7 @@ public class FtnTosser {
 				}
 			}
 		}
-		Notifier.INSTANSE.notify(new NewEchomailEvent(mail));
+		Notifier.INSTANCE.notify(new NewEchomailEvent(mail));
 		Integer n = tossed.get(echomail.getArea());
 		tossed.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 
@@ -364,7 +364,7 @@ public class FtnTosser {
 									}
 								}
 							}
-							Notifier.INSTANSE
+							Notifier.INSTANCE
 									.notify(new NewFilemailEvent(mail));
 						} else {
 							logger.l4("File " + filename

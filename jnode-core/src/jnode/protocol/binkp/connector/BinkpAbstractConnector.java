@@ -1,5 +1,5 @@
 /*
- * Licensed to the jNode FTN Platform Develpoment Team (jNode Team)
+ * Licensed to the jNode FTN Platform Development Team (jNode Team)
  * under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for 
  * additional information regarding copyright ownership.  
@@ -909,7 +909,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			event = new ConnectionEndEvent(clientConnection, false);
 			logger.l3("Connection ended as unknown");
 		}
-		Notifier.INSTANSE.notify(event);
+		Notifier.INSTANCE.notify(event);
 	}
 
 }
