@@ -124,7 +124,7 @@ public class FtnTosser {
 	private void tossEchomail(FtnMessage echomail, Link link, boolean secure) {
 
 		if (!secure) {
-			logger.l3("Echomail via insecure is dropped");
+			logger.l3("Echomail from insecure link is dropped");
 			return;
 		}
 		Echoarea area = getAreaByName(echomail.getArea(), link);

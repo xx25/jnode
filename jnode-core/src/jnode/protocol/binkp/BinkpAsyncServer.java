@@ -98,7 +98,7 @@ public class BinkpAsyncServer implements Runnable {
 				}
 			}
 		} catch (IOException e) {
-			logger.l1("Server error occured!", e);
+			logger.l1("Server error occurred!", e);
 		}
 	}
 }

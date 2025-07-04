@@ -639,7 +639,7 @@ public final class FtnTools {
 						+ f.length() + ")");
 			}
 		} else {
-			logger.l2("File rejected via unsecure " + filename);
+			logger.l2("File rejected from insecure link " + filename);
 		}
 	}
 
