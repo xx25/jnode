@@ -38,6 +38,7 @@ import jnode.logger.Logger;
 import jnode.protocol.binkp.exceprion.ConnectionEndException;
 import jnode.protocol.binkp.types.BinkpCommand;
 import jnode.protocol.binkp.types.BinkpFrame;
+import jnode.protocol.binkp.util.AddressParser;
 
 /**
  * TCP/IP connection
@@ -67,19 +68,11 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 		super(protocolAddress);
 		SocketChannel socket = SocketChannel.open();
 		try {
-			String[] parts = protocolAddress.split(":");
-			if (parts.length == 1) {
-				socket.connect(new InetSocketAddress(protocolAddress, 24554));
-			} else if (parts.length == 2) {
-				int port = Integer.valueOf(parts[1]);
-				socket.connect(new InetSocketAddress(parts[0], port));
-			} else {
-				throw new IOException("Invalid protocolAddress ("
-						+ protocolAddress + ") for this scheme");
-			}
-		} catch (NumberFormatException e) {
+			InetSocketAddress address = AddressParser.parseAddress(protocolAddress);
+			socket.connect(address);
+		} catch (IOException e) {
 			throw new IOException("Invalid protocolAddress (" + protocolAddress
-					+ ") for this scheme");
+					+ ") for this scheme: " + e.getMessage());
 		}
 		init(socket);
 	}

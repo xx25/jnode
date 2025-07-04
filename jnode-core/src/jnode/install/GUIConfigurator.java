@@ -109,6 +109,8 @@ public class GUIConfigurator {
 		ret.add("binkp.server");
 		ret.add("binkp.bind ");
 		ret.add("binkp.port");
+		ret.add("binkp.ipv6.enable");
+		ret.add("binkp.bind6");
 		ret.add("binkp.inbound");
 		ret.add("binkp.client");
 		ret.add("poll.period");
@@ -135,6 +137,8 @@ public class GUIConfigurator {
 		props.put("binkp.server", "Accept connections");
 		props.put("binkp.bind ", "Address for receiving");
 		props.put("binkp.port", "Port for receiving");
+		props.put("binkp.ipv6.enable", "Enable IPv6 support");
+		props.put("binkp.bind6", "IPv6 address for receiving");
 		props.put("binkp.inbound", "Path to incoming mail");
 		props.put("binkp.client", "Call nodes by timer");
 		props.put("poll.period", "Call period, s.");
