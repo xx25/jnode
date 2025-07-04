@@ -664,7 +664,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 		}
 		for (FtnAddress a : foreignAddress) {
-			messages.addAll(TosserQueue.getInstanse().getMessages(a));
+			messages.addAll(TosserQueue.getInstance().getMessages(a));
 		}
 		if (messages.isEmpty()) {
 			if (!flag_leob) {

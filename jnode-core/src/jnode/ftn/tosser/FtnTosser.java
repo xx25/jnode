@@ -124,7 +124,7 @@ public class FtnTosser {
 	private void tossEchomail(FtnMessage echomail, Link link, boolean secure) {
 
 		if (!secure) {
-			logger.l3("Echomail via unsecure is dropped");
+			logger.l3("Echomail via insecure is dropped");
 			return;
 		}
 		Echoarea area = getAreaByName(echomail.getArea(), link);
@@ -211,7 +211,7 @@ public class FtnTosser {
 
 		try {
 			unpack(message);
-			TosserQueue.getInstanse().toss();
+			TosserQueue.getInstance().toss();
 		} catch (IOException e) {
 			logger.l1(
 					"Exception file tossing message "
@@ -299,7 +299,7 @@ public class FtnTosser {
 							FILEECHO_ENABLE, true)) {
 						continue;
 					}
-					logger.l3("Proccessing " + file.getName());
+					logger.l3("Processing " + file.getName());
 					try {
 						FileInputStream fis = new FileInputStream(file);
 						FtnTIC tic = new FtnTIC();
@@ -789,7 +789,7 @@ public class FtnTosser {
 	 * @return
 	 */
 	public static List<Message> getMessagesForLink(Link link) {
-		return TosserQueue.getInstanse().getMessages(link);
+		return TosserQueue.getInstance().getMessages(link);
 	}
 
 	protected FtnTIC createTic(Link link, Filemail mail, File attach) {
@@ -838,7 +838,7 @@ public class FtnTosser {
 				Ftn2D d2 = new Ftn2D(addr.getNet(), addr.getNode());
 				seenby.add(d2);
 			} catch (NullPointerException e) {
-				logger.l1("Bad link for subscriprion " + ssub + " : ignored", e);
+				logger.l1("Bad link for subscription " + ssub + " : ignored", e);
 			}
 
 		}
