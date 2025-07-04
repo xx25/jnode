@@ -21,6 +21,7 @@
 package org.jnode.httpd.util;
 
 import io.javalin.http.Context;
+import jnode.logger.Logger;
 import org.jnode.httpd.filters.LocaleFilter;
 import org.jnode.httpd.i18n.TranslationService;
 
@@ -34,6 +35,7 @@ import java.util.regex.Pattern;
  * Enhanced HTML builder with i18n support
  */
 public class HTMLi18n {
+    private static final Logger logger = Logger.getLogger(HTMLi18n.class);
     private static final Pattern TRANSLATION_PATTERN = Pattern.compile("\\{\\{\\s*(\\w+(?:\\.\\w+)*)\\s*\\}\\}");
     private final Context ctx;
     private final LocaleFilter.TranslationHelper translator;
@@ -87,7 +89,7 @@ public class HTMLi18n {
             data.append(content);
         } catch (Exception e) {
             // If reflection fails, fall back to normal behavior
-            System.out.println("HTMLi18n: Failed to replace menu content, using fallback");
+            logger.l2("HTTP: Failed to replace menu content, using fallback", e);
         }
         
         return result;
@@ -242,7 +244,7 @@ public class HTMLi18n {
         if (menuContent.length() == 0) {
             menuContent = HTML.getContents("/parts/menu.html");
         }
-        System.out.println("HTMLi18n.menu() called - content length: " + menuContent.length());
+        logger.l4("HTTP: Loading menu content, length: " + menuContent.length());
         html.append(processTemplate(menuContent));
         return this;
     }

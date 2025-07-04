@@ -40,7 +40,7 @@ import java.util.List;
 
 public class ConnectionStat implements IStatPoster, IEventHandler {
 
-    private static final Logger logger = Logger.getLogger(ConnectionStatData.class);
+    private static final Logger logger = Logger.getLogger(ConnectionStat.class);
     private final String statPath = FtnTools.getInbound() + File.separator
             + "connstat.xml";
 

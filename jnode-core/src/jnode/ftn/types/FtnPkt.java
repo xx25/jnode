@@ -42,7 +42,7 @@ import jnode.logger.Logger;
  * 
  */
 public class FtnPkt {
-	private static final Logger logger = Logger.getLogger(FtnMessage.class);
+	private static final Logger logger = Logger.getLogger(FtnPkt.class);
 	private FtnAddress fromAddr;
 	private FtnAddress toAddr;
 	private String password;

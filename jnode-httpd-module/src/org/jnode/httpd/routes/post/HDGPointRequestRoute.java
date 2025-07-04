@@ -7,6 +7,7 @@ import jnode.dto.Echoarea;
 import jnode.dto.Link;
 import jnode.ftn.FtnTools;
 import jnode.ftn.types.FtnAddress;
+import jnode.logger.Logger;
 import jnode.main.MainHandler;
 import jnode.orm.ORMManager;
 import io.javalin.http.Context;
@@ -15,6 +16,7 @@ import io.javalin.http.Handler;
 
 public class HDGPointRequestRoute implements Handler {
 
+	private static final Logger logger = Logger.getLogger(HDGPointRequestRoute.class);
 	private boolean enabled = false;
 
 	public HDGPointRequestRoute(boolean enabled) {
@@ -97,11 +99,11 @@ public class HDGPointRequestRoute implements Handler {
 	}
 
 	private void error(String error) {
-		HttpdModule.logger.l2("HDGPRError: " + error);
+		logger.l2("HTTP: HDGPRError - " + error);
 	}
 
 	private void ok(String ok) {
-		HttpdModule.logger.l3("HDGPR: " + ok);
+		logger.l3("HTTP: HDGPR - " + ok);
 	}
 
 	private FtnAddress guessNewPointAddress() {

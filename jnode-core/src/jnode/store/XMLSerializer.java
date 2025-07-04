@@ -37,14 +37,14 @@ public final class XMLSerializer {
     }
 
     public static void write(Object f, String filename) throws FileNotFoundException {
-        logger.l5("XMLSerializer: Writing object of type " + (f != null ? f.getClass().getName() : "null") + " to file: " + filename);
+        logger.l5("Writing object of type " + (f != null ? f.getClass().getName() : "null") + " to file: " + filename);
         
         File file = new File(filename);
         File parentDir = file.getParentFile();
         if (parentDir != null && !parentDir.exists()) {
-            logger.l3("XMLSerializer: Parent directory does not exist: " + parentDir.getAbsolutePath() + ", attempting to create it");
+            logger.l3("Parent directory does not exist: " + parentDir.getAbsolutePath() + ", attempting to create it");
             if (!parentDir.mkdirs()) {
-                logger.l1("XMLSerializer: Failed to create parent directory: " + parentDir.getAbsolutePath());
+                logger.l1("Failed to create parent directory: " + parentDir.getAbsolutePath());
                 throw new FileNotFoundException("Cannot create parent directory: " + parentDir.getAbsolutePath());
             }
         }
@@ -55,7 +55,7 @@ public final class XMLSerializer {
         XMLEncoder encoder = null;
         
         try {
-            logger.l5("XMLSerializer: Writing to temporary file: " + tempFilename);
+            logger.l5("Writing to temporary file: " + tempFilename);
             encoder = new XMLEncoder(
                     new BufferedOutputStream(
                             new FileOutputStream(tempFile)));
@@ -64,7 +64,7 @@ public final class XMLSerializer {
             encoder.setExceptionListener(new ExceptionListener() {
                 @Override
                 public void exceptionThrown(Exception e) {
-                    logger.l1("XMLSerializer: Exception during XML encoding of file " + filename, e);
+                    logger.l1("Exception during XML encoding of file " + filename, e);
                 }
             });
             
@@ -74,7 +74,7 @@ public final class XMLSerializer {
             
             // Verify temp file is not empty
             if (tempFile.length() == 0) {
-                logger.l1("XMLSerializer: Temporary file is empty after write: " + tempFilename);
+                logger.l1("Temporary file is empty after write: " + tempFilename);
                 tempFile.delete();
                 throw new IOException("Failed to write data - temporary file is empty");
             }
@@ -82,26 +82,26 @@ public final class XMLSerializer {
             // Delete existing file if it exists
             if (file.exists()) {
                 if (!file.delete()) {
-                    logger.l2("XMLSerializer: Could not delete existing file: " + filename);
+                    logger.l2("Could not delete existing file: " + filename);
                 }
             }
             
             // Atomic rename temp file to target file
             if (!tempFile.renameTo(file)) {
-                logger.l1("XMLSerializer: Failed to rename temp file " + tempFilename + " to " + filename);
+                logger.l1("Failed to rename temp file " + tempFilename + " to " + filename);
                 throw new IOException("Failed to rename temporary file to target file");
             }
             
-            logger.l5("XMLSerializer: Successfully wrote object to file: " + filename + " (via atomic rename)");
+            logger.l5("Successfully wrote object to file: " + filename + " (via atomic rename)");
         } catch (IOException e) {
-            logger.l1("XMLSerializer: IO error while writing to file: " + filename, e);
+            logger.l1("IO error while writing to file: " + filename, e);
             // Clean up temp file if it exists
             if (tempFile.exists()) {
                 tempFile.delete();
             }
             throw new FileNotFoundException("IO error: " + e.getMessage());
         } catch (Exception e) {
-            logger.l1("XMLSerializer: Failed to write object to file: " + filename, e);
+            logger.l1("Failed to write object to file: " + filename, e);
             // Clean up temp file if it exists
             if (tempFile.exists()) {
                 tempFile.delete();
@@ -112,23 +112,23 @@ public final class XMLSerializer {
                 try {
                     encoder.close();
                 } catch (Exception e) {
-                    logger.l2("XMLSerializer: Error closing encoder", e);
+                    logger.l2("Error closing encoder", e);
                 }
             }
         }
     }
 
     public static Object read(String filename) throws FileNotFoundException {
-        logger.l5("XMLSerializer: Reading object from file: " + filename);
+        logger.l5("Reading object from file: " + filename);
         
         File file = new File(filename);
         if (!file.exists()) {
-            logger.l2("XMLSerializer: File does not exist: " + filename);
+            logger.l2("File does not exist: " + filename);
             throw new FileNotFoundException("File does not exist: " + filename);
         }
         
         if (!file.canRead()) {
-            logger.l1("XMLSerializer: Cannot read file: " + filename);
+            logger.l1("Cannot read file: " + filename);
             throw new FileNotFoundException("Cannot read file: " + filename);
         }
         
@@ -141,21 +141,21 @@ public final class XMLSerializer {
             decoder.setExceptionListener(new ExceptionListener() {
                 @Override
                 public void exceptionThrown(Exception e) {
-                    logger.l1("XMLSerializer: Exception during XML decoding of file " + filename, e);
+                    logger.l1("Exception during XML decoding of file " + filename, e);
                 }
             });
             
             Object o = decoder.readObject();
-            logger.l5("XMLSerializer: Successfully read object of type " + 
+            logger.l5("Successfully read object of type " + 
                      (o != null ? o.getClass().getName() : "null") + " from file: " + filename);
             return o;
         } catch (ArrayIndexOutOfBoundsException e) {
-            logger.l1("XMLSerializer: ArrayIndexOutOfBoundsException while reading file: " + filename + 
+            logger.l1("ArrayIndexOutOfBoundsException while reading file: " + filename + 
                      ". File may be corrupted or contain invalid data.", e);
             throw new RuntimeException("Failed to deserialize XML file: " + filename + 
                      ". File may be corrupted or contain invalid data.", e);
         } catch (Exception e) {
-            logger.l1("XMLSerializer: Failed to read object from file: " + filename, e);
+            logger.l1("Failed to read object from file: " + filename, e);
             throw new RuntimeException("Failed to read XML file: " + filename, e);
         } finally {
             if (decoder != null) {

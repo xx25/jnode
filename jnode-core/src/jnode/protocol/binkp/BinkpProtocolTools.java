@@ -42,7 +42,7 @@ import jnode.protocol.binkp.types.BinkpFrame;
 import jnode.protocol.io.Message;
 
 public class BinkpProtocolTools {
-	static final Logger logger = Logger.getLogger(BinkpProtocolTools.class);
+	private static final Logger logger = Logger.getLogger(BinkpProtocolTools.class);
 
 	public static byte hex2decimal(String s) {
 		String digits = "0123456789ABCDEF";
@@ -123,7 +123,7 @@ public class BinkpProtocolTools {
 	public static int write(BinkpFrame frame, SocketChannel socket) {
 		if (frame != null) {
 			try {
-				logger.l5("=== write() called with frame: " + frame);
+				logger.l5("write() called with frame: " + frame);
 				ByteBuffer buf = ByteBuffer.wrap(frame.getBytes());
 				int totalBytes = buf.remaining();
 				int writtenBytes = 0;
@@ -132,13 +132,13 @@ public class BinkpProtocolTools {
 					int written = socket.write(buf);
 					writtenBytes += written;
 					if (written == 0) {
-						logger.l2("=== CRITICAL: channel.write() returned 0, remaining=" + buf.remaining() + ", socket.isConnected()=" + socket.isConnected());
+						logger.l2("CRITICAL: channel.write() returned 0, remaining=" + buf.remaining() + ", socket.isConnected()=" + socket.isConnected());
 						Thread.yield(); // Give the channel a moment
 					} else if (written > 0) {
-						logger.l4("=== Network write: " + written + " bytes written, total so far: " + writtenBytes + "/" + totalBytes);
+						logger.l5("Network write: " + written + " bytes written, total so far: " + writtenBytes + "/" + totalBytes);
 					}
 				}
-				logger.l3("=== NETWORK TRANSMISSION COMPLETE: " + writtenBytes + "/" + totalBytes + " bytes for " + (frame.getCommand() != null ? "command " + frame.getCommand() : "data frame"));
+				logger.l5("NETWORK TRANSMISSION COMPLETE: " + writtenBytes + "/" + totalBytes + " bytes for " + (frame.getCommand() != null ? "command " + frame.getCommand() : "data frame"));
 				return 1;
 			} catch (IOException e) {
 				e.printStackTrace();

@@ -45,7 +45,7 @@ public final class RssPoster {
     public static void main(String[] args) throws FileNotFoundException {
         String fileName = "/temp/data.txt";
         Watermarks watermarks = new Watermarks(fileName);
-        System.out.println(getText("http://flibusta.net/polka/show/all/rss", watermarks, 4));
+        logger.l3("RSS: Test output: " + getText("http://flibusta.net/polka/show/all/rss", watermarks, 4));
     }
 
     private static String fill(StringBuilder sb, String url, String watermark, int limit) {
@@ -55,7 +55,7 @@ public final class RssPoster {
             lastWatermark = load(entries, url, watermark, limit);
             print(sb, entries);
         } catch (Exception e) {
-            logger.l2("Some error happens while parsing " + url, e);
+            logger.l2("RSS: Error parsing feed " + url, e);
         }
         return lastWatermark;
     }
@@ -69,7 +69,7 @@ public final class RssPoster {
         try {
             lastWatermark = fill(sb, url, watermark, limit);
         } catch (Exception e) {
-            logger.l2("Some error happens while parsing " + url, e);
+            logger.l2("RSS: Error parsing feed " + url, e);
         }
 
         if (lastWatermark != null) {
