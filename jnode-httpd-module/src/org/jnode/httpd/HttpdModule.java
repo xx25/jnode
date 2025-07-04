@@ -45,6 +45,8 @@ import org.jnode.httpd.i18n.TranslationService;
  */
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
+import io.javalin.config.JavalinConfig;
+import java.util.function.Consumer;
 
 /**
  * 
@@ -57,6 +59,9 @@ public class HttpdModule extends JnodeModule {
 	private static final String CONFIG_POINT_REG = "pointreg";
 	private static final String CONFIG_HDG_REG = "hdgpointreg";
 	private static final String CONFIG_EXTERNAL = "external";
+	private static final String CONFIG_IPV6_ENABLE = "ipv6.enable";
+	private static final String CONFIG_BIND6 = "bind6";
+	private static final String CONFIG_BIND = "bind";
 
 	private static final Logger logger = Logger.getLogger(HttpdModule.class);
 	private short port;
@@ -64,7 +69,11 @@ public class HttpdModule extends JnodeModule {
 	private boolean pointreg;
 	private boolean hdgpointreg;
 	private String external;
-	private Javalin app;
+	private boolean ipv6Enabled;
+	private String bind6;
+	private String bind;
+	private Javalin appV4;
+	private Javalin appV6;
 
 	public HttpdModule(String configFile) throws JnodeModuleException {
 		super(configFile);
@@ -76,6 +85,10 @@ public class HttpdModule extends JnodeModule {
 		external = properties.getProperty(CONFIG_EXTERNAL);
 		hdgpointreg = Boolean.valueOf(properties.getProperty(CONFIG_HDG_REG,
 				"false"));
+		ipv6Enabled = Boolean.valueOf(properties.getProperty(CONFIG_IPV6_ENABLE,
+				"false"));
+		bind6 = properties.getProperty(CONFIG_BIND6, "::");
+		bind = properties.getProperty(CONFIG_BIND, "0.0.0.0");
 		HTML.setExternalPath(external);
 	}
 
@@ -86,8 +99,8 @@ public class HttpdModule extends JnodeModule {
 
 	@Override
 	public void start() {
-
-		app = Javalin.create(config -> {
+		// Create base configuration for both servers
+		Consumer<JavalinConfig> configurer = config -> {
 			config.staticFiles.add(staticFiles -> {
 				staticFiles.hostedPath = "/";
 				staticFiles.directory = "/www";
@@ -100,8 +113,27 @@ public class HttpdModule extends JnodeModule {
 					staticFiles.location = Location.EXTERNAL;
 				});
 			}
-		}).start(port);
+		};
+		
+		// Start IPv4 server if bind address is specified
+		if (bind != null && !bind.isEmpty()) {
+			logger.l3("Starting HTTP server on IPv4 address: " + bind + ":" + port);
+			appV4 = Javalin.create(configurer).start(bind, port);
+			setupRoutes(appV4);
+		}
+		
+		// Start IPv6 server if enabled and bind6 address is specified
+		if (ipv6Enabled && bind6 != null && !bind6.isEmpty()) {
+			logger.l3("Starting HTTP server on IPv6 address: " + bind6 + ":" + port);
+			appV6 = Javalin.create(configurer).start(bind6, port);
+			setupRoutes(appV6);
+		}
 
+		// Initialize admin account (only once)
+		initializeAdmin();
+	}
+
+	private void setupRoutes(Javalin app) {
 		// Set up locale filter for all routes
 		app.before("*", new LocaleFilter());
 
@@ -183,7 +215,9 @@ public class HttpdModule extends JnodeModule {
 		app.post("/secure/schedule_add.html", new ScheduleAddRoute());
 		app.post("/secure/settings_export.html", new SettingsExportRoute());
 		app.post("/secure/settings_import.html", new SettingsImportRoute());
+	}
 
+	private void initializeAdmin() {
 		try {
 			WebAdmin admin = ORMManager.get(WebAdmin.class).getFirstAnd();
 			if (admin == null) {
@@ -205,8 +239,11 @@ public class HttpdModule extends JnodeModule {
 	}
 
 	public void stop() {
-		if (app != null) {
-			app.stop();
+		if (appV4 != null) {
+			appV4.stop();
+		}
+		if (appV6 != null) {
+			appV6.stop();
 		}
 	}
 }
