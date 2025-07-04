@@ -34,8 +34,32 @@
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
+			<artifactId>junit-jupiter-api</artifactId>
 			<version>5.11.3</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>5.11.3</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-launcher</artifactId>
+			<version>1.11.3</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>5.8.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-junit-jupiter</artifactId>
+			<version>5.8.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -53,6 +77,9 @@
 					<source>11</source>
 					<target>11</target>
 					<encoding>UTF-8</encoding>
+					<excludes>
+						<exclude>**/test/**</exclude>
+					</excludes>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -70,7 +97,18 @@
 				<configuration>
 					<encoding>UTF-8</encoding>
 					<argLine>-Xms256m -Xmx512m -ea -Dfile.encoding=UTF-8</argLine>
+					<includes>
+						<include>**/*Test.java</include>
+						<include>**/*Tests.java</include>
+					</includes>
 				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.junit.jupiter</groupId>
+						<artifactId>junit-jupiter-engine</artifactId>
+						<version>5.11.3</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
