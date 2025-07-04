@@ -1,7 +1,7 @@
 package jnode.jscript;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
@@ -16,7 +16,7 @@ public class JscriptExecutorTest {
         bindings.put("console", jScriptConsole);
 
         JscriptExecutor.execScript("var a = 42 + 'ggg'; console.log(a);", bindings);
-        Assert.assertEquals("42ggg", jScriptConsole.out());
+        assertEquals("42ggg", jScriptConsole.out());
     }
 
 }

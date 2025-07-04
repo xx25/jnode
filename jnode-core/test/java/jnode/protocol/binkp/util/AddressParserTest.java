@@ -20,12 +20,12 @@
 
 package jnode.protocol.binkp.util;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for AddressParser IPv6 and IPv4 address parsing
@@ -51,7 +51,7 @@ public class AddressParserTest {
         InetSocketAddress addr = AddressParser.parseAddress("[::1]:24554");
         String host = addr.getHostString();
         // Java may resolve ::1 to full form 0:0:0:0:0:0:0:1
-        assertTrue("Expected ::1 or expanded form", "::1".equals(host) || "0:0:0:0:0:0:0:1".equals(host));
+        assertTrue("::1".equals(host) || "0:0:0:0:0:0:0:1".equals(host), "Expected ::1 or expanded form");
         assertEquals(24554, addr.getPort());
     }
     
@@ -59,7 +59,7 @@ public class AddressParserTest {
     public void testIPv6AddressWithBracketsWithoutPort() throws IOException {
         InetSocketAddress addr = AddressParser.parseAddress("[::1]");
         String host = addr.getHostString();
-        assertTrue("Expected ::1 or expanded form", "::1".equals(host) || "0:0:0:0:0:0:0:1".equals(host));
+        assertTrue("::1".equals(host) || "0:0:0:0:0:0:0:1".equals(host), "Expected ::1 or expanded form");
         assertEquals(24554, addr.getPort());
     }
     
@@ -67,7 +67,7 @@ public class AddressParserTest {
     public void testIPv6AddressWithoutBrackets() throws IOException {
         InetSocketAddress addr = AddressParser.parseAddress("::1");
         String host = addr.getHostString();
-        assertTrue("Expected ::1 or expanded form", "::1".equals(host) || "0:0:0:0:0:0:0:1".equals(host));
+        assertTrue("::1".equals(host) || "0:0:0:0:0:0:0:1".equals(host), "Expected ::1 or expanded form");
         assertEquals(24554, addr.getPort());
     }
     
@@ -75,8 +75,8 @@ public class AddressParserTest {
     public void testIPv6FullAddressWithBracketsAndPort() throws IOException {
         InetSocketAddress addr = AddressParser.parseAddress("[2001:db8::1]:25555");
         String host = addr.getHostString();
-        assertTrue("Expected 2001:db8::1 or expanded form", 
-                "2001:db8::1".equals(host) || (host.contains("2001:db8") && host.contains("1")));
+        assertTrue("2001:db8::1".equals(host) || (host.contains("2001:db8") && host.contains("1")), 
+                "Expected 2001:db8::1 or expanded form");
         assertEquals(25555, addr.getPort());
     }
     
@@ -84,8 +84,8 @@ public class AddressParserTest {
     public void testIPv6FullAddressWithoutBrackets() throws IOException {
         InetSocketAddress addr = AddressParser.parseAddress("2001:db8::1");
         String host = addr.getHostString();
-        assertTrue("Expected 2001:db8::1 or expanded form", 
-                "2001:db8::1".equals(host) || (host.contains("2001:db8") && host.contains("1")));
+        assertTrue("2001:db8::1".equals(host) || (host.contains("2001:db8") && host.contains("1")), 
+                "Expected 2001:db8::1 or expanded form");
         assertEquals(24554, addr.getPort());
     }
     
@@ -114,48 +114,48 @@ public class AddressParserTest {
     public void testIPv6WithCustomPort() throws IOException {
         InetSocketAddress addr = AddressParser.parseAddress("[fe80::1]:12345");
         String host = addr.getHostString();
-        assertTrue("Expected fe80::1 or expanded form", host.contains("fe80") && host.contains("1"));
+        assertTrue(host.contains("fe80") && host.contains("1"), "Expected fe80::1 or expanded form");
         assertEquals(12345, addr.getPort());
     }
     
-    @Test(expected = IOException.class)
-    public void testInvalidIPv6BracketFormat() throws IOException {
-        AddressParser.parseAddress("[::1:invalid");
+    @Test
+    public void testInvalidIPv6BracketFormat() {
+        assertThrows(IOException.class, () -> AddressParser.parseAddress("[::1:invalid"));
     }
     
-    @Test(expected = IOException.class)
-    public void testInvalidIPv6BracketFormatMissingColon() throws IOException {
-        AddressParser.parseAddress("[::1]invalid");
+    @Test
+    public void testInvalidIPv6BracketFormatMissingColon() {
+        assertThrows(IOException.class, () -> AddressParser.parseAddress("[::1]invalid"));
     }
     
-    @Test(expected = IOException.class)
-    public void testInvalidPortNumber() throws IOException {
-        AddressParser.parseAddress("192.168.1.1:invalid");
+    @Test
+    public void testInvalidPortNumber() {
+        assertThrows(IOException.class, () -> AddressParser.parseAddress("192.168.1.1:invalid"));
     }
     
-    @Test(expected = IOException.class)
-    public void testInvalidPortNumberIPv6() throws IOException {
-        AddressParser.parseAddress("[::1]:invalid");
+    @Test
+    public void testInvalidPortNumberIPv6() {
+        assertThrows(IOException.class, () -> AddressParser.parseAddress("[::1]:invalid"));
     }
     
-    @Test(expected = IOException.class)
-    public void testEmptyAddress() throws IOException {
-        AddressParser.parseAddress("");
+    @Test
+    public void testEmptyAddress() {
+        assertThrows(IOException.class, () -> AddressParser.parseAddress(""));
     }
     
-    @Test(expected = IOException.class)
-    public void testNullAddress() throws IOException {
-        AddressParser.parseAddress(null);
+    @Test
+    public void testNullAddress() {
+        assertThrows(IOException.class, () -> AddressParser.parseAddress(null));
     }
     
-    @Test(expected = IOException.class)
-    public void testEmptyIPv6Address() throws IOException {
-        AddressParser.parseAddress("[]");
+    @Test
+    public void testEmptyIPv6Address() {
+        assertThrows(IOException.class, () -> AddressParser.parseAddress("[]"));
     }
     
-    @Test(expected = IOException.class)
-    public void testEmptyIPv6AddressWithPort() throws IOException {
-        AddressParser.parseAddress("[]:24554");
+    @Test
+    public void testEmptyIPv6AddressWithPort() {
+        assertThrows(IOException.class, () -> AddressParser.parseAddress("[]:24554"));
     }
     
     @Test
@@ -167,9 +167,10 @@ public class AddressParserTest {
         for (int i = 0; i < localhostVariants.length; i++) {
             InetSocketAddress addr = AddressParser.parseAddress(localhostVariants[i]);
             String host = addr.getHostString();
-            assertTrue("IPv6 localhost variant failed: " + localhostVariants[i], 
-                    "::1".equals(host) || "0:0:0:0:0:0:0:1".equals(host));
-            assertEquals("Port mismatch for: " + localhostVariants[i], expectedPorts[i], addr.getPort());
+            assertTrue("::1".equals(host) || "0:0:0:0:0:0:0:1".equals(host), 
+                    "IPv6 localhost variant failed: " + localhostVariants[i]);
+            assertEquals(expectedPorts[i], addr.getPort(), 
+                    "Port mismatch for: " + localhostVariants[i]);
         }
     }
     
@@ -186,9 +187,9 @@ public class AddressParserTest {
         
         for (int i = 0; i < complexAddresses.length; i++) {
             InetSocketAddress addr = AddressParser.parseAddress(complexAddresses[i]);
-            assertEquals("Port mismatch for complex address: " + complexAddresses[i], 
-                    expectedPorts[i], addr.getPort());
-            assertNotNull("Host should not be null", addr.getHostString());
+            assertEquals(expectedPorts[i], addr.getPort(), 
+                    "Port mismatch for complex address: " + complexAddresses[i]);
+            assertNotNull(addr.getHostString(), "Host should not be null");
         }
     }
 }
