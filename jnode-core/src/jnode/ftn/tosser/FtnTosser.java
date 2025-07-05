@@ -136,8 +136,8 @@ public class FtnTosser {
 			return;
 		}
 
-		Long rl = getOptionLong(link, LinkOption.LONG_LINK_LEVEL);
-		if (rl < area.getWritelevel()) {
+		Long rl = (link != null) ? getOptionLong(link, LinkOption.LONG_LINK_LEVEL) : 0L;
+		if (link != null && rl < area.getWritelevel()) {
 			writeNetmail(
 					getPrimaryFtnAddress(),
 					new FtnAddress(link.getLinkAddress()),
@@ -424,6 +424,7 @@ public class FtnTosser {
 			PollQueue.getSelf().add(
 					ORMManager.get(Link.class).getById(l.getId()));
 		}
+		running = false;
 	}
 
 	private void markAsBad(File file, String message) {
