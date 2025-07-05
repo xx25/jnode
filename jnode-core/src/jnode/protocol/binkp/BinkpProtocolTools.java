@@ -39,6 +39,7 @@ import jnode.logger.Logger;
 import jnode.protocol.binkp.connector.BinkpAbstractConnector;
 import jnode.protocol.binkp.types.BinkpCommand;
 import jnode.protocol.binkp.types.BinkpFrame;
+import jnode.protocol.binkp.util.FilenameEscaper;
 import jnode.protocol.io.Message;
 
 public class BinkpProtocolTools {
@@ -149,15 +150,18 @@ public class BinkpProtocolTools {
 	}
 
 	public static boolean messageEquals(Message message, String arg) {
+		// Compare using escaped filename for consistency
 		return (getString(message).equals(arg));
 	}
 
 	public static Message createMessage(String arg, boolean secure) {
 		String[] args = arg.split(" ");
 		try {
+			// Unescape filename according to BinkP specification
+			String filename = FilenameEscaper.unescape(args[0]);
 			Long len = Long.valueOf(args[1]);
 			Long unixtime = Long.valueOf(args[2]);
-			Message message = new Message(args[0], len);
+			Message message = new Message(filename, len);
 			message.setUnixtime(unixtime);
 			message.setSecure(secure);
 			return message;
@@ -167,12 +171,16 @@ public class BinkpProtocolTools {
 	}
 
 	public static String getString(Message message, int skip) {
-		return String.format("%s %d %d %d", message.getMessageName(),
+		// Escape filename according to BinkP specification
+		String escapedFilename = FilenameEscaper.escape(message.getMessageName());
+		return String.format("%s %d %d %d", escapedFilename,
 				message.getMessageLength(), message.getUnixtime(), skip);
 	}
 
 	public static String getString(Message message) {
-		return String.format("%s %d %d", message.getMessageName(),
+		// Escape filename according to BinkP specification
+		String escapedFilename = FilenameEscaper.escape(message.getMessageName());
+		return String.format("%s %d %d", escapedFilename,
 				message.getMessageLength(), message.getUnixtime());
 	}
 

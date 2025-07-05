@@ -33,6 +33,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
 
 import jnode.logger.Logger;
 import jnode.protocol.binkp.exceprion.ConnectionEndException;
@@ -209,6 +210,21 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 								((Buffer)head).flip();
 								int header = ((int) head.getShort()) & 0xffff;
 								int datalen = header & 0x7fff;
+								
+								// Drop empty frames as per BinkP specification (FTS-1026)
+								// "Empty frames (SIZE=0): Obsolete, SHOULD NOT be used"
+								// "Handling empty frames: Silently drop, treat total length as 2"
+								if (datalen == 0) {
+									logger.l5("Dropping empty frame (SIZE=0) as per BinkP specification");
+									continue;
+								}
+								
+								// Protect against oversized frames that violate BinkP specification
+								if (datalen > 32767) {
+									error(String.format("Received frame size %d exceeds BinkP maximum of 32767 bytes", datalen));
+									break;
+								}
+								
 								ByteBuffer data = ByteBuffer.allocate(datalen);
 								for (int len = 0; len < datalen;) {
 									len += readOrDie(data, channel);
@@ -216,21 +232,42 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 								((Buffer)data).flip();
 								if ((header & 0x8000) >= 0x8000) {
 									// command
+									if (datalen < 1) {
+										logger.l3("Malformed command frame: no command byte");
+										continue;
+									}
 									BinkpCommand cmd = getCommand(data.get());
+									if (cmd == null) {
+										int unknownCmd = data.array()[0] & 0xFF;
+										logger.l3("Unknown command received: " + unknownCmd + " (ignoring as per BinkP specification)");
+										continue;
+									}
+									
+									// Handle null-terminated command arguments
 									if (datalen > 1) {
 										if (data.get(datalen - 1) == 0) {
 											datalen--;
 										}
 										byte[] buf = new byte[datalen - 1];
 										data.get(buf);
-										frame = new BinkpFrame(cmd, new String(
-												buf));
+										
+										try {
+											String arg = new String(buf, StandardCharsets.UTF_8);
+											frame = new BinkpFrame(cmd, arg);
+										} catch (Exception e) {
+											logger.l3("Malformed command argument encoding, using default: " + e.getMessage());
+											frame = new BinkpFrame(cmd, new String(buf));
+										}
 									} else {
 										frame = new BinkpFrame(cmd);
 									}
 								} else {
-									frame = new BinkpFrame(data.array(),
-											datalen);
+									try {
+										frame = new BinkpFrame(data.array(), datalen);
+									} catch (Exception e) {
+										logger.l3("Failed to create data frame: " + e.getMessage());
+										continue;
+									}
 								}
 								if (frame != null) {
 									logger.l5("Frame received: " + frame);

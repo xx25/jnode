@@ -26,6 +26,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.NoSuchElementException;
 
 import jnode.logger.Logger;
@@ -139,9 +140,24 @@ public class BinkpSyncConnector extends BinkpAbstractConnector {
 						head[i] = readOrDie(socket.getInputStream());
 					}
 					int len = ((head[0] & 0xff) << 8 | (head[1] & 0xff)) & 0x7FFF;
+					boolean command = (head[0] & 0x80) > 0;
+					
+					// Drop empty frames as per BinkP specification (FTS-1026)
+					// "Empty frames (SIZE=0): Obsolete, SHOULD NOT be used"
+					// "Handling empty frames: Silently drop, treat total length as 2"
+					if (len == 0) {
+						logger.l5("Dropping empty frame (SIZE=0) as per BinkP specification");
+						continue;
+					}
+					
+					// Protect against oversized frames that violate BinkP specification
+					if (len > 32767) {
+						error(String.format("Received frame size %d exceeds BinkP maximum of 32767 bytes", len));
+						break;
+					}
+					
 					int remaining = len;
 					ByteBuffer data = ByteBuffer.allocate(len);
-					boolean command = (head[0] & 0x80) > 0;
 					while (remaining > 0) {
 						byte[] buf = readOrDie(socket.getInputStream(),
 								remaining);
@@ -151,16 +167,42 @@ public class BinkpSyncConnector extends BinkpAbstractConnector {
 					((Buffer)data).flip();
 					BinkpFrame frame;
 					if (command) {
-						BinkpCommand cmd = BinkpProtocolTools.getCommand(data
-								.get());
-						if (data.get(len - 1) == 0) {
-							len--;
+						if (len < 1) {
+							logger.l3("Malformed command frame: no command byte");
+							continue;
 						}
-						byte[] ndata = new byte[len - 1];
-						data.get(ndata);
-						frame = new BinkpFrame(cmd, new String(ndata));
+						BinkpCommand cmd = BinkpProtocolTools.getCommand(data.get());
+						if (cmd == null) {
+							int unknownCmd = data.array()[0] & 0xFF;
+							logger.l3("Unknown command received: " + unknownCmd + " (ignoring as per BinkP specification)");
+							continue;
+						}
+						
+						// Handle null-terminated command arguments
+						if (len > 1) {
+							if (data.get(len - 1) == 0) {
+								len--;
+							}
+							byte[] ndata = new byte[len - 1];
+							data.get(ndata);
+							
+							try {
+								String arg = new String(ndata, StandardCharsets.UTF_8);
+								frame = new BinkpFrame(cmd, arg);
+							} catch (Exception e) {
+								logger.l3("Malformed command argument encoding, using default: " + e.getMessage());
+								frame = new BinkpFrame(cmd, new String(ndata));
+							}
+						} else {
+							frame = new BinkpFrame(cmd);
+						}
 					} else {
-						frame = new BinkpFrame(data.array());
+						try {
+							frame = new BinkpFrame(data.array());
+						} catch (Exception e) {
+							logger.l3("Failed to create data frame: " + e.getMessage());
+							continue;
+						}
 					}
 					logger.l5("Frame received: " + frame + 
 						", command=" + (command ? "yes" : "no") + 
