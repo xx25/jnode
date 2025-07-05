@@ -70,7 +70,9 @@ public class BinkpFrame {
 	private void init() {
 		int datalen = frame.length - 2;
 		if (datalen > MAX_SIZE) {
-			// swear here
+			throw new IllegalArgumentException(
+				String.format("Frame data size %d exceeds maximum allowed size %d bytes (BinkP specification limit)", 
+					datalen, MAX_SIZE));
 		} else {
 			datalen &= 0x7fff;
 		}

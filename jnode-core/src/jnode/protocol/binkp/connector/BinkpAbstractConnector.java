@@ -123,6 +123,8 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	private String cramAlgo = null;
 	private String cramText = null;
 	protected boolean binkp1_0 = true;
+	private boolean remoteBinkp11Supported = false;
+	private boolean versionNegotiated = false;
 	// current messages 'to send' before EOF
 	protected ArrayList<Message> messages = new ArrayList<>();
 	protected InputStream currentInputStream;
@@ -624,15 +626,55 @@ public abstract class BinkpAbstractConnector implements Runnable {
 				}
 			}
 		} else if (args[0].equals("VER")) {
+			// Parse remote version and negotiate protocol version
 			if (arg.matches("^.* binkp/1\\.1$")) {
-				binkp1_0 = false;
-				logger.l4("Protocol version 1.1");
+				remoteBinkp11Supported = true;
+				logger.l4("Remote supports BinkP/1.1");
+			} else if (arg.matches("^.* binkp/1\\.0$")) {
+				remoteBinkp11Supported = false;
+				logger.l4("Remote supports BinkP/1.0 only");
 			} else {
-				binkp1_0 = true;
-				logger.l4("Protocol version 1.0");
+				// Unknown or no version specified, assume 1.0 for compatibility
+				remoteBinkp11Supported = false;
+				logger.l4("Remote version unknown, assuming BinkP/1.0");
+			}
+			
+			// Negotiate final protocol version - use 1.1 only if both sides support it
+			if (!versionNegotiated) {
+				negotiateProtocolVersion();
 			}
 		}
 
+	}
+
+	/**
+	 * Negotiate the final protocol version based on both sides' capabilities.
+	 * According to BinkP specification, should fallback to 1.0 if remote doesn't support 1.1.
+	 */
+	private void negotiateProtocolVersion() {
+		boolean localBinkp11Supported = true; // jNode supports BinkP/1.1
+		
+		if (localBinkp11Supported && remoteBinkp11Supported) {
+			binkp1_0 = false;
+			logger.l3("Protocol negotiated: BinkP/1.1 (both sides support it)");
+		} else {
+			binkp1_0 = true;
+			if (!remoteBinkp11Supported) {
+				logger.l3("Protocol negotiated: BinkP/1.0 (remote doesn't support 1.1)");
+			} else {
+				logger.l3("Protocol negotiated: BinkP/1.0 (local fallback)");
+			}
+		}
+		
+		versionNegotiated = true;
+		
+		// Send our version response if we're the server and haven't sent it yet
+		if (!clientConnection && versionNegotiated) {
+			String negotiatedVersion = binkp1_0 ? "binkp/1.0" : "binkp/1.1";
+			frames.addLast(new BinkpFrame(BinkpCommand.M_NUL, "VER "
+					+ MainHandler.getVersion() + " " + negotiatedVersion));
+			logger.l4("Sent negotiated version: " + negotiatedVersion);
+		}
 	}
 
 	protected void checkForMessages() {
@@ -708,6 +750,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 				+ info.getLocation()));
 		frames.addLast(new BinkpFrame(BinkpCommand.M_NUL, "NDL "
 				+ info.getNDL()));
+		// Initially announce BinkP/1.1 capability, will fallback to 1.0 if needed
 		frames.addLast(new BinkpFrame(BinkpCommand.M_NUL, "VER "
 				+ MainHandler.getVersion() + " binkp/1.1"));
 		frames.addLast(new BinkpFrame(BinkpCommand.M_NUL, "TIME "
