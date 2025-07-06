@@ -21,7 +21,9 @@
 package jnode.ftn;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -42,7 +44,7 @@ public class FilesBBSWriter {
     private static final int MAX_FILENAME_LENGTH = 12;
     
     /**
-     * Appends a file entry to FILES.BBS in the specified directory.
+     * Appends a file entry to FILES.BBS in the specified directory using US-ASCII encoding.
      * 
      * @param directory The directory containing the file and FILES.BBS
      * @param filename The filename to add
@@ -50,6 +52,20 @@ public class FilesBBSWriter {
      * @throws IOException if writing fails
      */
     public static void appendEntry(File directory, String filename, String description) throws IOException {
+        appendEntry(directory, filename, description, false, "US-ASCII");
+    }
+    
+    /**
+     * Appends a file entry to FILES.BBS in the specified directory with configurable encoding.
+     * 
+     * @param directory The directory containing the file and FILES.BBS
+     * @param filename The filename to add
+     * @param description The file description (can be multi-line)
+     * @param use8bit If true, uses specified charset; if false, uses US-ASCII
+     * @param charsetName The charset name to use when use8bit is true (e.g., "CP866", "CP437")
+     * @throws IOException if writing fails
+     */
+    public static void appendEntry(File directory, String filename, String description, boolean use8bit, String charsetName) throws IOException {
         if (directory == null || !directory.isDirectory()) {
             throw new IllegalArgumentException("Invalid directory: " + directory);
         }
@@ -76,12 +92,27 @@ public class FilesBBSWriter {
             logger.l5("Line " + i + ": " + formattedLines.get(i));
         }
         
+        // Determine charset to use
+        Charset charset;
+        try {
+            if (use8bit && charsetName != null && !charsetName.isEmpty()) {
+                charset = Charset.forName(charsetName);
+                logger.l4("Using charset: " + charset.displayName());
+            } else {
+                charset = StandardCharsets.US_ASCII;
+                logger.l4("Using charset: US-ASCII (7-bit)");
+            }
+        } catch (UnsupportedCharsetException e) {
+            logger.l2("Unsupported charset: " + charsetName + ", falling back to US-ASCII");
+            charset = StandardCharsets.US_ASCII;
+        }
+        
         // Append to FILES.BBS with file locking for concurrent access
         synchronized (FilesBBSWriter.class) {
             try (BufferedWriter writer = new BufferedWriter(
                     new OutputStreamWriter(
                             new FileOutputStream(filesBbs, true), 
-                            StandardCharsets.US_ASCII))) {
+                            charset))) {
                 
                 for (String line : formattedLines) {
                     writer.write(line);
@@ -89,7 +120,7 @@ public class FilesBBSWriter {
                 }
                 
                 writer.flush();
-                logger.l4("Successfully flushed data to FILES.BBS");
+                logger.l4("Successfully flushed data to FILES.BBS using " + charset.displayName());
             }
         }
         

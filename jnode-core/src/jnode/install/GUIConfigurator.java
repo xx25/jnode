@@ -119,6 +119,8 @@ public class GUIConfigurator {
 		ret.add("fileecho.path");
 		ret.add("fileecho.files_bbs.enable");
 		ret.add("fileecho.file_id_diz.enable");
+		ret.add("fileecho.8bit_output.enable");
+		ret.add("fileecho.output_charset");
 		ret.add("stat.enable");
 		ret.add("stat.area");
 		ret.add("jscript.enable");
@@ -150,6 +152,8 @@ public class GUIConfigurator {
 		props.put("fileecho.path", "Path to file echoes folder");
 		props.put("fileecho.files_bbs.enable", "Generate FILES.BBS in file echo directories");
 		props.put("fileecho.file_id_diz.enable", "Generate FILE_ID.DIZ in file echo directories");
+		props.put("fileecho.8bit_output.enable", "Enable 8-bit output for FILES.BBS and FILE_ID.DIZ");
+		props.put("fileecho.output_charset", "Charset for 8-bit output (e.g., CP866, CP437)");
 		props.put("stat.enable", "Enable statistics");
 		props.put("stat.area", "Echo for statistics");
 		props.put("jscript.enable", "Enable scripts");
@@ -179,6 +183,8 @@ public class GUIConfigurator {
 		props.setProperty("fileecho.path", "files");
 		props.setProperty("fileecho.files_bbs.enable", "true");
 		props.setProperty("fileecho.file_id_diz.enable", "true");
+		props.setProperty("fileecho.8bit_output.enable", "false");
+		props.setProperty("fileecho.output_charset", "CP866");
 		props.setProperty("stat.enable", "true");
 		props.setProperty("stat.area", "9999.stat");
 		props.setProperty("jscript.enable", "true");
@@ -249,6 +255,7 @@ public class GUIConfigurator {
 			case "fileecho.enable":
 			case "fileecho.files_bbs.enable":
 			case "fileecho.file_id_diz.enable":
+			case "fileecho.8bit_output.enable":
 			case "stat.enable":
 			case "jscript.enable":
 				comp = new Checkbox();

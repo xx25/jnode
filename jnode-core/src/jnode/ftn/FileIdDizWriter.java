@@ -21,7 +21,9 @@
 package jnode.ftn;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +46,7 @@ public class FileIdDizWriter {
     private static final int MAX_LINE_LENGTH = 45;
     
     /**
-     * Appends a file entry to FILE_ID.DIZ in the specified directory.
+     * Appends a file entry to FILE_ID.DIZ in the specified directory using US-ASCII encoding.
      * If the file doesn't exist, it will be created. If it exists, the entry
      * will be appended to preserve existing descriptions.
      * 
@@ -54,6 +56,22 @@ public class FileIdDizWriter {
      * @throws IOException if writing fails
      */
     public static void appendEntry(File directory, String filename, String description) throws IOException {
+        appendEntry(directory, filename, description, false, "US-ASCII");
+    }
+    
+    /**
+     * Appends a file entry to FILE_ID.DIZ in the specified directory with configurable encoding.
+     * If the file doesn't exist, it will be created. If it exists, the entry
+     * will be appended to preserve existing descriptions.
+     * 
+     * @param directory The directory to create/append to FILE_ID.DIZ in
+     * @param filename The filename being described
+     * @param description The file description (can be multi-line)
+     * @param use8bit If true, uses specified charset; if false, uses US-ASCII
+     * @param charsetName The charset name to use when use8bit is true (e.g., "CP866", "CP437")
+     * @throws IOException if writing fails
+     */
+    public static void appendEntry(File directory, String filename, String description, boolean use8bit, String charsetName) throws IOException {
         if (directory == null || !directory.isDirectory()) {
             throw new IllegalArgumentException("Invalid directory: " + directory);
         }
@@ -80,12 +98,27 @@ public class FileIdDizWriter {
             logger.l5("Line " + i + ": " + formattedLines.get(i));
         }
         
+        // Determine charset to use
+        Charset charset;
+        try {
+            if (use8bit && charsetName != null && !charsetName.isEmpty()) {
+                charset = Charset.forName(charsetName);
+                logger.l4("Using charset: " + charset.displayName());
+            } else {
+                charset = StandardCharsets.US_ASCII;
+                logger.l4("Using charset: US-ASCII (7-bit)");
+            }
+        } catch (UnsupportedCharsetException e) {
+            logger.l2("Unsupported charset: " + charsetName + ", falling back to US-ASCII");
+            charset = StandardCharsets.US_ASCII;
+        }
+        
         // Append to FILE_ID.DIZ with proper encoding and synchronization
         synchronized (FileIdDizWriter.class) {
             try (BufferedWriter writer = new BufferedWriter(
                     new OutputStreamWriter(
                             new FileOutputStream(fileIdDiz, true), // Append mode
-                            StandardCharsets.US_ASCII))) {
+                            charset))) {
                 
                 for (String line : formattedLines) {
                     writer.write(line);
@@ -93,7 +126,7 @@ public class FileIdDizWriter {
                 }
                 
                 writer.flush();
-                logger.l4("Successfully flushed data to FILE_ID.DIZ");
+                logger.l4("Successfully flushed data to FILE_ID.DIZ using " + charset.displayName());
             }
         }
         

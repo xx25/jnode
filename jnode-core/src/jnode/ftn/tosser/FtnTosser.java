@@ -55,6 +55,8 @@ public class FtnTosser {
 	private static final String FILEECHO_PATH = "fileecho.path";
 	private static final String FILES_BBS_ENABLE = "fileecho.files_bbs.enable";
 	private static final String FILE_ID_DIZ_ENABLE = "fileecho.file_id_diz.enable";
+	private static final String FILEECHO_8BIT_ENABLE = "fileecho.8bit_output.enable";
+	private static final String FILEECHO_CHARSET = "fileecho.output_charset";
 	private static final Logger logger = Logger.getLogger(FtnTosser.class);
 	private static final String MAIL_LIMIT = "tosser.mail_limit";
 	private final Map<String, Integer> tossed = new HashMap<>();
@@ -344,10 +346,13 @@ public class FtnTosser {
 								logger.l3("FILES.BBS feature enabled: " + filesBbsEnabled);
 								if (filesBbsEnabled) {
 									try {
+										boolean use8bit = MainHandler.getCurrentInstance().getBooleanProperty(FILEECHO_8BIT_ENABLE, false);
+										String charset = MainHandler.getCurrentInstance().getProperty(FILEECHO_CHARSET, "CP866");
 										logger.l3("Writing FILES.BBS entry for " + tic.getFile() + " to " + newFile.getParentFile().getAbsolutePath());
 										logger.l4("File description: " + tic.getDesc());
+										logger.l4("8-bit output enabled: " + use8bit + ", charset: " + (use8bit ? charset : "US-ASCII"));
 										FilesBBSWriter.appendEntry(newFile.getParentFile(), 
-												tic.getFile(), tic.getDesc());
+												tic.getFile(), tic.getDesc(), use8bit, charset);
 										logger.l3("Successfully wrote FILES.BBS entry");
 									} catch (Exception e) {
 										logger.l2("Failed to write FILES.BBS entry for " + 
@@ -364,10 +369,13 @@ public class FtnTosser {
 								logger.l3("FILE_ID.DIZ feature enabled: " + fileIdDizEnabled);
 								if (fileIdDizEnabled) {
 									try {
+										boolean use8bit = MainHandler.getCurrentInstance().getBooleanProperty(FILEECHO_8BIT_ENABLE, false);
+										String charset = MainHandler.getCurrentInstance().getProperty(FILEECHO_CHARSET, "CP866");
 										logger.l3("Writing FILE_ID.DIZ entry for " + tic.getFile() + " to " + newFile.getParentFile().getAbsolutePath());
 										logger.l4("File description: " + tic.getDesc());
+										logger.l4("8-bit output enabled: " + use8bit + ", charset: " + (use8bit ? charset : "US-ASCII"));
 										FileIdDizWriter.appendEntry(newFile.getParentFile(), 
-												tic.getFile(), tic.getDesc());
+												tic.getFile(), tic.getDesc(), use8bit, charset);
 										logger.l3("Successfully wrote FILE_ID.DIZ entry");
 									} catch (Exception e) {
 										logger.l2("Failed to write FILE_ID.DIZ entry for " + 
