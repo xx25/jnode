@@ -62,10 +62,23 @@ public class FileIdDizWriter {
             throw new IllegalArgumentException("Filename cannot be null or empty");
         }
         
+        logger.l4("Directory path: " + directory.getAbsolutePath());
+        logger.l4("Directory exists: " + directory.exists());
+        logger.l4("Directory is writable: " + directory.canWrite());
+        
         File fileIdDiz = new File(directory, FILE_ID_DIZ);
+        logger.l4("FILE_ID.DIZ path: " + fileIdDiz.getAbsolutePath());
+        logger.l4("FILE_ID.DIZ exists: " + fileIdDiz.exists());
+        if (fileIdDiz.exists()) {
+            logger.l4("FILE_ID.DIZ is writable: " + fileIdDiz.canWrite());
+        }
         
         // Format the entry according to FILE_ID.DIZ specification
         List<String> formattedLines = formatFileIdDizEntry(filename, description);
+        logger.l4("Formatted lines count: " + formattedLines.size());
+        for (int i = 0; i < formattedLines.size(); i++) {
+            logger.l5("Line " + i + ": " + formattedLines.get(i));
+        }
         
         // Append to FILE_ID.DIZ with proper encoding and synchronization
         synchronized (FileIdDizWriter.class) {
@@ -80,10 +93,12 @@ public class FileIdDizWriter {
                 }
                 
                 writer.flush();
+                logger.l4("Successfully flushed data to FILE_ID.DIZ");
             }
         }
         
         logger.l4("Added entry to FILE_ID.DIZ: " + filename + " in " + directory.getAbsolutePath());
+        logger.l4("FILE_ID.DIZ file size after write: " + fileIdDiz.length() + " bytes");
     }
     
     /**

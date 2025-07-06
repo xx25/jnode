@@ -331,31 +331,52 @@ public class FtnTosser {
 								continue;
 							}
 							Filemail mail = new Filemail();
-							File newFile = new File(getFilePath(area.getName(),
-									tic.getFile()));
+							String filePath = getFilePath(area.getName(), tic.getFile());
+							logger.l3("File destination path: " + filePath);
+							File newFile = new File(filePath);
+							logger.l3("Moving file from " + attach.getAbsolutePath() + " to " + newFile.getAbsolutePath());
 							if (FileUtils.move(attach, newFile, true)) {
+								logger.l3("File successfully moved to " + newFile.getAbsolutePath());
 								mail.setFilepath(newFile.getAbsolutePath());
 								
 								// Generate FILES.BBS entry in the destination directory
-								if (MainHandler.getCurrentInstance().getBooleanProperty(FILES_BBS_ENABLE, true)) {
+								boolean filesBbsEnabled = MainHandler.getCurrentInstance().getBooleanProperty(FILES_BBS_ENABLE, true);
+								logger.l3("FILES.BBS feature enabled: " + filesBbsEnabled);
+								if (filesBbsEnabled) {
 									try {
+										logger.l3("Writing FILES.BBS entry for " + tic.getFile() + " to " + newFile.getParentFile().getAbsolutePath());
+										logger.l4("File description: " + tic.getDesc());
 										FilesBBSWriter.appendEntry(newFile.getParentFile(), 
 												tic.getFile(), tic.getDesc());
+										logger.l3("Successfully wrote FILES.BBS entry");
 									} catch (Exception e) {
 										logger.l2("Failed to write FILES.BBS entry for " + 
-												tic.getFile(), e);
+												tic.getFile() + " in " + newFile.getParentFile().getAbsolutePath(), e);
+										logger.l3("Exception details: " + e.getMessage());
+										e.printStackTrace();
 									}
+								} else {
+									logger.l3("FILES.BBS feature is disabled");
 								}
 								
 								// Generate FILE_ID.DIZ entry in the destination directory
-								if (MainHandler.getCurrentInstance().getBooleanProperty(FILE_ID_DIZ_ENABLE, true)) {
+								boolean fileIdDizEnabled = MainHandler.getCurrentInstance().getBooleanProperty(FILE_ID_DIZ_ENABLE, true);
+								logger.l3("FILE_ID.DIZ feature enabled: " + fileIdDizEnabled);
+								if (fileIdDizEnabled) {
 									try {
+										logger.l3("Writing FILE_ID.DIZ entry for " + tic.getFile() + " to " + newFile.getParentFile().getAbsolutePath());
+										logger.l4("File description: " + tic.getDesc());
 										FileIdDizWriter.appendEntry(newFile.getParentFile(), 
 												tic.getFile(), tic.getDesc());
+										logger.l3("Successfully wrote FILE_ID.DIZ entry");
 									} catch (Exception e) {
 										logger.l2("Failed to write FILE_ID.DIZ entry for " + 
-												tic.getFile(), e);
+												tic.getFile() + " in " + newFile.getParentFile().getAbsolutePath(), e);
+										logger.l3("Exception details: " + e.getMessage());
+										e.printStackTrace();
 									}
+								} else {
+									logger.l3("FILE_ID.DIZ feature is disabled");
 								}
 							} else {
 								mail.setFilepath(attach.getAbsolutePath());

@@ -58,10 +58,23 @@ public class FilesBBSWriter {
             throw new IllegalArgumentException("Filename cannot be null or empty");
         }
         
+        logger.l4("Directory path: " + directory.getAbsolutePath());
+        logger.l4("Directory exists: " + directory.exists());
+        logger.l4("Directory is writable: " + directory.canWrite());
+        
         File filesBbs = new File(directory, FILES_BBS);
+        logger.l4("FILES.BBS path: " + filesBbs.getAbsolutePath());
+        logger.l4("FILES.BBS exists: " + filesBbs.exists());
+        if (filesBbs.exists()) {
+            logger.l4("FILES.BBS is writable: " + filesBbs.canWrite());
+        }
         
         // Format the entry
         List<String> formattedLines = formatEntry(filename, description);
+        logger.l4("Formatted lines count: " + formattedLines.size());
+        for (int i = 0; i < formattedLines.size(); i++) {
+            logger.l5("Line " + i + ": " + formattedLines.get(i));
+        }
         
         // Append to FILES.BBS with file locking for concurrent access
         synchronized (FilesBBSWriter.class) {
@@ -76,10 +89,12 @@ public class FilesBBSWriter {
                 }
                 
                 writer.flush();
+                logger.l4("Successfully flushed data to FILES.BBS");
             }
         }
         
         logger.l4("Added entry to FILES.BBS: " + filename + " in " + directory.getAbsolutePath());
+        logger.l4("FILES.BBS file size after write: " + filesBbs.length() + " bytes");
     }
     
     /**
