@@ -23,6 +23,10 @@ package jnode.dto;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import jnode.ftn.types.FtnAddress;
+import jnode.ndl.FtnNdlAddress;
+import jnode.ndl.NodelistScanner;
+
 /**
  * 
  * @author kreon
@@ -123,6 +127,75 @@ public class Link {
 
 	public void setProtocolAddress(String protocolAddress) {
 		this.protocolAddress = protocolAddress;
+	}
+
+	/**
+	 * Gets the protocol address for this link, with nodelist fallback.
+	 * 
+	 * Logic:
+	 * 1. If protocolAddress is "-", return "-" (no connection)
+	 * 2. If protocolAddress is not empty and not "-", return it as-is
+	 * 3. If protocolAddress is empty, try to resolve from nodelist:
+	 *    a. Check IBN flag first - if it has host/IP, use it
+	 *    b. If IBN has no host, check INA flag
+	 *    c. If no valid address found, return "-"
+	 * 
+	 * @return Resolved protocol address or "-" if no valid address found
+	 */
+	public String getResolvedProtocolAddress() {
+		// If explicitly set to "-", don't connect
+		if ("-".equals(protocolAddress)) {
+			return "-";
+		}
+		
+		// If we have a configured address, use it
+		if (protocolAddress != null && !protocolAddress.isEmpty() && !"-".equals(protocolAddress)) {
+			return protocolAddress;
+		}
+		
+		// Try to resolve from nodelist
+		try {
+			FtnAddress ftnAddr = new FtnAddress(linkAddress);
+			FtnNdlAddress ndlAddr = NodelistScanner.getInstance().isExists(ftnAddr);
+			
+			if (ndlAddr == null) {
+				// Not in nodelist
+				return "-";
+			}
+			
+			// First check IBN flag
+			String ibnHost = ndlAddr.getIbnHost();
+			if (ibnHost != null && !ibnHost.isEmpty()) {
+				// IBN has a host/IP specified
+				int port = ndlAddr.getBinkpPort();
+				if (port > 0 && port != 24554) {
+					return ibnHost + ":" + port;
+				} else {
+					return ibnHost + ":24554";
+				}
+			}
+			
+			// IBN exists but no host specified, or no IBN - check INA
+			String inaHost = ndlAddr.getInetHost();
+			if (inaHost != null && !inaHost.isEmpty() && !"-".equals(inaHost)) {
+				// INA has a host/IP specified
+				int port = ndlAddr.getBinkpPort();
+				if (port > 0) {
+					// Use IBN port if available
+					return inaHost + ":" + port;
+				} else {
+					// Default port
+					return inaHost + ":24554";
+				}
+			}
+			
+			// No valid address found in nodelist
+			return "-";
+			
+		} catch (Exception e) {
+			// If any error occurs during resolution, don't connect
+			return "-";
+		}
 	}
 
     @Override

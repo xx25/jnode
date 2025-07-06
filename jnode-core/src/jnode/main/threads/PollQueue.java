@@ -48,9 +48,11 @@ public class PollQueue {
 	private LinkedList<Link> queue = new LinkedList<Link>();
 
 	public void add(Link link) {
-		if (link.getProtocolAddress() != null
-				&& !link.getProtocolAddress().isEmpty()
-				&& !"-".equals(link.getProtocolAddress())) {
+		// Use resolved address which includes nodelist fallback
+		String resolvedAddress = link.getResolvedProtocolAddress();
+		if (resolvedAddress != null
+				&& !resolvedAddress.isEmpty()
+				&& !"-".equals(resolvedAddress)) {
 			synchronized (queue) {
 				if (!queue.contains(link) && !isActive(link)) {
 					queue.addLast(link);
