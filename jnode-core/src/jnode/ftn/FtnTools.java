@@ -557,6 +557,17 @@ public final class FtnTools {
 	 * @return
 	 */
 	public static FtnMessage netmailToFtnMessage(Netmail mail) {
+		return netmailToFtnMessage(mail, null);
+	}
+
+	/**
+	 * Converter
+	 * 
+	 * @param mail
+	 * @param ourAddress - the specific address to use for Via field, or null to use all addresses
+	 * @return
+	 */
+	public static FtnMessage netmailToFtnMessage(Netmail mail, FtnAddress ourAddress) {
 		FtnMessage message = new FtnMessage();
 		message.setNetmail(true);
 		message.setFromName(mail.getFromName());
@@ -571,10 +582,17 @@ public final class FtnTools {
 		if (text.charAt(text.length() - 1) != '\n') {
 			text.append('\n');
 		}
-		for (FtnAddress address : MainHandler.getCurrentInstance().getInfo()
-				.getAddressList()) {
-			text.append(String.format(ROUTE_VIA, address.toString(),
+		if (ourAddress != null) {
+			// Use the specific address passed in (consistent with AKA selection)
+			text.append(String.format(ROUTE_VIA, ourAddress.toString(),
 					FORMAT.format(new Date())));
+		} else {
+			// Fallback to old behavior for backward compatibility
+			for (FtnAddress address : MainHandler.getCurrentInstance().getInfo()
+					.getAddressList()) {
+				text.append(String.format(ROUTE_VIA, address.toString(),
+						FORMAT.format(new Date())));
+			}
 		}
 		message.setText(text.toString());
 		return message;

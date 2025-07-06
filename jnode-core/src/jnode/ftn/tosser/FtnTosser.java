@@ -531,7 +531,8 @@ public class FtnTosser {
 			link.setLinkAddress(address.toString());
 			link.setPaketPassword("-");
 		}
-		FtnPkt header = new FtnPkt(selectOurAka(link), address,
+		FtnAddress ourAka = selectOurAka(link);
+		FtnPkt header = new FtnPkt(ourAka, address,
 				link.getPaketPassword(), new Date());
 		List<Netmail> mail = null;
 		boolean pack = (link.getId() != null) ? getOptionBooleanDefFalse(link,
@@ -558,7 +559,7 @@ public class FtnTosser {
 					try {
 
 						for (Netmail n : mail) {
-							FtnMessage m = netmailToFtnMessage(n);
+							FtnMessage m = netmailToFtnMessage(n, ourAka);
 							m.write(os);
 							num++;
 							if ((n.getAttr() & FtnMessage.ATTR_FILEATT) >= FtnMessage.ATTR_FILEATT) {
