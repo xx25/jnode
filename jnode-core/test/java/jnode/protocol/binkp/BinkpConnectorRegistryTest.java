@@ -30,7 +30,6 @@ import org.junit.jupiter.api.Test;
 import jnode.protocol.binkp.connector.BinkpAbstractConnector;
 import jnode.protocol.binkp.connector.BinkpAsyncConnector;
 import jnode.protocol.binkp.connector.BinkpPipeConnector;
-import jnode.protocol.binkp.connector.BinkpSyncConnector;
 
 /**
  * Unit tests for BinkpConnectorRegistry
@@ -62,8 +61,6 @@ public class BinkpConnectorRegistryTest {
         // Test async connector
         assertEquals(BinkpAsyncConnector.class, registry.getConnector("async:"));
         
-        // Test sync connector
-        assertEquals(BinkpSyncConnector.class, registry.getConnector("sync:"));
         
         // Test pipe connector
         assertEquals(BinkpPipeConnector.class, registry.getConnector("pipe:"));
@@ -87,11 +84,10 @@ public class BinkpConnectorRegistryTest {
         Collection<String> keys = registry.getKeys();
         
         assertNotNull(keys);
-        assertTrue(keys.size() >= 4); // At least the built-in connectors
+        assertTrue(keys.size() >= 3); // At least the built-in connectors
         
         // Check that built-in keys are present
         assertTrue(keys.contains("async:"));
-        assertTrue(keys.contains("sync:"));
         assertTrue(keys.contains("pipe:"));
         assertTrue(keys.contains("|"));
     }

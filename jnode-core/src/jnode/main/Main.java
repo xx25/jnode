@@ -88,6 +88,28 @@ public class Main {
 			}
 		}
 		logger.l1(MainHandler.getVersion() + " starting");
+		
+		// Build information logging
+		try {
+			java.util.Properties buildProps = new java.util.Properties();
+			java.io.InputStream is = Main.class.getClassLoader().getResourceAsStream("version.properties");
+			if (is != null) {
+				buildProps.load(is);
+				String buildTime = buildProps.getProperty("buildTime", "unknown");
+				String version = buildProps.getProperty("version", "unknown");
+				logger.l1("Build info: version=" + version + ", buildTime=" + buildTime);
+				is.close();
+			} else {
+				logger.l1("Build info: version.properties not found");
+			}
+		} catch (Exception e) {
+			logger.l1("Build info: failed to read build properties: " + e.getMessage());
+		}
+		
+		// Enhanced debug identifier for this session
+		long sessionId = System.currentTimeMillis();
+		logger.l1("DEBUG Session ID: " + sessionId + " (use this to track debug output)");
+		
 		// installer
 
 		new InstallUtil();

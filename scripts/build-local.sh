@@ -58,6 +58,7 @@ if [ -n "$TARGET_HOST" ]; then
 sudo systemctl stop jnode || true
 sudo mkdir -p /opt/jnode/lib-backup-$(date +%Y%m%d-%H%M%S)
 sudo cp -r /opt/jnode/lib/* /opt/jnode/lib-backup-$(date +%Y%m%d-%H%M%S)/ 2>/dev/null || true
+sudo rm -rf /opt/jnode/lib/*
 sudo cp ~/jnode-deploy/* /opt/jnode/lib/
 sudo systemctl start jnode
 sudo systemctl status jnode --no-pager

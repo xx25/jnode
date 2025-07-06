@@ -36,6 +36,7 @@ import jnode.logger.Logger;
  * - Maximum 45 characters per line
  * - ASCII text only (no ANSI, no formatting)
  * - Must be named exactly "FILE_ID.DIZ"
+ * - Filenames are written in original case (consistent with files.bbs)
  * - No blank lines allowed
  */
 public class FileIdDizWriter {
@@ -146,16 +147,16 @@ public class FileIdDizWriter {
         
         // Handle empty or null description
         if (description == null || description.trim().isEmpty()) {
-            lines.add(truncateToMaxLength(filename.toUpperCase()));
+            lines.add(truncateToMaxLength(filename));
             return lines;
         }
         
         // Split description into lines and process each
         String[] descLines = description.split("\\r?\\n");
         
-        // First line: filename (uppercase) + description
+        // First line: filename + description
         if (descLines.length > 0) {
-            String firstLine = filename.toUpperCase();
+            String firstLine = filename;
             String firstDesc = descLines[0].trim();
             
             // Try to fit filename and description on first line
@@ -200,7 +201,7 @@ public class FileIdDizWriter {
                 }
             }
         } else {
-            lines.add(truncateToMaxLength(filename.toUpperCase()));
+            lines.add(truncateToMaxLength(filename));
         }
         
         return truncateToMaxLines(lines);
