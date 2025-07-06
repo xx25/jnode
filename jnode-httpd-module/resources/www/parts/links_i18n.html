@@ -14,6 +14,19 @@
 	</tr>
 	%s
 </table>
+
+<div style="border: 1px solid #999; padding: 10px; margin-bottom: 20px;">
+	<h4>Connection Address Help</h4>
+	<p>Specify how to connect to this node. Leave empty to use nodelist data automatically.</p>
+	<h5>Options:</h5>
+	<pre style="white-space: pre-wrap; word-wrap: break-word; max-width: 100%%; overflow-x: auto; background-color: #f5f5f5; padding: 10px;">hostname.com:24554  - Connect to hostname on port 24554
+192.168.1.100:24554 - Connect to IP address on port 24554
+hostname.com        - Connect to hostname on default port 24554
+(empty)             - Use nodelist IBN/INA flags automatically
+-                   - Never make outgoing connections (incoming only)</pre>
+	<p><strong>Automatic nodelist resolution:</strong> If address is empty, jNode will check the nodelist for IBN (BinkP) flags first, then fallback to INA (Internet) flags if IBN has no host specified.</p>
+</div>
+
 <form action="/secure/link" method="post">
 	<input type="hidden" name="id" id="_link_id" value="0" />
 	<table id="edit" class="links">
@@ -33,22 +46,6 @@
 		<tr>
 			<th>{{links.connection_address}}</th>
 			<td><input type="text" name="address" id="_link_address" /></td>
-		</tr>
-
-		<tr>
-			<td colspan="2">
-				<div style="border: 1px solid #999; padding: 10px; margin-bottom: 20px;">
-					<h4>Connection Address Help</h4>
-					<p>Specify how to connect to this node. Leave empty to use nodelist data automatically.</p>
-					<h5>Options:</h5>
-					<pre style="white-space: pre-wrap; word-wrap: break-word; max-width: 100%; overflow-x: auto; background-color: #f5f5f5; padding: 10px;">hostname.com:24554  - Connect to hostname on port 24554
-192.168.1.100:24554 - Connect to IP address on port 24554
-hostname.com        - Connect to hostname on default port 24554
-(empty)             - Use nodelist IBN/INA flags automatically
--                   - Never make outgoing connections (incoming only)</pre>
-					<p><strong>Automatic nodelist resolution:</strong> If address is empty, jNode will check the nodelist for IBN (BinkP) flags first, then fallback to INA (Internet) flags if IBN has no host specified.</p>
-				</div>
-			</td>
 		</tr>
 
 		<tr>
