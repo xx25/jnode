@@ -69,6 +69,7 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 		super(protocolAddress);
 		SocketChannel socket = SocketChannel.open();
 		try {
+			socket.configureBlocking(false);
 			InetSocketAddress address = AddressParser.parseAddress(protocolAddress);
 			socket.connect(address);
 		} catch (IOException e) {
@@ -79,7 +80,9 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 	}
 
 	private void init(SocketChannel socket) throws IOException {
-		socket.configureBlocking(false);
+		if (socket.isBlocking()) {
+			socket.configureBlocking(false);
+		}
 		selector = Selector.open();
 		socket.register(selector, socket.validOps());
 		connectionStartTime = System.currentTimeMillis();

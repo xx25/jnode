@@ -54,7 +54,7 @@ public class ConnectorSelectionTest {
             
             // This mimics the selection logic from BinkpAsyncClientPool
             for (String key : keys) {
-                if (protocolAddress.startsWith(key)) {
+                if (key != null && protocolAddress.startsWith(key)) {
                     selectedKey = key;
                     break;
                 }
@@ -79,7 +79,7 @@ public class ConnectorSelectionTest {
         String foundKey = null;
         
         for (String key : keys) {
-            if (regularAddress.startsWith(key)) {
+            if (key != null && regularAddress.startsWith(key)) {
                 foundKey = key;
                 break;
             }
