@@ -2,14 +2,23 @@
 
 <p>{{netmail.configure_description}}</p>
 
-<div style="border: 1px solid #999; padding: 10px; margin-bottom: 20px;">
-    <h3>{{netmail.pattern_syntax}}</h3>
-    <p>Use Java regular expressions. Use <code>*</code> to match all.</p>
-    <h4>Examples:</h4>
-    <pre style="white-space: pre-wrap; word-wrap: break-word; max-width: 100%%; overflow-x: auto; background-color: #f5f5f5; padding: 10px;">2:5020/.*     - All nodes in net 5020
-.*Robot.*     - Any name containing "Robot"  
-AreaFix.*     - Subject starting with "AreaFix"</pre>
-</div>
+<table class="info">
+	<tr>
+		<th>Pattern Type</th><th>Example</th><th>Matches</th><th>Description</th>
+	</tr>
+	<tr>
+		<td>FTN Address</td><td>2:5020/.*</td><td>All nodes in net 5020</td><td>Match nodes by network/zone pattern</td>
+	</tr>
+	<tr>
+		<td>Name Pattern</td><td>.*Robot.*</td><td>Any name with "Robot"</td><td>Match names containing specific text</td>
+	</tr>
+	<tr>
+		<td>Subject Pattern</td><td>AreaFix.*</td><td>Subjects starting with "AreaFix"</td><td>Match message subjects by pattern</td>
+	</tr>
+	<tr>
+		<td>Wildcard</td><td>*</td><td>Everything</td><td>Match all messages (use with caution)</td>
+	</tr>
+</table>
 
 <!-- Add/Edit Form -->
 <span class="info" id="_error"></span>

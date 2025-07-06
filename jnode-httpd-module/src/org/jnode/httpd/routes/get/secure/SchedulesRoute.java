@@ -20,7 +20,29 @@ public class SchedulesRoute implements Handler {
         html.append("<h2>").append(html.t("schedules.title")).append("</h2>");
         
         // Help description
-        html.append("<p>").append("Schedule JavaScript scripts for automated execution at specified intervals. You can set scripts to run hourly, daily, weekly, monthly, or annually with specific timing details.").append("</p>");
+        html.append("<p>").append("Schedule JavaScript scripts for automated execution at specified intervals.").append("</p>");
+        
+        // Help table
+        html.append("<table class=\"info\">");
+        html.append("<tr>");
+        html.append("<th>Schedule Type</th><th>Details Value</th><th>Execution Time</th><th>Description</th>");
+        html.append("</tr>");
+        html.append("<tr>");
+        html.append("<td>HOURLY</td><td>0-59</td><td>Minute of hour</td><td>Run every hour at specified minute</td>");
+        html.append("</tr>");
+        html.append("<tr>");
+        html.append("<td>DAILY</td><td>0-23</td><td>Hour of day</td><td>Run every day at specified hour</td>");
+        html.append("</tr>");
+        html.append("<tr>");
+        html.append("<td>WEEKLY</td><td>1-7</td><td>Day of week</td><td>Run every week on specified day (1=Monday)</td>");
+        html.append("</tr>");
+        html.append("<tr>");
+        html.append("<td>MONTHLY</td><td>1-31</td><td>Day of month</td><td>Run every month on specified day</td>");
+        html.append("</tr>");
+        html.append("<tr>");
+        html.append("<td>ANNUALLY</td><td>1-365</td><td>Day of year</td><td>Run every year on specified day</td>");
+        html.append("</tr>");
+        html.append("</table>");
         
         // Get all scripts for dropdown
         List<Jscript> scripts = ORMManager.get(Jscript.class).getAll();

@@ -17,7 +17,29 @@ public class ScriptsRoute implements Handler {
         html.append("<h2>").append(html.t("scripts.title")).append("</h2>");
         
         // Help description
-        html.append("<p>").append("Manage JavaScript automation scripts that can be executed manually or scheduled for automated execution. Scripts have access to helper classes for extended functionality.").append("</p>");
+        html.append("<p>").append("Manage JavaScript automation scripts for system automation and reporting.").append("</p>");
+        
+        // Help table
+        html.append("<table class=\"info\">");
+        html.append("<tr>");
+        html.append("<th>Helper Class</th><th>Function</th><th>Usage</th><th>Description</th>");
+        html.append("</tr>");
+        html.append("<tr>");
+        html.append("<td>reporthelper</td><td>report()</td><td>Database reports</td><td>Generate database reports to echoareas</td>");
+        html.append("</tr>");
+        html.append("<tr>");
+        html.append("<td>shellhelper</td><td>execCommand()</td><td>Execute shell commands</td><td>Run system commands and capture output</td>");
+        html.append("</tr>");
+        html.append("<tr>");
+        html.append("<td>writefilehelper</td><td>writeFileToEchoarea()</td><td>File operations</td><td>Write files and content to echoareas</td>");
+        html.append("</tr>");
+        html.append("<tr>");
+        html.append("<td>writestathelper</td><td>writeStatToEchoarea()</td><td>Statistics</td><td>Generate and post statistics reports</td>");
+        html.append("</tr>");
+        html.append("<tr>");
+        html.append("<td>corehelper</td><td>getClassByName()</td><td>Reflection</td><td>Access Java classes and methods</td>");
+        html.append("</tr>");
+        html.append("</table>");
         
         // Add new script button
         html.append("<div style='margin-bottom: 10px;'>");
