@@ -27,6 +27,8 @@ import jnode.event.NewFilemailEvent;
 import jnode.event.NewNetmailEvent;
 import jnode.event.Notifier;
 import jnode.ftn.FtnTools;
+import jnode.ftn.FilesBBSWriter;
+import jnode.ftn.FileIdDizWriter;
 import jnode.ftn.types.*;
 import jnode.logger.Logger;
 import jnode.main.MainHandler;
@@ -51,6 +53,8 @@ import static jnode.ftn.FtnTools.*;
 public class FtnTosser {
 	private static final String FILEECHO_ENABLE = "fileecho.enable";
 	private static final String FILEECHO_PATH = "fileecho.path";
+	private static final String FILES_BBS_ENABLE = "fileecho.files_bbs.enable";
+	private static final String FILE_ID_DIZ_ENABLE = "fileecho.file_id_diz.enable";
 	private static final Logger logger = Logger.getLogger(FtnTosser.class);
 	private static final String MAIL_LIMIT = "tosser.mail_limit";
 	private final Map<String, Integer> tossed = new HashMap<>();
@@ -331,6 +335,28 @@ public class FtnTosser {
 									tic.getFile()));
 							if (FileUtils.move(attach, newFile, true)) {
 								mail.setFilepath(newFile.getAbsolutePath());
+								
+								// Generate FILES.BBS entry in the destination directory
+								if (MainHandler.getCurrentInstance().getBooleanProperty(FILES_BBS_ENABLE, true)) {
+									try {
+										FilesBBSWriter.appendEntry(newFile.getParentFile(), 
+												tic.getFile(), tic.getDesc());
+									} catch (Exception e) {
+										logger.l2("Failed to write FILES.BBS entry for " + 
+												tic.getFile(), e);
+									}
+								}
+								
+								// Generate FILE_ID.DIZ entry in the destination directory
+								if (MainHandler.getCurrentInstance().getBooleanProperty(FILE_ID_DIZ_ENABLE, true)) {
+									try {
+										FileIdDizWriter.appendEntry(newFile.getParentFile(), 
+												tic.getFile(), tic.getDesc());
+									} catch (Exception e) {
+										logger.l2("Failed to write FILE_ID.DIZ entry for " + 
+												tic.getFile(), e);
+									}
+								}
 							} else {
 								mail.setFilepath(attach.getAbsolutePath());
 							}
