@@ -117,6 +117,8 @@ public class GUIConfigurator {
 		ret.add("poll.delay");
 		ret.add("fileecho.enable");
 		ret.add("fileecho.path");
+		ret.add("fileecho.files_bbs.enable");
+		ret.add("fileecho.file_id_diz.enable");
 		ret.add("stat.enable");
 		ret.add("stat.area");
 		ret.add("jscript.enable");
@@ -146,6 +148,8 @@ public class GUIConfigurator {
 		props.put("poll.delay", "First call delay, s.");
 		props.put("fileecho.enable", "Enable file echoes");
 		props.put("fileecho.path", "Path to file echoes folder");
+		props.put("fileecho.files_bbs.enable", "Generate FILES.BBS in file echo directories");
+		props.put("fileecho.file_id_diz.enable", "Generate FILE_ID.DIZ in file echo directories");
 		props.put("stat.enable", "Enable statistics");
 		props.put("stat.area", "Echo for statistics");
 		props.put("jscript.enable", "Enable scripts");
@@ -173,6 +177,8 @@ public class GUIConfigurator {
 		props.setProperty("poll.delay", "600");
 		props.setProperty("fileecho.enable", "true");
 		props.setProperty("fileecho.path", "files");
+		props.setProperty("fileecho.files_bbs.enable", "true");
+		props.setProperty("fileecho.file_id_diz.enable", "true");
 		props.setProperty("stat.enable", "true");
 		props.setProperty("stat.area", "9999.stat");
 		props.setProperty("jscript.enable", "true");
@@ -241,6 +247,8 @@ public class GUIConfigurator {
 			case "binkp.server":
 			case "binkp.client":
 			case "fileecho.enable":
+			case "fileecho.files_bbs.enable":
+			case "fileecho.file_id_diz.enable":
 			case "stat.enable":
 			case "jscript.enable":
 				comp = new Checkbox();
