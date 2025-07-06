@@ -107,18 +107,35 @@ public class FtnNdlAddress extends FtnAddress {
 			Matcher m = IBN_PATTERN.matcher(line);
 			if (m.matches()) {
 				if (m.group(1) != null) {
-					try {
-						String[] r = m.group(1).split(":");
-						return Integer.valueOf(r[r.length - 1]);
-					} catch (NumberFormatException e) {
-						return 24554;
+					// Remove the leading colon
+					String ibnValue = m.group(1).substring(1);
+					String[] parts = ibnValue.split(":");
+					
+					// Check last part for port number
+					if (parts.length > 1) {
+						try {
+							return Integer.parseInt(parts[parts.length - 1]);
+						} catch (NumberFormatException e) {
+							return 24554; // Default port if parsing fails
+						}
+					} else if (parts.length == 1) {
+						// Single value - check if it's a port number
+						try {
+							int port = Integer.parseInt(parts[0]);
+							// If it parses as a number and is in valid port range, it's a port
+							if (port > 0 && port <= 65535) {
+								return port;
+							}
+						} catch (NumberFormatException e) {
+							// It's a hostname, not a port
+						}
 					}
-				} else {
-					return 24554;
 				}
+				// IBN flag exists but no port specified
+				return 24554;
 			}
 		}
-		return -1;
+		return -1; // No IBN flag found
 	}
 
 	public String getInetHost() {
@@ -129,6 +146,42 @@ public class FtnNdlAddress extends FtnAddress {
 					return m.group(1).substring(1);
 				} else {
 					return "-";
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Extracts the host address from IBN flag.
+	 * Examples:
+	 * - IBN:domain.name -> "domain.name"
+	 * - IBN:1.2.3.4 -> "1.2.3.4"
+	 * - IBN:domain.name:24555 -> "domain.name"
+	 * - IBN -> null (no host specified)
+	 * 
+	 * @return The host address from IBN flag, or null if not present
+	 */
+	public String getIbnHost() {
+		if (line != null) {
+			Matcher m = IBN_PATTERN.matcher(line);
+			if (m.matches()) {
+				if (m.group(1) != null) {
+					// Remove the leading colon
+					String ibnValue = m.group(1).substring(1);
+					// Split by colon to handle cases like "domain.name:24555"
+					String[] parts = ibnValue.split(":");
+					if (parts.length > 0 && !parts[0].isEmpty()) {
+						// Check if it's a numeric port (no host specified)
+						try {
+							Integer.parseInt(parts[0]);
+							// It's just a port number, no host
+							return null;
+						} catch (NumberFormatException e) {
+							// It's a host address
+							return parts[0];
+						}
+					}
 				}
 			}
 		}
