@@ -103,9 +103,6 @@
 						<include>**/*Test.java</include>
 						<include>**/*Tests.java</include>
 					</includes>
-					<additionalClasspathElements>
-						<additionalClasspathElement>${project.basedir}/../jnode-core/target/classes</additionalClasspathElement>
-					</additionalClasspathElements>
 				</configuration>
 				<dependencies>
 					<dependency>
