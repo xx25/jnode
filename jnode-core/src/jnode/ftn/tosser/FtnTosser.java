@@ -326,8 +326,13 @@ public class FtnTosser {
 								continue;
 							}
 							logger.l4("Processing file from " + tic.getFrom() + " (link: " + source.getLinkAddress() + ") for area: " + tic.getArea());
-							Filearea area = getFileareaByName(tic.getArea(),
-									source);
+							Filearea area = null;
+							try {
+								area = getFileareaByName(tic.getArea(), source);
+							} catch (Exception e) {
+								logger.l2("Exception in getFileareaByName: " + e.getMessage(), e);
+								e.printStackTrace();
+							}
 							if (area == null) {
 								markAsBad(file, "Filearea '" + tic.getArea() + "' is not available for link " + source.getLinkAddress());
 								continue;

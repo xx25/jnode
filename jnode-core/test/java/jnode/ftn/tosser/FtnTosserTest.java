@@ -359,19 +359,12 @@ public class FtnTosserTest {
         fileSub.setArea(fileArea);
         ORMManager.get(FileSubscription.class).save(fileSub);
         
-        // Debug: Check if subscription was saved and is findable
-        System.out.println("DEBUG: Link ID: " + testLink.getId());
-        System.out.println("DEBUG: FileArea ID: " + fileArea.getId());
+        // Check if subscription was saved and is findable
         List<FileSubscription> allSubs = ORMManager.get(FileSubscription.class).getAll();
-        System.out.println("DEBUG: Total file subscriptions: " + allSubs.size());
-        for (FileSubscription sub : allSubs) {
-            System.out.println("DEBUG: Sub link ID: " + sub.getLink().getId() + ", area ID: " + sub.getArea().getId());
-        }
         
         // Test the exact query that getFileareaByName uses
         FileSubscription foundSub = ORMManager.get(FileSubscription.class).getFirstAnd(
             "filearea_id", "=", fileArea.getId(), "link_id", "=", testLink.getId());
-        System.out.println("DEBUG: Found subscription: " + (foundSub != null));
         
         // Create test file in inbound directory (where TIC processor expects it)
         String inboundPath = MainHandler.getCurrentInstance().getProperty("binkp.inbound", tempDir.toString() + "/inbound");
@@ -471,7 +464,6 @@ public class FtnTosserTest {
         boolean pingResponseFound = false;
         
         for (Netmail nm : netmails) {
-            System.out.println("DEBUG: Found netmail - To: " + nm.getToName() + ", Subject: " + nm.getSubject());
             // Check for PING robot response (has "PING Response" subject and sent to original sender)
             if (nm.getSubject() != null && nm.getSubject().contains("PING Response") && 
                 "Test User".equals(nm.getToName())) {

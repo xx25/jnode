@@ -27,7 +27,6 @@ import java.util.HashMap;
 import jnode.protocol.binkp.connector.BinkpAbstractConnector;
 import jnode.protocol.binkp.connector.BinkpAsyncConnector;
 import jnode.protocol.binkp.connector.BinkpPipeConnector;
-import jnode.protocol.binkp.connector.BinkpSyncConnector;
 
 /**
  * Stores various connectors - for modularity
@@ -47,7 +46,6 @@ public class BinkpConnectorRegistry {
 	private BinkpConnectorRegistry() {
 		connectorMap = new HashMap<>();
 		connectorMap.put("async:", BinkpAsyncConnector.class);
-		connectorMap.put("sync:", BinkpSyncConnector.class);
 		connectorMap.put("pipe:", BinkpPipeConnector.class);
 		connectorMap.put("|", BinkpPipeConnector.class);
 	}
