@@ -49,14 +49,11 @@ public class ConnectionStatData {
 
     public List<ConnectionStatDataElement> loadAndDrop() {
         synchronized (ConnectionStatData.class) {
-            logger.l4("Loading and dropping statistics from file: " + statPath);
-            
             List<ConnectionStatDataElement> result = internalLoad();
-            logger.l5("Loaded " + result.size() + " elements before dropping");
             
             try {
                 XMLSerializer.write(new ArrayList<ConnectionStatDataElement>(), statPath);
-                logger.l4("Successfully cleared statistics file: " + statPath);
+                logger.l4("Cleared statistics file: " + statPath);
             } catch (FileNotFoundException e) {
                 logger.l1(MessageFormat.format(" Failed to clear data, file {0} not found", statPath), e);
             } catch (Exception e) {
@@ -68,9 +65,6 @@ public class ConnectionStatData {
 
     public void store(FtnAddress ftnAddress, ConnectionStatDataElement element) {
         synchronized (ConnectionStatData.class) {
-            logger.l5("Storing statistics for address: " + 
-                     (ftnAddress != null ? ftnAddress.toString() : "null"));
-            
             List<ConnectionStatDataElement> elements = internalLoad();
             int pos = findPos(ftnAddress, elements);
             
@@ -83,19 +77,14 @@ public class ConnectionStatData {
             element.linkStr = (ftnAddress != null) ? ftnAddress.toString() : null;
             
             if (pos == -1) {
-                logger.l5("Adding new element for address: " + element.linkStr);
                 elements.add(element);
             } else {
-                logger.l5("Updating existing element at position " + pos + 
-                         " for address: " + element.linkStr);
                 elements.set(pos, element);
             }
             
-            logger.l5("Total elements to write: " + elements.size());
-            
             try {
                 XMLSerializer.write(elements, statPath);
-                logger.l5("Successfully stored statistics to file: " + statPath);
+                logger.l4("Updated statistics file: " + statPath);
             } catch (FileNotFoundException e) {
                 logger.l1(MessageFormat.format(" Failed to store data, file {0} not found", statPath), e);
             } catch (Exception e) {
@@ -106,7 +95,6 @@ public class ConnectionStatData {
 
     public int findPos(FtnAddress ftnAddress, List<ConnectionStatDataElement> elements) {
         String searchAddress = (ftnAddress != null) ? ftnAddress.toString() : null;
-        logger.l5("Searching for position of address: " + searchAddress);
         
         int pos = -1;
         for (int i = 0; i < elements.size(); ++i) {
@@ -120,20 +108,14 @@ public class ConnectionStatData {
             if (ftnAddress == null) {
                 if (element.linkStr == null) {
                     pos = i;
-                    logger.l5("Found null address match at position " + i);
                     break;
                 }
             } else if (element.linkStr != null) {
                 if (element.linkStr.equals(searchAddress)) {
                     pos = i;
-                    logger.l5("Found address match at position " + i + " for: " + searchAddress);
                     break;
                 }
             }
-        }
-        
-        if (pos == -1) {
-            logger.l5("Address not found: " + searchAddress);
         }
         
         return pos;
@@ -141,11 +123,8 @@ public class ConnectionStatData {
 
     @SuppressWarnings("unchecked")
 	private List<ConnectionStatDataElement> internalLoad() {
-        logger.l5("Loading statistics from file: " + statPath);
-        
         File statFile = new File(statPath);
         if (!statFile.exists()) {
-            logger.l4("Statistics file does not exist yet: " + statPath + ", returning empty list");
             return new ArrayList<ConnectionStatDataElement>();
         }
         
@@ -156,8 +135,6 @@ public class ConnectionStatData {
         
         List<ConnectionStatDataElement> result;
         try {
-            logger.l5("File size: " + statFile.length() + " bytes");
-            
             Object loaded = XMLSerializer.read(statPath);
             if (loaded == null) {
                 logger.l2("XMLSerializer returned null for file: " + statPath);
@@ -171,16 +148,13 @@ public class ConnectionStatData {
             }
             
             result = (List<ConnectionStatDataElement>) loaded;
-            logger.l5("Successfully loaded " + result.size() + " elements from file: " + statPath);
+            logger.l4("Loaded " + result.size() + " elements from file: " + statPath);
             
             // Validate loaded elements
             for (int i = 0; i < result.size(); i++) {
                 ConnectionStatDataElement element = result.get(i);
                 if (element == null) {
                     logger.l2("Found null element at index " + i + " in file: " + statPath);
-                } else {
-                    logger.l5("Element " + i + ": linkStr=" + element.linkStr + 
-                             ", bytesReceived=" + element.bytesReceived + ", bytesSended=" + element.bytesSended);
                 }
             }
             
