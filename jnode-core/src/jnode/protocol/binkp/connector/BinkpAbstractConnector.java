@@ -461,9 +461,6 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			error("We weren't waiting for M_PWD");
 		}
 		boolean valid = (!secure || checkPassword(arg));
-
-		//FIXME disabled password check
-//		valid = true;
 		
 		String text;
 		if (secure) {

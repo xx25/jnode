@@ -166,30 +166,11 @@ public class Link {
 				return "-";
 			}
 			
-			// First check IBN flag
-			String ibnHost = ndlAddr.getIbnHost();
-			if (ibnHost != null && !ibnHost.isEmpty()) {
-				// IBN has a host/IP specified
-				int port = ndlAddr.getBinkpPort();
-				if (port > 0 && port != 24554) {
-					return ibnHost + ":" + port;
-				} else {
-					return ibnHost + ":24554";
-				}
-			}
-			
-			// IBN exists but no host specified, or no IBN - check INA
-			String inaHost = ndlAddr.getInetHost();
-			if (inaHost != null && !inaHost.isEmpty() && !"-".equals(inaHost)) {
-				// INA has a host/IP specified
-				int port = ndlAddr.getBinkpPort();
-				if (port > 0) {
-					// Use IBN port if available
-					return inaHost + ":" + port;
-				} else {
-					// Default port
-					return inaHost + ":24554";
-				}
+			// Get all addresses in priority order (IPv6 first if enabled)
+			List<String> allAddresses = getAllResolvedProtocolAddresses();
+			if (!allAddresses.isEmpty()) {
+				// Return the first (highest priority) address
+				return allAddresses.get(0);
 			}
 			
 			// No valid address found in nodelist
@@ -239,30 +220,48 @@ public class Link {
 				return addresses;
 			}
 			
-			// Get all IBN addresses first (they have priority)
-			List<String> ibnHosts = ndlAddr.getIbnHosts();
+			// Get all IBN addresses first (they have priority), sorted by IPv6 priority if enabled
+			List<String> ibnHosts = ndlAddr.getIbnHostsByPriority();
 			for (String ibnHost : ibnHosts) {
 				if (ibnHost != null && !ibnHost.isEmpty()) {
-					// Check if address already includes port
-					if (ibnHost.contains(":")) {
+					// Check if address already includes port (IPv6 bracket notation or standard port)
+					if (ibnHost.contains(":") && !ibnHost.startsWith("[")) {
+						addresses.add(ibnHost);
+					} else if (ibnHost.startsWith("[") && ibnHost.contains("]:")) {
+						// IPv6 address with port in bracket notation
 						addresses.add(ibnHost);
 					} else {
 						// Add default port if not specified
-						addresses.add(ibnHost + ":24554");
+						if (ibnHost.startsWith("[") && ibnHost.endsWith("]")) {
+							// IPv6 address without port - add port after brackets
+							addresses.add(ibnHost + ":24554");
+						} else {
+							// IPv4 or hostname without port
+							addresses.add(ibnHost + ":24554");
+						}
 					}
 				}
 			}
 			
-			// Get all INA addresses
-			List<String> inaHosts = ndlAddr.getInetHosts();
+			// Get all INA addresses sorted by IPv6 priority if enabled
+			List<String> inaHosts = ndlAddr.getInetHostsByPriority();
 			for (String inaHost : inaHosts) {
 				if (inaHost != null && !inaHost.isEmpty() && !"-".equals(inaHost)) {
-					// Check if address already includes port
-					if (inaHost.contains(":")) {
+					// Check if address already includes port (IPv6 bracket notation or standard port)
+					if (inaHost.contains(":") && !inaHost.startsWith("[")) {
+						addresses.add(inaHost);
+					} else if (inaHost.startsWith("[") && inaHost.contains("]:")) {
+						// IPv6 address with port in bracket notation
 						addresses.add(inaHost);
 					} else {
 						// Add default port if not specified
-						addresses.add(inaHost + ":24554");
+						if (inaHost.startsWith("[") && inaHost.endsWith("]")) {
+							// IPv6 address without port - add port after brackets
+							addresses.add(inaHost + ":24554");
+						} else {
+							// IPv4 or hostname without port
+							addresses.add(inaHost + ":24554");
+						}
 					}
 				}
 			}

@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jnode.ftn.types.FtnAddress;
+import jnode.main.MainHandler;
 
 public class FtnNdlAddress extends FtnAddress {
 	private static final Pattern IBN_PATTERN = Pattern.compile(
@@ -36,6 +37,18 @@ public class FtnNdlAddress extends FtnAddress {
 			"INA(:[^,]+)?", Pattern.CASE_INSENSITIVE);
 	private static final Pattern IBN_GLOBAL_PATTERN = Pattern.compile(
 			"IBN(:[^,]+)?", Pattern.CASE_INSENSITIVE);
+	
+	// IPv6 address detection pattern - matches addresses in square brackets
+	private static final Pattern IPV6_PATTERN = Pattern.compile(
+			"\\[([a-fA-F0-9:]+)\\].*");
+	
+	// IPv4 address detection pattern
+	private static final Pattern IPV4_PATTERN = Pattern.compile(
+			"(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})(?::(\\d+))?");
+	
+	// Hostname pattern - anything that's not an IP address
+	private static final Pattern HOSTNAME_PATTERN = Pattern.compile(
+			"([a-zA-Z0-9.-]+)(?::(\\d+))?");
 
 	public static enum Status {
 		HOLD, DOWN, HUB, HOST, PVT, NORMAL
@@ -262,5 +275,137 @@ public class FtnNdlAddress extends FtnAddress {
 			}
 		}
 		return hosts;
+	}
+	
+	/**
+	 * Checks if IPv6 is enabled in the BinkP configuration.
+	 * @return true if IPv6 is enabled, false otherwise
+	 */
+	public boolean isIPv6Enabled() {
+		return MainHandler.getCurrentInstance().getBooleanProperty("binkp.ipv6.enable", false);
+	}
+	
+	/**
+	 * Categorizes an address as IPv6, IPv4, or hostname.
+	 * @param address The address to categorize
+	 * @return "ipv6", "ipv4", or "hostname"
+	 */
+	public String getAddressType(String address) {
+		if (address == null || address.isEmpty()) {
+			return "hostname";
+		}
+		
+		// Check for IPv6 address in square brackets
+		if (IPV6_PATTERN.matcher(address).matches()) {
+			return "ipv6";
+		}
+		
+		// Check for IPv4 address
+		if (IPV4_PATTERN.matcher(address).matches()) {
+			return "ipv4";
+		}
+		
+		// Everything else is treated as hostname
+		return "hostname";
+	}
+	
+	/**
+	 * Gets all IBN addresses sorted by priority when IPv6 is enabled.
+	 * When IPv6 is enabled: Priority order is IPv6 > IPv4 > hostname
+	 * When IPv6 is disabled: IPv6 addresses are filtered out entirely
+	 * @return List of IBN addresses sorted by priority (or filtered)
+	 */
+	public List<String> getIbnHostsByPriority() {
+		List<String> hosts = getIbnHosts();
+		if (!isIPv6Enabled()) {
+			// Filter out IPv6 addresses when IPv6 is disabled
+			List<String> filteredHosts = new ArrayList<>();
+			for (String host : hosts) {
+				if (!getAddressType(host).equals("ipv6")) {
+					filteredHosts.add(host);
+				}
+			}
+			return filteredHosts;
+		}
+		
+		// Sort by priority: IPv6 first, then IPv4, then hostname
+		List<String> ipv6Hosts = new ArrayList<>();
+		List<String> ipv4Hosts = new ArrayList<>();
+		List<String> hostnameHosts = new ArrayList<>();
+		
+		for (String host : hosts) {
+			String type = getAddressType(host);
+			switch (type) {
+				case "ipv6":
+					ipv6Hosts.add(host);
+					break;
+				case "ipv4":
+					ipv4Hosts.add(host);
+					break;
+				default:
+					hostnameHosts.add(host);
+					break;
+			}
+		}
+		
+		// Combine lists with IPv6 first
+		List<String> sortedHosts = new ArrayList<>();
+		sortedHosts.addAll(ipv6Hosts);
+		sortedHosts.addAll(ipv4Hosts);
+		sortedHosts.addAll(hostnameHosts);
+		
+		return sortedHosts;
+	}
+	
+	/**
+	 * Gets all INA addresses sorted by priority when IPv6 is enabled.
+	 * When IPv6 is enabled: Priority order is IPv6 > IPv4 > hostname
+	 * When IPv6 is disabled: IPv6 addresses are filtered out entirely
+	 * @return List of INA addresses sorted by priority (or filtered)
+	 */
+	public List<String> getInetHostsByPriority() {
+		List<String> hosts = getInetHosts();
+		if (!isIPv6Enabled()) {
+			// Filter out IPv6 addresses when IPv6 is disabled
+			List<String> filteredHosts = new ArrayList<>();
+			for (String host : hosts) {
+				if (!"-".equals(host) && !getAddressType(host).equals("ipv6")) {
+					filteredHosts.add(host);
+				}
+			}
+			return filteredHosts;
+		}
+		
+		// Sort by priority: IPv6 first, then IPv4, then hostname
+		List<String> ipv6Hosts = new ArrayList<>();
+		List<String> ipv4Hosts = new ArrayList<>();
+		List<String> hostnameHosts = new ArrayList<>();
+		
+		for (String host : hosts) {
+			if ("-".equals(host)) {
+				continue; // Skip invalid entries
+			}
+			
+			String type = getAddressType(host);
+			switch (type) {
+				case "ipv6":
+					ipv6Hosts.add(host);
+					break;
+				case "ipv4":
+					ipv4Hosts.add(host);
+					break;
+				default:
+					hostnameHosts.add(host);
+					break;
+			}
+		}
+		
+		// Combine lists with IPv6 first
+		List<String> sortedHosts = new ArrayList<>();
+		sortedHosts.addAll(ipv6Hosts);
+		sortedHosts.addAll(ipv4Hosts);
+		sortedHosts.addAll(hostnameHosts);
+		
+		return sortedHosts;
 	}
 }
