@@ -224,8 +224,18 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 								
 								// Protect against oversized frames that violate BinkP specification
 								if (datalen > 32767) {
-									error(String.format("Received frame size %d exceeds BinkP maximum of 32767 bytes", datalen));
-									break;
+									logger.l2(String.format("Connection terminated: frame size %d exceeds BinkP maximum of 32767 bytes", datalen));
+									try {
+										if (channel != null && channel.isOpen()) {
+											channel.close();
+										}
+										if (selector != null && selector.isOpen()) {
+											selector.close();
+										}
+									} catch (IOException e) {
+										logger.l3("Error closing connection after frame size violation", e);
+									}
+									throw new ConnectionEndException("Frame size violation: received " + datalen + " bytes, maximum is 32767");
 								}
 								
 								ByteBuffer data = ByteBuffer.allocate(datalen);
