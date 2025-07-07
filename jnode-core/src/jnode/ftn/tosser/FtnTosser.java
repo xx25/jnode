@@ -582,6 +582,15 @@ public class FtnTosser {
 	 * @param errorDetails Detailed error message
 	 */
 	private void notifySysop(String subject, String errorDetails) {
+		// Check if sysop notifications are enabled (default: true)
+		boolean notificationsEnabled = MainHandler.getCurrentInstance()
+				.getBooleanProperty("tosser.sysop.notifications", true);
+		
+		if (!notificationsEnabled) {
+			logger.l4("Sysop notification skipped (disabled): " + subject);
+			return;
+		}
+		
 		try {
 			FtnAddress sysopAddress = getPrimaryFtnAddress();
 			String sysopName = MainHandler.getCurrentInstance().getInfo().getSysop();

@@ -128,6 +128,8 @@ public class FtnTosserTest {
         testProps.setProperty("fileecho.path", tempDir.toString() + "/fileecho");
         testProps.setProperty("fileecho.enable", "true");
         testProps.setProperty("trace.enabled", "true");
+        // Disable sysop notifications during testing to avoid affecting test expectations
+        testProps.setProperty("tosser.sysop.notifications", "false");
         
         // Configure H2 in-memory database for testing
         testProps.setProperty("jdbc.url", "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false");
