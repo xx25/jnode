@@ -24,7 +24,6 @@ import jnode.dto.*;
 import jnode.event.Notifier;
 import jnode.event.SharedModuleEvent;
 import jnode.ftn.FtnTools;
-import jnode.install.GUIConfigurator;
 import jnode.install.InstallUtil;
 import jnode.jscript.JscriptExecutor;
 import jnode.logger.Logger;
@@ -68,9 +67,12 @@ public class Main {
 			tryRedirectLog();
 
 		} catch (IOException e) {
-			GUIConfigurator.main(args);
-			logger.l1("Bad configuration", e);
-			return;
+			System.err.println("ERROR: Cannot load configuration file: " + args[0]);
+			System.err.println("Please ensure the configuration file exists and is readable.");
+			System.err.println("Example configuration files can be found in the docs/ directory.");
+			System.err.println("See documentation for configuration file format and options.");
+			logger.l1("Configuration file not found or unreadable: " + args[0], e);
+			System.exit(1);
 		}
 		try {
 			ORMManager.INSTANCE.start();
