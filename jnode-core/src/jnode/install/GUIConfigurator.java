@@ -125,6 +125,8 @@ public class GUIConfigurator {
 		ret.add("stat.area");
 		ret.add("jscript.enable");
 		ret.add("threadpool.queue_size");
+		ret.add("tosser.loop_prevention.echomail");
+		ret.add("tosser.loop_prevention.netmail");
 		return ret;
 	}
 
@@ -158,6 +160,8 @@ public class GUIConfigurator {
 		props.put("stat.area", "Echo for statistics");
 		props.put("jscript.enable", "Enable scripts");
 		props.put("threadpool.queue_size", "Thread pool queue size");
+		props.put("tosser.loop_prevention.echomail", "Enable echomail loop prevention");
+		props.put("tosser.loop_prevention.netmail", "Enable netmail loop prevention");
 		return props;
 	}
 
@@ -188,6 +192,8 @@ public class GUIConfigurator {
 		props.setProperty("stat.enable", "true");
 		props.setProperty("stat.area", "9999.stat");
 		props.setProperty("jscript.enable", "true");
+		props.setProperty("tosser.loop_prevention.echomail", "true");
+		props.setProperty("tosser.loop_prevention.netmail", "true");
 		return props;
 	}
 
@@ -258,6 +264,8 @@ public class GUIConfigurator {
 			case "fileecho.8bit_output.enable":
 			case "stat.enable":
 			case "jscript.enable":
+			case "tosser.loop_prevention.echomail":
+			case "tosser.loop_prevention.netmail":
 				comp = new Checkbox();
 				break;
 			default:
