@@ -70,6 +70,7 @@ import jnode.dto.Subscription;
 import jnode.event.NewEchoareaEvent;
 import jnode.event.NewFileareaEvent;
 import jnode.event.Notifier;
+import jnode.ftn.EchoareaLookupResult;
 import jnode.ftn.tosser.FtnTosser;
 import jnode.ftn.types.Ftn2D;
 import jnode.ftn.types.FtnAddress;
@@ -1420,6 +1421,56 @@ public final class FtnTools {
 			}
 		}
 		return ret;
+	}
+
+	/**
+	 * Enhanced echoarea lookup with detailed error information
+	 * 
+	 * @param name echoarea name
+	 * @param link requesting link
+	 * @return EchoareaLookupResult with echoarea or detailed error information
+	 */
+	public static EchoareaLookupResult getAreaByNameWithDetails(String name, Link link) {
+		name = name.toLowerCase();
+		Echoarea area = ORMManager.get(Echoarea.class).getFirstAnd("name", "=", name);
+		
+		if (area == null) {
+			// Echoarea doesn't exist
+			if (link == null || getOptionBooleanDefFalse(link, LinkOption.BOOLEAN_AUTOCREATE_AREA)) {
+				// Auto-creation is enabled - create the area
+				area = new Echoarea();
+				area.setName(name);
+				area.setDescription("Autocreated echoarea");
+				area.setReadlevel((link != null) ? getOptionLong(link, LinkOption.LONG_LINK_LEVEL) : 0);
+				area.setWritelevel((link != null) ? getOptionLong(link, LinkOption.LONG_LINK_LEVEL) : 0);
+				area.setGroup((link != null) ? getOptionString(link, LinkOption.SARRAY_LINK_GROUPS).split(" ")[0] : "");
+				logger.l3("Echoarea " + name.toUpperCase() + " created");
+				ORMManager.get(Echoarea.class).save(area);
+				
+				if (link != null) {
+					Subscription sub = new Subscription();
+					sub.setArea(area);
+					sub.setLink(link);
+					ORMManager.get(Subscription.class).save(sub);
+				}
+				Notifier.INSTANCE.notify(new NewEchoareaEvent(name, link));
+				return EchoareaLookupResult.success(area);
+			} else {
+				// Auto-creation is disabled
+				return EchoareaLookupResult.autoCreateDisabled(name);
+			}
+		} else {
+			// Echoarea exists - check if link is subscribed
+			if (link != null && ORMManager.get(Subscription.class).getFirstAnd(
+					"echoarea_id", "=", area.getId(), "link_id", "=", link.getId()) == null) {
+				// Link is not subscribed to existing echoarea
+				String linkAddress = link.getLinkAddress();
+				return EchoareaLookupResult.linkNotSubscribed(name, linkAddress);
+			}
+			
+			// Success - echoarea found and accessible
+			return EchoareaLookupResult.success(area);
+		}
 	}
 
 	/**
