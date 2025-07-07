@@ -20,6 +20,8 @@
 
 package jnode.ndl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,6 +32,10 @@ public class FtnNdlAddress extends FtnAddress {
 			".*,IBN(:[^,]+)?.*", Pattern.CASE_INSENSITIVE);
 	private static final Pattern INA_PATTERN = Pattern.compile(
 			".*,INA(:[^,]+)?.*", Pattern.CASE_INSENSITIVE);
+	private static final Pattern INA_GLOBAL_PATTERN = Pattern.compile(
+			"INA(:[^,]+)?", Pattern.CASE_INSENSITIVE);
+	private static final Pattern IBN_GLOBAL_PATTERN = Pattern.compile(
+			"IBN(:[^,]+)?", Pattern.CASE_INSENSITIVE);
 
 	public static enum Status {
 		HOLD, DOWN, HUB, HOST, PVT, NORMAL
@@ -153,6 +159,36 @@ public class FtnNdlAddress extends FtnAddress {
 	}
 
 	/**
+	 * Extracts all INA addresses from the nodelist line.
+	 * Examples:
+	 * - "INA:server1.com,INA:server2.com" -> ["server1.com", "server2.com"]
+	 * - "INA:1.2.3.4,INA:5.6.7.8:25555" -> ["1.2.3.4", "5.6.7.8:25555"]
+	 * - "INA" -> ["-"] (flag present but no address)
+	 * - No INA flags -> empty list
+	 * 
+	 * @return List of INA addresses found in the nodelist line
+	 */
+	public List<String> getInetHosts() {
+		List<String> hosts = new ArrayList<>();
+		if (line != null) {
+			Matcher m = INA_GLOBAL_PATTERN.matcher(line);
+			while (m.find()) {
+				if (m.group(1) != null) {
+					// Extract address after the colon
+					String address = m.group(1).substring(1);
+					if (!address.isEmpty()) {
+						hosts.add(address);
+					}
+				} else {
+					// INA flag without address
+					hosts.add("-");
+				}
+			}
+		}
+		return hosts;
+	}
+
+	/**
 	 * Extracts the host address from IBN flag.
 	 * Examples:
 	 * - IBN:domain.name -> "domain.name"
@@ -186,5 +222,45 @@ public class FtnNdlAddress extends FtnAddress {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Extracts all IBN addresses from the nodelist line.
+	 * Examples:
+	 * - "IBN:server1.com:24554,IBN:server2.com" -> ["server1.com:24554", "server2.com"]
+	 * - "IBN:1.2.3.4,IBN:5.6.7.8:25555" -> ["1.2.3.4", "5.6.7.8:25555"]
+	 * - "IBN:24554" -> [] (port only, no host)
+	 * - "IBN" -> [] (flag present but no address)
+	 * - No IBN flags -> empty list
+	 * 
+	 * @return List of IBN addresses found in the nodelist line
+	 */
+	public List<String> getIbnHosts() {
+		List<String> hosts = new ArrayList<>();
+		if (line != null) {
+			Matcher m = IBN_GLOBAL_PATTERN.matcher(line);
+			while (m.find()) {
+				if (m.group(1) != null) {
+					// Extract address after the colon
+					String ibnValue = m.group(1).substring(1);
+					if (!ibnValue.isEmpty()) {
+						// Split by colon to handle cases like "domain.name:24555"
+						String[] parts = ibnValue.split(":");
+						if (parts.length > 0 && !parts[0].isEmpty()) {
+							// Check if it's a numeric port (no host specified)
+							try {
+								Integer.parseInt(parts[0]);
+								// It's just a port number, no host - skip this entry
+								continue;
+							} catch (NumberFormatException e) {
+								// It's a host address, add the full value
+								hosts.add(ibnValue);
+							}
+						}
+					}
+				}
+			}
+		}
+		return hosts;
 	}
 }

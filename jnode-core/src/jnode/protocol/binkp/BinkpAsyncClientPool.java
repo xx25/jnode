@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.List;
 
 import jnode.dto.Link;
 import jnode.logger.Logger;
@@ -55,34 +56,62 @@ public class BinkpAsyncClientPool implements Runnable {
 				}
 				l = PollQueue.getSelf().getNext();
 			}
-			try {
-				BinkpAbstractConnector conn = null;
-				// Use resolved address which includes nodelist fallback
-				String pa = l.getResolvedProtocolAddress();
-				for (String key : BinkpConnectorRegistry.getSelf().getKeys()) {
-					if (pa.startsWith(key)) {
-						conn = createConnector(pa, key);
-						break;
+			// Try all available addresses with retry logic
+			boolean connected = false;
+			List<String> addresses = l.getAllResolvedProtocolAddresses();
+			
+			if (addresses.isEmpty()) {
+				logger.l3("No addresses available for link " + l.getLinkAddress());
+				continue;
+			}
+			
+			for (String pa : addresses) {
+				if ("-".equals(pa)) {
+					logger.l3("Skipping disabled address for link " + l.getLinkAddress());
+					continue;
+				}
+				
+				try {
+					BinkpAbstractConnector conn = null;
+					// Check for custom connector types
+					for (String key : BinkpConnectorRegistry.getSelf().getKeys()) {
+						if (pa.startsWith(key)) {
+							conn = createConnector(pa, key);
+							break;
+						}
 					}
+					if (conn == null) {
+						conn = new BinkpAsyncConnector(pa);
+					}
+					
+					logger.l4("Attempting connection to " + extractHostFromProtocolAddress(pa) + " for link " + l.getLinkAddress());
+					ThreadPool.execute(conn);
+					connected = true;
+					break; // Successfully created connector, break from address loop
+					
+				} catch (RuntimeException e) {
+					logger.l2("Runtime exception connecting to " + extractHostFromProtocolAddress(pa) + ": " + e.getLocalizedMessage(), e);
+				} catch (ConnectException e) {
+					String host = extractHostFromProtocolAddress(pa);
+					logger.l3("Connection failed to " + host + ": " + e.getLocalizedMessage());
+					// Continue to next address
+				} catch (SocketTimeoutException e) {
+					String host = extractHostFromProtocolAddress(pa);
+					logger.l3("Socket timeout connecting to " + host + ": " + e.getLocalizedMessage());
+					// Continue to next address
+				} catch (UnknownHostException e) {
+					String host = extractHostFromProtocolAddress(pa);
+					logger.l3("Unknown host " + host + ": " + e.getLocalizedMessage());
+					// Continue to next address
+				} catch (IOException e) {
+					String host = extractHostFromProtocolAddress(pa);
+					logger.l3("IO error connecting to " + host + ": " + e.getLocalizedMessage());
+					// Continue to next address
 				}
-				if (conn == null) {
-					conn = new BinkpAsyncConnector(pa);
-				}
-				ThreadPool.execute(conn);
-			} catch (RuntimeException e) {
-				logger.l2("Runtime exception: " + e.getLocalizedMessage(), e);
-			} catch (ConnectException e) {
-				String host = extractHostFromProtocolAddress(l.getResolvedProtocolAddress());
-				logger.l2("Connection timed out to " + host + ": " + e.getLocalizedMessage(), e);
-			} catch (SocketTimeoutException e) {
-				String host = extractHostFromProtocolAddress(l.getResolvedProtocolAddress());
-				logger.l2("Socket timeout connecting to " + host + ": " + e.getLocalizedMessage(), e);
-			} catch (UnknownHostException e) {
-				String host = extractHostFromProtocolAddress(l.getResolvedProtocolAddress());
-				logger.l2("Unknown host " + host + ": " + e.getLocalizedMessage(), e);
-			} catch (IOException e) {
-				String host = extractHostFromProtocolAddress(l.getResolvedProtocolAddress());
-				logger.l2("IO error connecting to " + host + ": " + e.getLocalizedMessage(), e);
+			}
+			
+			if (!connected) {
+				logger.l2("Failed to connect to any address for link " + l.getLinkAddress() + " (tried " + addresses.size() + " addresses)");
 			}
 		}
 	}
