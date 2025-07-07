@@ -60,6 +60,8 @@ public class FtnTosser {
 	private static final String FILEECHO_CHARSET = "fileecho.output_charset";
 	private static final Logger logger = Logger.getLogger(FtnTosser.class);
 	private static final String MAIL_LIMIT = "tosser.mail_limit";
+	private static final String LOOP_PREVENTION_ECHOMAIL = "tosser.loop_prevention.echomail";
+	private static final String LOOP_PREVENTION_NETMAIL = "tosser.loop_prevention.netmail";
 	private final Map<String, Integer> tossed = new HashMap<>();
 	private final Map<String, Integer> bad = new HashMap<>();
 	private final Set<Link> pollLinks = new HashSet<>();
@@ -78,6 +80,38 @@ public class FtnTosser {
 				return;
 			}
 		}
+		
+		// Check for VIA loops if loop prevention is enabled
+		if (isNetmailLoopPreventionEnabled()) {
+			List<String> viaLines = extractViaLines(netmail);
+			FtnAddress loopAddr = checkOurAddressInVia(viaLines);
+			if (loopAddr != null) {
+				String errorMsg = String.format("Netmail loop detected - message already passed through %s", 
+						loopAddr.toString());
+				logger.l2("MAIL ERROR: " + errorMsg);
+				
+				// Notify sysop about netmail loop
+				notifySysop("Netmail Loop Detected", 
+						String.format("A netmail message was dropped due to routing loop detection.\n\n" +
+								"From: %s (%s)\n" +
+								"To: %s (%s)\n" +
+								"Subject: %s\n" +
+								"Message Date: %s\n\n" +
+								"Loop detected at address: %s\n\n" +
+								"This message has already passed through our system and is being routed " +
+								"back to us, creating a circular route. Check your routing configuration.",
+								netmail.getFromAddr().toString(), netmail.getFromName(),
+								netmail.getToAddr().toString(), netmail.getToName(),
+								netmail.getSubject(), 
+								(netmail.getDate() != null) ? netmail.getDate().toString() : "unknown",
+								loopAddr.toString()));
+				
+				Integer n = bad.get("netmail");
+				bad.put("netmail", (n == null) ? 1 : n + 1);
+				return;
+			}
+		}
+		
 		boolean drop = checkNetmailMustDropped(netmail);
 
 		if (drop) {
@@ -90,12 +124,14 @@ public class FtnTosser {
 					String.format("A netmail message was dropped due to validation failure.\n\n" +
 							"From: %s (%s)\n" +
 							"To: %s (%s)\n" +
-							"Subject: %s\n\n" +
+							"Subject: %s\n" +
+							"Message Date: %s\n\n" +
 							"This typically indicates issues with address validation, " +
 							"unknown sender, or destination not found in nodelist.",
 							netmail.getFromAddr().toString(), netmail.getFromName(),
 							netmail.getToAddr().toString(), netmail.getToName(),
-							netmail.getSubject()));
+							netmail.getSubject(), 
+							(netmail.getDate() != null) ? netmail.getDate().toString() : "unknown"));
 			
 			Integer n = bad.get("netmail");
 			bad.put("netmail", (n == null) ? 1 : n + 1);
@@ -157,12 +193,14 @@ public class FtnTosser {
 							"Echoarea: %s\n" +
 							"From Link: %s\n" +
 							"Message From: %s (%s)\n" +
-							"Subject: %s\n\n" +
+							"Subject: %s\n" +
+							"Message Date: %s\n\n" +
 							"Only secure (password-protected) links can post echomail. " +
 							"Check link configuration and packet passwords.",
 							echomail.getArea(), linkAddr,
 							echomail.getFromAddr().toString(), echomail.getFromName(),
-							echomail.getSubject()));
+							echomail.getSubject(), 
+							(echomail.getDate() != null) ? echomail.getDate().toString() : "unknown"));
 			return;
 		}
 		EchoareaLookupResult lookupResult = FtnTools.getAreaByNameWithDetails(echomail.getArea(), link);
@@ -240,18 +278,52 @@ public class FtnTosser {
 							"Echoarea: %s (requires level %d)\n" +
 							"From Link: %s (has level %d)\n" +
 							"Message From: %s (%s)\n" +
-							"Subject: %s\n\n" +
+							"Subject: %s\n" +
+							"Message Date: %s\n\n" +
 							"The link's access level is too low to post to this echoarea. " +
 							"You may need to adjust the link's level or the echoarea's write level.",
 							echomail.getArea(), area.getWritelevel(),
 							link.getLinkAddress(), rl,
 							echomail.getFromAddr().toString(), echomail.getFromName(),
-							echomail.getSubject()));
+							echomail.getSubject(), 
+							(echomail.getDate() != null) ? echomail.getDate().toString() : "unknown"));
 			
 			Integer n = bad.get(echomail.getArea());
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 			return;
 		}
+		
+		// Check for PATH loops if loop prevention is enabled
+		if (isEchomailLoopPreventionEnabled()) {
+			Ftn2D loopAddr = checkOurAddressInPath(echomail.getPath());
+			if (loopAddr != null) {
+				String linkAddr = (link != null) ? link.getLinkAddress() : "unknown";
+				logger.l2(String.format("MAIL ERROR: Echomail loop detected - area: %s, loop at: %s, from link: %s", 
+						echomail.getArea(), loopAddr.toString(), linkAddr));
+				
+				// Notify sysop about echomail loop
+				notifySysop("Echomail Loop Detected", 
+						String.format("An echomail message was dropped due to routing loop detection.\n\n" +
+								"Echoarea: %s\n" +
+								"From Link: %s\n" +
+								"Message From: %s (%s)\n" +
+								"Subject: %s\n" +
+								"Message Date: %s\n\n" +
+								"Loop detected at address: %s\n\n" +
+								"This message has already passed through our system (%s) as shown in the PATH. " +
+								"This indicates a circular routing configuration. Check your echomail links and routing.",
+								echomail.getArea(), linkAddr,
+								echomail.getFromAddr().toString(), echomail.getFromName(),
+								echomail.getSubject(), 
+								(echomail.getDate() != null) ? echomail.getDate().toString() : "unknown",
+								loopAddr.toString(), loopAddr.toString()));
+				
+				Integer n = bad.get(echomail.getArea());
+				bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
+				return;
+			}
+		}
+		
 		// malicious messages without MSGID occur
 
 		if (echomail.getMsgid() != null) {
@@ -266,13 +338,15 @@ public class FtnTosser {
 								"Message ID: %s\n" +
 								"From Link: %s\n" +
 								"Message From: %s (%s)\n" +
-								"Subject: %s\n\n" +
+								"Subject: %s\n" +
+								"Message Date: %s\n\n" +
 								"This may indicate routing loops, duplicate sends, or " +
 								"links processing the same message multiple times.",
 								echomail.getArea(), echomail.getMsgid(),
 								(link != null) ? link.getLinkAddress() : "unknown",
 								echomail.getFromAddr().toString(), echomail.getFromName(),
-								echomail.getSubject()));
+								echomail.getSubject(), 
+								(echomail.getDate() != null) ? echomail.getDate().toString() : "unknown"));
 				
 				Integer n = bad.get(echomail.getArea());
 				bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
@@ -1183,6 +1257,87 @@ public class FtnTosser {
 			}
 		}
 		return viaLines;
+	}
+
+	/**
+	 * Check if any of our addresses appear in the PATH (indicating a loop through our system)
+	 * @param path List of Ftn2D addresses in PATH
+	 * @return Our address if found in PATH (indicating a loop), null otherwise
+	 */
+	private Ftn2D checkOurAddressInPath(List<Ftn2D> path) {
+		if (path == null || path.isEmpty()) {
+			return null;
+		}
+		
+		// Get all our 2D addresses
+		Set<Ftn2D> ourAddresses = new HashSet<>();
+		for (FtnAddress addr : MainHandler.getCurrentInstance().getInfo().getAddressList()) {
+			ourAddresses.add(new Ftn2D(addr.getNet(), addr.getNode()));
+		}
+		
+		// Check if any of our addresses appear in the path
+		for (Ftn2D pathAddr : path) {
+			if (ourAddresses.contains(pathAddr)) {
+				return pathAddr;
+			}
+		}
+		
+		return null;
+	}
+
+	/**
+	 * Check if any of our addresses appear in VIA lines (indicating a loop through our system)
+	 * @param viaLines List of VIA lines from the message
+	 * @return Our address if found in VIA (indicating a loop), null otherwise
+	 */
+	private FtnAddress checkOurAddressInVia(List<String> viaLines) {
+		if (viaLines == null || viaLines.isEmpty()) {
+			return null;
+		}
+		
+		// Get all our addresses
+		Set<FtnAddress> ourAddresses = new HashSet<>(MainHandler.getCurrentInstance().getInfo().getAddressList());
+		
+		// Check each VIA line
+		for (String viaLine : viaLines) {
+			// Via line format: \001Via address jNode version date/time
+			// Example: \001Via 2:5020/1042 jNode ver 2.0.1 Fri Nov 06 2014 at 20:17:07
+			String[] parts = viaLine.split(" ");
+			if (parts.length >= 2) {
+				try {
+					// The address is the second part (after \001Via)
+					FtnAddress viaAddr = new FtnAddress(parts[1]);
+					
+					// Check if this is one of our addresses
+					for (FtnAddress ourAddr : ourAddresses) {
+						if (viaAddr.equals(ourAddr)) {
+							return ourAddr;
+						}
+					}
+				} catch (Exception e) {
+					// If we can't parse the address, log it and continue
+					logger.l3("Could not parse VIA address from line: " + viaLine);
+				}
+			}
+		}
+		
+		return null;
+	}
+
+	/**
+	 * Check if echomail loop prevention is enabled
+	 * @return true if enabled (default), false otherwise
+	 */
+	private boolean isEchomailLoopPreventionEnabled() {
+		return MainHandler.getCurrentInstance().getBooleanProperty(LOOP_PREVENTION_ECHOMAIL, true);
+	}
+
+	/**
+	 * Check if netmail loop prevention is enabled
+	 * @return true if enabled (default), false otherwise
+	 */
+	private boolean isNetmailLoopPreventionEnabled() {
+		return MainHandler.getCurrentInstance().getBooleanProperty(LOOP_PREVENTION_NETMAIL, true);
 	}
 
 }
