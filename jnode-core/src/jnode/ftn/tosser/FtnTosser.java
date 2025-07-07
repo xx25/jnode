@@ -80,6 +80,8 @@ public class FtnTosser {
 		boolean drop = checkNetmailMustDropped(netmail);
 
 		if (drop) {
+			logger.l2(String.format("MAIL ERROR: Netmail dropped from %s to %s - failed validation", 
+					netmail.getFromAddr().toString(), netmail.getToAddr().toString()));
 			Integer n = bad.get("netmail");
 			bad.put("netmail", (n == null) ? 1 : n + 1);
 		} else {
@@ -130,13 +132,14 @@ public class FtnTosser {
 	private void tossEchomail(FtnMessage echomail, Link link, boolean secure) {
 
 		if (!secure) {
-			logger.l3("Echomail from insecure link is dropped");
+			logger.l2(String.format("MAIL ERROR: Echomail from insecure link dropped - area: %s, from: %s", 
+					echomail.getArea(), (link != null) ? link.getLinkAddress() : "unknown"));
 			return;
 		}
 		Echoarea area = getAreaByName(echomail.getArea(), link);
 		if (area == null) {
-			logger.l3("Echoarea " + echomail.getArea()
-					+ " is not available for " + link.getLinkAddress());
+			logger.l2(String.format("MAIL ERROR: Echoarea %s not available for link %s - message dropped", 
+					echomail.getArea(), (link != null) ? link.getLinkAddress() : "unknown"));
 			Integer n = bad.get(echomail.getArea());
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 			return;
@@ -153,9 +156,8 @@ public class FtnTosser {
 					String.format(
 							"Sorry, you have no enough level to post %s to this area\n%s",
 							quote(echomail), MainHandler.getVersion()));
-			logger.l3("Echoarea " + echomail.getArea()
-					+ " is not available for " + link.getLinkAddress()
-					+ " (level mismatch)");
+			logger.l2(String.format("MAIL ERROR: Echoarea %s access denied for link %s - insufficient level (required: %d, has: %d)", 
+					echomail.getArea(), link.getLinkAddress(), area.getWritelevel(), rl));
 			Integer n = bad.get(echomail.getArea());
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 			return;
@@ -164,8 +166,8 @@ public class FtnTosser {
 
 		if (echomail.getMsgid() != null) {
 			if (isADupe(area, echomail.getMsgid())) {
-				logger.l3("Message " + echomail.getArea() + " "
-						+ echomail.getMsgid() + " is a dupe");
+				logger.l2(String.format("MAIL ERROR: Duplicate message detected - area: %s, msgid: %s, from: %s", 
+						echomail.getArea(), echomail.getMsgid(), echomail.getFromAddr().toString()));
 				Integer n = bad.get(echomail.getArea());
 				bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 				return;
@@ -261,9 +263,8 @@ public class FtnTosser {
 						file.delete();
 					} catch (Exception e) {
 						markAsBad(file, "Tossing failed");
-						logger.l2(
-								"Error while tossing: "
-										+ e.getLocalizedMessage(), e);
+						logger.l2(String.format("MAIL ERROR: Tossing failed for file %s - %s", 
+								file.getName(), e.getLocalizedMessage()), e);
 					}
 				} else if (loname.matches("(s|u)inb\\d*.pkt")) {
 					try {
@@ -279,7 +280,8 @@ public class FtnTosser {
 									LinkOption.BOOLEAN_IGNORE_PKTPWD)) {
 								if (!link.getPaketPassword().equalsIgnoreCase(
 										pkt.getPassword())) {
-									logger.l2("Pkt password mismatch - package moved to inbound");
+									logger.l2(String.format("MAIL ERROR: Packet password mismatch for link %s - file: %s", 
+											link.getLinkAddress(), file.getName()));
 									markAsBad(file, "Password mismatch");
 									continue;
 								}
@@ -296,9 +298,8 @@ public class FtnTosser {
 						file.delete();
 					} catch (Exception e) {
 						markAsBad(file, "Tossing failed");
-						logger.l2(
-								"Error while tossing: "
-										+ e.getLocalizedMessage(), e);
+						logger.l2(String.format("MAIL ERROR: Tossing failed for file %s - %s", 
+								file.getName(), e.getLocalizedMessage()), e);
 					}
 				} else if (loname.matches("^[a-z0-9]{8}\\.tic$")) {
 					if (!MainHandler.getCurrentInstance().getBooleanProperty(
@@ -488,7 +489,7 @@ public class FtnTosser {
 	}
 
 	private void markAsBad(File file, String message) {
-		logger.l2("File " + file.getName() + " is bad: " + message);
+		logger.l2(String.format("MAIL ERROR: File %s marked as bad - %s", file.getName(), message));
 		file.renameTo(new File(file.getAbsolutePath() + ".bad"));
 	}
 
