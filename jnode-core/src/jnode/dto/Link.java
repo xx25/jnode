@@ -20,6 +20,9 @@
 
 package jnode.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
@@ -196,6 +199,79 @@ public class Link {
 			// If any error occurs during resolution, don't connect
 			return "-";
 		}
+	}
+
+	/**
+	 * Gets all available protocol addresses for this link, with nodelist fallback.
+	 * This method supports multiple IBN and INA entries for load balancing and failover.
+	 * 
+	 * Logic:
+	 * 1. If protocolAddress is "-", return empty list (no connection)
+	 * 2. If protocolAddress is configured, return it as single-item list
+	 * 3. If protocolAddress is empty, try to resolve from nodelist:
+	 *    a. Add all IBN addresses from nodelist to the list
+	 *    b. Add all INA addresses from nodelist to the list
+	 *    c. Return all valid addresses found
+	 * 
+	 * @return List of all available protocol addresses (empty if no valid addresses found)
+	 */
+	public List<String> getAllResolvedProtocolAddresses() {
+		List<String> addresses = new ArrayList<>();
+		
+		// If explicitly set to "-", don't connect
+		if ("-".equals(protocolAddress)) {
+			return addresses;
+		}
+		
+		// If we have a configured address, use it
+		if (protocolAddress != null && !protocolAddress.isEmpty() && !"-".equals(protocolAddress)) {
+			addresses.add(protocolAddress);
+			return addresses;
+		}
+		
+		// Try to resolve from nodelist
+		try {
+			FtnAddress ftnAddr = new FtnAddress(linkAddress);
+			FtnNdlAddress ndlAddr = NodelistScanner.getInstance().isExists(ftnAddr);
+			
+			if (ndlAddr == null) {
+				// Not in nodelist
+				return addresses;
+			}
+			
+			// Get all IBN addresses first (they have priority)
+			List<String> ibnHosts = ndlAddr.getIbnHosts();
+			for (String ibnHost : ibnHosts) {
+				if (ibnHost != null && !ibnHost.isEmpty()) {
+					// Check if address already includes port
+					if (ibnHost.contains(":")) {
+						addresses.add(ibnHost);
+					} else {
+						// Add default port if not specified
+						addresses.add(ibnHost + ":24554");
+					}
+				}
+			}
+			
+			// Get all INA addresses
+			List<String> inaHosts = ndlAddr.getInetHosts();
+			for (String inaHost : inaHosts) {
+				if (inaHost != null && !inaHost.isEmpty() && !"-".equals(inaHost)) {
+					// Check if address already includes port
+					if (inaHost.contains(":")) {
+						addresses.add(inaHost);
+					} else {
+						// Add default port if not specified
+						addresses.add(inaHost + ":24554");
+					}
+				}
+			}
+			
+		} catch (Exception e) {
+			// If any error occurs during resolution, return empty list
+		}
+		
+		return addresses;
 	}
 
     @Override
