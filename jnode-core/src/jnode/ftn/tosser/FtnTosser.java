@@ -27,6 +27,7 @@ import jnode.event.NewFilemailEvent;
 import jnode.event.NewNetmailEvent;
 import jnode.event.Notifier;
 import jnode.ftn.FtnTools;
+import jnode.ftn.EchoareaLookupResult;
 import jnode.ftn.FilesBBSWriter;
 import jnode.ftn.FileIdDizWriter;
 import jnode.ftn.types.*;
@@ -164,28 +165,60 @@ public class FtnTosser {
 							echomail.getSubject()));
 			return;
 		}
-		Echoarea area = getAreaByName(echomail.getArea(), link);
-		if (area == null) {
+		EchoareaLookupResult lookupResult = FtnTools.getAreaByNameWithDetails(echomail.getArea(), link);
+		if (!lookupResult.isSuccess()) {
 			String linkAddr = (link != null) ? link.getLinkAddress() : "unknown";
-			logger.l2(String.format("MAIL ERROR: Echoarea %s not available for link %s - message dropped", 
-					echomail.getArea(), linkAddr));
+			logger.l2(String.format("MAIL ERROR: Echoarea %s - %s - message dropped", 
+					echomail.getArea(), lookupResult.getLogMessage()));
 			
-			// Notify sysop about unknown echoarea
-			notifySysop("Unknown Echoarea Error", 
-					String.format("A message was dropped because the echoarea is not available.\n\n" +
+			// Create specific error messages based on the error type
+			String errorTitle;
+			String errorDescription;
+			String suggestedAction;
+			
+			switch (lookupResult.getErrorType()) {
+				case AUTO_CREATE_DISABLED:
+					errorTitle = "Echoarea Auto-Creation Disabled";
+					errorDescription = "A message was dropped because the echoarea does not exist and automatic echoarea creation is disabled for this link.";
+					suggestedAction = "You can either:\n" +
+						"1. Enable automatic echoarea creation for link " + linkAddr + " in the link configuration\n" +
+						"2. Manually create the echoarea '" + echomail.getArea() + "' and add a subscription for this link\n" +
+						"3. Contact the sender to verify the correct echoarea name";
+					break;
+				case LINK_NOT_SUBSCRIBED:
+					errorTitle = "Link Not Subscribed to Echoarea";
+					errorDescription = "A message was dropped because the echoarea exists but the sending link is not subscribed to it.";
+					suggestedAction = "You need to add a subscription for link " + linkAddr + " to echoarea '" + echomail.getArea() + "' in the link configuration.";
+					break;
+				default:
+					errorTitle = "Unknown Echoarea Error";
+					errorDescription = "A message was dropped because the echoarea is not available.";
+					suggestedAction = "Check the echoarea configuration and link settings.";
+					break;
+			}
+			
+			// Notify sysop with detailed error information
+			notifySysop(errorTitle, 
+					String.format("%s\n\n" +
 							"Echoarea: %s\n" +
 							"From Link: %s\n" +
 							"Message From: %s (%s)\n" +
 							"Subject: %s\n\n" +
-							"You may need to create this echoarea or check link configuration.",
+							"Error Details: %s\n\n" +
+							"Suggested Action:\n%s",
+							errorDescription,
 							echomail.getArea(), linkAddr,
 							echomail.getFromAddr().toString(), echomail.getFromName(),
-							echomail.getSubject()));
+							echomail.getSubject(),
+							lookupResult.getErrorMessage(),
+							suggestedAction));
 			
 			Integer n = bad.get(echomail.getArea());
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 			return;
 		}
+		
+		Echoarea area = lookupResult.getEchoarea();
 
 		Long rl = (link != null) ? getOptionLong(link, LinkOption.LONG_LINK_LEVEL) : 0L;
 		if (link != null && rl < area.getWritelevel()) {
