@@ -507,9 +507,9 @@ public class FtnTosser {
 						}
 						file.delete();
 					} catch (Exception e) {
-						logger.l1(
-								"Error while processing tic " + file.getName(),
-								e);
+						markAsBad(file, "TIC processing failed");
+						logger.l2(String.format("MAIL ERROR: TIC processing failed for file %s - %s", 
+								file.getName(), e.getLocalizedMessage()), e);
 					}
 				} else if (loname.matches("^[0-9a-f]{8}\\..?lo$")) {
 					FtnAddress address = getPrimaryFtnAddress().clone();

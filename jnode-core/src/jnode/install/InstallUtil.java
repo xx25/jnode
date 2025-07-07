@@ -72,7 +72,7 @@ public class InstallUtil {
 			doInstall();
 		} else {
 			Version ver = versions.get(0);
-			logger.l1("You have installed " + ver.toString());
+			logger.l1("Version from database table 'version': " + ver.toString());
 			checkForLastVersion(ver);
 		}
 	}
