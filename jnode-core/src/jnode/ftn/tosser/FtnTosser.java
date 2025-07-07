@@ -685,7 +685,7 @@ public class FtnTosser {
 			link.setLinkAddress(address.toString());
 			link.setPaketPassword("-");
 		}
-		FtnAddress ourAka = selectOurAka(link);
+		FtnAddress ourAka = selectOurAka(link, "packNetmail");
 		FtnPkt header = new FtnPkt(ourAka, address,
 				link.getPaketPassword(), new Date());
 		List<Netmail> mail = null;
@@ -771,7 +771,7 @@ public class FtnTosser {
 			File f = createOutboundFile(link);
 			FileOutputStream fos = new FileOutputStream(f);
 			OutputStream os = (pack) ? new ZipOutputStream(fos) : fos;
-			FtnPkt header = new FtnPkt(selectOurAka(link), address,
+			FtnPkt header = new FtnPkt(selectOurAka(link, "packEchomail"), address,
 					link.getPaketPassword(), new Date());
 			if (pack) {
 				((ZipOutputStream) os).putNextEntry(new ZipEntry(generate8d()
@@ -802,7 +802,7 @@ public class FtnTosser {
 						}
 						seenby.add(link2d);
 						seenby.addAll(createSeenBy(area));
-						FtnAddress ourAka = selectOurAka(link);
+						FtnAddress ourAka = selectOurAka(link, "packEchomail-seenby");
 						Ftn2D me = new Ftn2D(ourAka.getNet(), ourAka.getNode());
 						seenby.add(me);
 						if (!path.contains(me)) {
@@ -1033,7 +1033,7 @@ public class FtnTosser {
 			tic.setSize(attach.length());
 			tic.setDesc(mail.getFiledesc());
 			tic.setPassword(link.getPaketPassword());
-			tic.setFrom(FtnTools.selectOurAka(link));
+			tic.setFrom(FtnTools.selectOurAka(link, "createTic"));
 			tic.setTo(null);
 			tic.setOrigin(new FtnAddress(mail.getOrigin()));
 			return tic;

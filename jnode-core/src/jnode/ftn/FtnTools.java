@@ -1293,6 +1293,10 @@ public final class FtnTools {
 	}
 
 	public static FtnAddress selectOurAka(Link link) {
+		return selectOurAka(link, "");
+	}
+
+	public static FtnAddress selectOurAka(Link link, String context) {
 		if (MainHandler.getCurrentInstance().getInfo().getAddressList().size() < 2) {
 			return getPrimaryFtnAddress();
 		}
@@ -1323,7 +1327,8 @@ public final class FtnTools {
 				}
 			}
 		}
-		logger.l5("Using aka " + ret + " for " + link.getLinkAddress() + "");
+		String contextStr = (context != null && !context.isEmpty()) ? " (" + context + ")" : "";
+		logger.l5("Using aka " + ret + " for " + link.getLinkAddress() + contextStr);
 		return ret;
 	}
 
