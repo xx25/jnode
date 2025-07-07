@@ -80,8 +80,22 @@ public class FtnTosser {
 		boolean drop = checkNetmailMustDropped(netmail);
 
 		if (drop) {
-			logger.l2(String.format("MAIL ERROR: Netmail dropped from %s to %s - failed validation", 
-					netmail.getFromAddr().toString(), netmail.getToAddr().toString()));
+			String errorMsg = String.format("Netmail dropped from %s to %s - failed validation", 
+					netmail.getFromAddr().toString(), netmail.getToAddr().toString());
+			logger.l2("MAIL ERROR: " + errorMsg);
+			
+			// Notify sysop about netmail validation failure
+			notifySysop("Netmail Validation Error", 
+					String.format("A netmail message was dropped due to validation failure.\n\n" +
+							"From: %s (%s)\n" +
+							"To: %s (%s)\n" +
+							"Subject: %s\n\n" +
+							"This typically indicates issues with address validation, " +
+							"unknown sender, or destination not found in nodelist.",
+							netmail.getFromAddr().toString(), netmail.getFromName(),
+							netmail.getToAddr().toString(), netmail.getToName(),
+							netmail.getSubject()));
+			
 			Integer n = bad.get("netmail");
 			bad.put("netmail", (n == null) ? 1 : n + 1);
 		} else {
@@ -132,14 +146,42 @@ public class FtnTosser {
 	private void tossEchomail(FtnMessage echomail, Link link, boolean secure) {
 
 		if (!secure) {
+			String linkAddr = (link != null) ? link.getLinkAddress() : "unknown";
 			logger.l2(String.format("MAIL ERROR: Echomail from insecure link dropped - area: %s, from: %s", 
-					echomail.getArea(), (link != null) ? link.getLinkAddress() : "unknown"));
+					echomail.getArea(), linkAddr));
+			
+			// Notify sysop about insecure echomail
+			notifySysop("Insecure Echomail Dropped", 
+					String.format("An echomail message was dropped because it came from an insecure link.\n\n" +
+							"Echoarea: %s\n" +
+							"From Link: %s\n" +
+							"Message From: %s (%s)\n" +
+							"Subject: %s\n\n" +
+							"Only secure (password-protected) links can post echomail. " +
+							"Check link configuration and packet passwords.",
+							echomail.getArea(), linkAddr,
+							echomail.getFromAddr().toString(), echomail.getFromName(),
+							echomail.getSubject()));
 			return;
 		}
 		Echoarea area = getAreaByName(echomail.getArea(), link);
 		if (area == null) {
+			String linkAddr = (link != null) ? link.getLinkAddress() : "unknown";
 			logger.l2(String.format("MAIL ERROR: Echoarea %s not available for link %s - message dropped", 
-					echomail.getArea(), (link != null) ? link.getLinkAddress() : "unknown"));
+					echomail.getArea(), linkAddr));
+			
+			// Notify sysop about unknown echoarea
+			notifySysop("Unknown Echoarea Error", 
+					String.format("A message was dropped because the echoarea is not available.\n\n" +
+							"Echoarea: %s\n" +
+							"From Link: %s\n" +
+							"Message From: %s (%s)\n" +
+							"Subject: %s\n\n" +
+							"You may need to create this echoarea or check link configuration.",
+							echomail.getArea(), linkAddr,
+							echomail.getFromAddr().toString(), echomail.getFromName(),
+							echomail.getSubject()));
+			
 			Integer n = bad.get(echomail.getArea());
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 			return;
@@ -158,6 +200,21 @@ public class FtnTosser {
 							quote(echomail), MainHandler.getVersion()));
 			logger.l2(String.format("MAIL ERROR: Echoarea %s access denied for link %s - insufficient level (required: %d, has: %d)", 
 					echomail.getArea(), link.getLinkAddress(), area.getWritelevel(), rl));
+			
+			// Notify sysop about access level mismatch
+			notifySysop("Echoarea Access Denied", 
+					String.format("An echomail message was dropped due to insufficient access level.\n\n" +
+							"Echoarea: %s (requires level %d)\n" +
+							"From Link: %s (has level %d)\n" +
+							"Message From: %s (%s)\n" +
+							"Subject: %s\n\n" +
+							"The link's access level is too low to post to this echoarea. " +
+							"You may need to adjust the link's level or the echoarea's write level.",
+							echomail.getArea(), area.getWritelevel(),
+							link.getLinkAddress(), rl,
+							echomail.getFromAddr().toString(), echomail.getFromName(),
+							echomail.getSubject()));
+			
 			Integer n = bad.get(echomail.getArea());
 			bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 			return;
@@ -168,6 +225,22 @@ public class FtnTosser {
 			if (isADupe(area, echomail.getMsgid())) {
 				logger.l2(String.format("MAIL ERROR: Duplicate message detected - area: %s, msgid: %s, from: %s", 
 						echomail.getArea(), echomail.getMsgid(), echomail.getFromAddr().toString()));
+				
+				// Notify sysop about duplicate message (may indicate routing loops or resends)
+				notifySysop("Duplicate Echomail Detected", 
+						String.format("A duplicate echomail message was detected and dropped.\n\n" +
+								"Echoarea: %s\n" +
+								"Message ID: %s\n" +
+								"From Link: %s\n" +
+								"Message From: %s (%s)\n" +
+								"Subject: %s\n\n" +
+								"This may indicate routing loops, duplicate sends, or " +
+								"links processing the same message multiple times.",
+								echomail.getArea(), echomail.getMsgid(),
+								(link != null) ? link.getLinkAddress() : "unknown",
+								echomail.getFromAddr().toString(), echomail.getFromName(),
+								echomail.getSubject()));
+				
 				Integer n = bad.get(echomail.getArea());
 				bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
 				return;
@@ -490,7 +563,45 @@ public class FtnTosser {
 
 	private void markAsBad(File file, String message) {
 		logger.l2(String.format("MAIL ERROR: File %s marked as bad - %s", file.getName(), message));
+		
+		// Notify sysop about bad file
+		notifySysop("Packet Processing Error", 
+				String.format("A packet file was marked as bad and moved to quarantine.\n\n" +
+						"File: %s\n" +
+						"Reason: %s\n" +
+						"Action: File renamed to %s.bad\n\n" +
+						"This may indicate corrupted packets, password issues, or format problems.",
+						file.getName(), message, file.getName()));
+		
 		file.renameTo(new File(file.getAbsolutePath() + ".bad"));
+	}
+
+	/**
+	 * Send error notification to sysop
+	 * @param subject Subject of the error notification
+	 * @param errorDetails Detailed error message
+	 */
+	private void notifySysop(String subject, String errorDetails) {
+		try {
+			FtnAddress sysopAddress = getPrimaryFtnAddress();
+			String sysopName = MainHandler.getCurrentInstance().getInfo().getSysop();
+			String stationName = MainHandler.getCurrentInstance().getInfo().getStationName();
+			
+			StringBuilder message = new StringBuilder();
+			message.append("System Error Notification\n");
+			message.append("========================\n\n");
+			message.append(errorDetails);
+			message.append("\n\n");
+			message.append("--- ").append(MainHandler.getVersion()).append("\n");
+			message.append("Time: ").append(new Date().toString()).append("\n");
+			
+			writeNetmail(sysopAddress, sysopAddress, stationName, sysopName, 
+					subject, message.toString());
+			
+			logger.l3("Error notification sent to sysop: " + subject);
+		} catch (Exception e) {
+			logger.l2("Failed to send error notification to sysop", e);
+		}
 	}
 
 	public static String getFileechoPath() {
