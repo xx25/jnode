@@ -98,13 +98,17 @@ public class FtnTosser {
 								"Subject: %s\n" +
 								"Message Date: %s\n\n" +
 								"Loop detected at address: %s\n\n" +
+								"VIA lines:\n%s\n\n" +
+								"Our addresses: %s\n\n" +
 								"This message has already passed through our system and is being routed " +
 								"back to us, creating a circular route. Check your routing configuration.",
 								netmail.getFromAddr().toString(), netmail.getFromName(),
 								netmail.getToAddr().toString(), netmail.getToName(),
 								netmail.getSubject(), 
 								(netmail.getDate() != null) ? netmail.getDate().toString() : "unknown",
-								loopAddr.toString()));
+								loopAddr.toString(),
+								viaLines != null ? String.join("\n", viaLines) : "No VIA lines found",
+								MainHandler.getCurrentInstance().getInfo().getAddressList().toString()));
 				
 				Integer n = bad.get("netmail");
 				bad.put("netmail", (n == null) ? 1 : n + 1);
@@ -310,13 +314,20 @@ public class FtnTosser {
 								"Subject: %s\n" +
 								"Message Date: %s\n\n" +
 								"Loop detected at address: %s\n\n" +
+								"PATH: %s\n" +
+								"Parsed PATH: %s\n" +
+								"Our addresses: %s\n\n" +
 								"This message has already passed through our system (%s) as shown in the PATH. " +
 								"This indicates a circular routing configuration. Check your echomail links and routing.",
 								echomail.getArea(), linkAddr,
 								echomail.getFromAddr().toString(), echomail.getFromName(),
 								echomail.getSubject(), 
 								(echomail.getDate() != null) ? echomail.getDate().toString() : "unknown",
-								loopAddr.toString(), loopAddr.toString()));
+								loopAddr.toString(), 
+								echomail.getPath() != null ? echomail.getPath() : "null",
+								echomail.getPath() != null ? echomail.getPath().toString() : "null",
+								MainHandler.getCurrentInstance().getInfo().getAddressList().toString(),
+								loopAddr.toString()));
 				
 				Integer n = bad.get(echomail.getArea());
 				bad.put(echomail.getArea(), (n == null) ? 1 : n + 1);
@@ -1260,9 +1271,12 @@ public class FtnTosser {
 	}
 
 	/**
-	 * Check if any of our addresses appear in the PATH (indicating a loop through our system)
+	 * Check if any of our addresses appear in the PATH indicating a true loop.
+	 * A loop is only detected if our address appears in the PATH and there are 
+	 * other addresses after it. If our address is the last entry in the PATH,
+	 * it's not a loop (normal POINT system behavior).
 	 * @param path List of Ftn2D addresses in PATH
-	 * @return Our address if found in PATH (indicating a loop), null otherwise
+	 * @return Our address if found in PATH with other addresses after it (indicating a loop), null otherwise
 	 */
 	private Ftn2D checkOurAddressInPath(List<Ftn2D> path) {
 		if (path == null || path.isEmpty()) {
@@ -1275,9 +1289,11 @@ public class FtnTosser {
 			ourAddresses.add(new Ftn2D(addr.getNet(), addr.getNode()));
 		}
 		
-		// Check if any of our addresses appear in the path
-		for (Ftn2D pathAddr : path) {
+		// Check if any of our addresses appear in the path, but ignore if it's the last entry
+		for (int i = 0; i < path.size() - 1; i++) {  // Note: path.size() - 1 to exclude last entry
+			Ftn2D pathAddr = path.get(i);
 			if (ourAddresses.contains(pathAddr)) {
+				// Found our address with other addresses after it - this is a true loop
 				return pathAddr;
 			}
 		}
