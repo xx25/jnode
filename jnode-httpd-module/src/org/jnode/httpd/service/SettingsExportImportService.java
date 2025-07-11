@@ -23,12 +23,19 @@ public class SettingsExportImportService {
     
     // Tables to include in export (configuration/settings only)
     private static final Class<?>[] EXPORT_ENTITIES = {
+        // Base entities with no foreign key dependencies
         Echoarea.class,
         Filearea.class,
+        
+        // Links must come before entities that reference them
         Link.class,
+        
+        // Entities that depend on Link
         LinkOption.class,
-        Subscription.class,
-        FileSubscription.class,
+        Subscription.class,    // depends on Link and Echoarea
+        FileSubscription.class, // depends on Link and Filearea
+        
+        // Other entities
         Route.class,
         Rewrite.class,
         NetmailAcceptRule.class,
@@ -120,11 +127,40 @@ public class SettingsExportImportService {
             for (Class<?> entityClass : EXPORT_ENTITIES) {
                 String tableName = getTableName(entityClass);
                 
+                JsonNode tableData = null;
+                String actualTableName = tableName;
+                
                 if (tables.has(tableName)) {
-                    JsonNode tableData = tables.get(tableName);
+                    tableData = tables.get(tableName);
+                } else {
+                    // Try legacy table name (class name lowercase) for backward compatibility
+                    String legacyTableName = entityClass.getSimpleName().toLowerCase();
+                    if (tables.has(legacyTableName)) {
+                        tableData = tables.get(legacyTableName);
+                        actualTableName = legacyTableName;
+                        logger.l4("Using legacy table name '" + legacyTableName + "' for " + entityClass.getSimpleName());
+                    }
+                }
+                
+                if (tableData != null) {
                     int importedCount = importTable(entityClass, tableData);
-                    result.addTableResult(tableName, importedCount);
-                    logger.l4("Imported " + importedCount + " records to " + tableName);
+                    result.addTableResult(actualTableName, importedCount);
+                    logger.l4("Imported " + importedCount + " records from " + actualTableName + " to " + tableName);
+                    
+                    // Extra logging for Link imports to debug foreign key issues
+                    if (entityClass == Link.class && importedCount > 0) {
+                        try {
+                            List<Link> links = ORMManager.get(Link.class).getAll();
+                            logger.l4("After Link import, database contains " + links.size() + " links");
+                            for (Link link : links) {
+                                logger.l4("  Link ID: " + link.getId() + ", Address: " + link.getLinkAddress());
+                            }
+                        } catch (Exception e) {
+                            logger.l2("Error checking imported links: " + e.getMessage());
+                        }
+                    }
+                } else {
+                    logger.l4("No data for table " + tableName + " (or legacy " + entityClass.getSimpleName().toLowerCase() + ") in import file");
                 }
             }
             
@@ -189,9 +225,13 @@ public class SettingsExportImportService {
             } else {
                 entity = objectMapper.treeToValue(entityNode, entityClass);
             }
-            // Use upsert logic to handle existing records
-            upsertEntity(entityClass, entity);
-            count++;
+            
+            // Skip null entities (e.g., LinkOptions with missing Link references)
+            if (entity != null) {
+                // Use upsert logic to handle existing records
+                upsertEntity(entityClass, entity);
+                count++;
+            }
         }
         
         return count;
@@ -227,7 +267,13 @@ public class SettingsExportImportService {
             } else {
                 // Entity doesn't exist, create new one
                 logger.l4("Creating new " + entityClass.getSimpleName() + " with ID: " + entityId);
-                dao.save(entity);
+                
+                // For entities with generatedId = true, we need to use raw SQL to preserve original IDs
+                if (hasGeneratedId(entityClass)) {
+                    insertWithPreservedId(dao, entity, entityClass);
+                } else {
+                    dao.save(entity);
+                }
             }
         } else {
             // No ID specified, create new entity (database will generate ID)
@@ -335,7 +381,8 @@ public class SettingsExportImportService {
             Long linkId = node.get("link_id").asLong();
             Link link = ORMManager.get(Link.class).getById(linkId);
             if (link == null) {
-                throw new SQLException("Link with ID " + linkId + " not found while importing LinkOption");
+                logger.l2("Skipping LinkOption: Link with ID " + linkId + " not found during import");
+                return null; // Skip this LinkOption
             }
             linkOption.setLink(link);
         }
@@ -372,7 +419,8 @@ public class SettingsExportImportService {
             Long linkId = node.get("link_id").asLong();
             Link link = ORMManager.get(Link.class).getById(linkId);
             if (link == null) {
-                throw new SQLException("Link with ID " + linkId + " not found while importing Subscription");
+                logger.l2("Skipping Subscription: Link with ID " + linkId + " not found during import");
+                return null; // Skip this Subscription
             }
             subscription.setLink(link);
         }
@@ -382,7 +430,8 @@ public class SettingsExportImportService {
             Long echoareaId = node.get("echoarea_id").asLong();
             Echoarea echoarea = ORMManager.get(Echoarea.class).getById(echoareaId);
             if (echoarea == null) {
-                throw new SQLException("Echoarea with ID " + echoareaId + " not found while importing Subscription");
+                logger.l2("Skipping Subscription: Echoarea with ID " + echoareaId + " not found during import");
+                return null; // Skip this Subscription
             }
             subscription.setArea(echoarea);
         }
@@ -411,7 +460,8 @@ public class SettingsExportImportService {
             Long linkId = node.get("link_id").asLong();
             Link link = ORMManager.get(Link.class).getById(linkId);
             if (link == null) {
-                throw new SQLException("Link with ID " + linkId + " not found while importing FileSubscription");
+                logger.l2("Skipping FileSubscription: Link with ID " + linkId + " not found during import");
+                return null; // Skip this FileSubscription
             }
             fileSubscription.setLink(link);
         }
@@ -421,7 +471,8 @@ public class SettingsExportImportService {
             Long fileareaId = node.get("filearea_id").asLong();
             Filearea filearea = ORMManager.get(Filearea.class).getById(fileareaId);
             if (filearea == null) {
-                throw new SQLException("Filearea with ID " + fileareaId + " not found while importing FileSubscription");
+                logger.l2("Skipping FileSubscription: Filearea with ID " + fileareaId + " not found during import");
+                return null; // Skip this FileSubscription
             }
             fileSubscription.setArea(filearea);
         }
@@ -498,9 +549,158 @@ public class SettingsExportImportService {
     }
     
     private String getTableName(Class<?> entityClass) {
-        // Convert class name to table name (simple conversion)
+        // Get the actual table name from @DatabaseTable annotation
+        try {
+            if (entityClass.isAnnotationPresent(com.j256.ormlite.table.DatabaseTable.class)) {
+                com.j256.ormlite.table.DatabaseTable annotation = 
+                    entityClass.getAnnotation(com.j256.ormlite.table.DatabaseTable.class);
+                if (annotation.tableName() != null && !annotation.tableName().isEmpty()) {
+                    return annotation.tableName();
+                }
+            }
+        } catch (Exception e) {
+            logger.l2("Could not get table name from annotation for " + entityClass.getSimpleName() + ": " + e.getMessage());
+        }
+        
+        // Fallback to simple conversion if annotation is not found
         String className = entityClass.getSimpleName();
         return className.toLowerCase();
+    }
+    
+    /**
+     * Check if entity class has auto-generated ID field
+     */
+    private boolean hasGeneratedId(Class<?> entityClass) {
+        try {
+            for (java.lang.reflect.Field field : entityClass.getDeclaredFields()) {
+                if (field.isAnnotationPresent(com.j256.ormlite.field.DatabaseField.class)) {
+                    com.j256.ormlite.field.DatabaseField annotation = 
+                        field.getAnnotation(com.j256.ormlite.field.DatabaseField.class);
+                    if (annotation.generatedId()) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.l2("Error checking for generatedId in " + entityClass.getSimpleName() + ": " + e.getMessage());
+        }
+        return false;
+    }
+    
+    /**
+     * Insert entity with preserved ID using raw SQL (bypasses auto-generation)
+     */
+    private void insertWithPreservedId(jnode.dao.GenericDAO<Object> dao, Object entity, Class<?> entityClass) throws Exception {
+        try {
+            // Build INSERT statement dynamically using reflection
+            String tableName = getTableName(entityClass);
+            
+            // Get all fields with @DatabaseField annotation
+            List<java.lang.reflect.Field> dbFields = new ArrayList<>();
+            List<String> columnNames = new ArrayList<>();
+            List<String> paramValues = new ArrayList<>();
+            
+            for (java.lang.reflect.Field field : entityClass.getDeclaredFields()) {
+                if (field.isAnnotationPresent(com.j256.ormlite.field.DatabaseField.class)) {
+                    com.j256.ormlite.field.DatabaseField annotation = 
+                        field.getAnnotation(com.j256.ormlite.field.DatabaseField.class);
+                    
+                    // Get column name
+                    String columnName = annotation.columnName();
+                    if (columnName.isEmpty()) {
+                        columnName = field.getName(); // fallback to field name
+                    }
+                    
+                    dbFields.add(field);
+                    columnNames.add(columnName);
+                    
+                    // Get field value
+                    field.setAccessible(true);
+                    Object value = field.get(entity);
+                    
+                    if (value == null) {
+                        // Use default value from annotation if available
+                        String defaultValue = annotation.defaultValue();
+                        if (!defaultValue.equals(com.j256.ormlite.field.DatabaseField.DEFAULT_STRING)) {
+                            paramValues.add(defaultValue);
+                        } else {
+                            // For null values, we'll need to handle them specially in SQL
+                            paramValues.add(""); // Empty string as fallback
+                        }
+                    } else {
+                        // Convert value to string for SQL
+                        if (value instanceof Boolean) {
+                            // Check if this is a boolean field type for PostgreSQL compatibility
+                            if (annotation.dataType() == com.j256.ormlite.field.DataType.BOOLEAN) {
+                                paramValues.add(((Boolean) value) ? "true" : "false");
+                            } else {
+                                paramValues.add(((Boolean) value) ? "1" : "0");
+                            }
+                        } else if (value instanceof Date) {
+                            // Convert Date to timestamp
+                            paramValues.add(String.valueOf(((Date) value).getTime()));
+                        } else if (annotation.foreign()) {
+                            // For foreign key fields, extract the ID from the related entity
+                            try {
+                                java.lang.reflect.Method getIdMethod = value.getClass().getMethod("getId");
+                                Object id = getIdMethod.invoke(value);
+                                if (id != null) {
+                                    paramValues.add(id.toString());
+                                } else {
+                                    paramValues.add(""); // Will be handled as NULL or default
+                                }
+                            } catch (Exception e) {
+                                logger.l2("Warning: Could not extract ID from foreign entity " + value.getClass().getSimpleName() + ": " + e.getMessage());
+                                paramValues.add(""); // Fallback
+                            }
+                        } else {
+                            paramValues.add(value.toString());
+                        }
+                    }
+                }
+            }
+            
+            // Build SQL statement with embedded values (since executeRaw doesn't support parameters)
+            String columns = String.join(", ", columnNames);
+            
+            // Build values list with proper SQL escaping
+            List<String> sqlValues = new ArrayList<>();
+            for (int i = 0; i < paramValues.size(); i++) {
+                String value = paramValues.get(i);
+                java.lang.reflect.Field field = dbFields.get(i);
+                com.j256.ormlite.field.DatabaseField annotation = 
+                    field.getAnnotation(com.j256.ormlite.field.DatabaseField.class);
+                
+                if (value == null) {
+                    sqlValues.add("NULL");
+                } else if (value.isEmpty() && !annotation.canBeNull()) {
+                    // For NOT NULL fields with empty string values, use empty string literal
+                    sqlValues.add("''");
+                } else if (value.isEmpty()) {
+                    sqlValues.add("NULL");
+                } else if (value.matches("\\d+")) {
+                    // Numeric value - no quotes needed
+                    sqlValues.add(value);
+                } else {
+                    // String value - needs quotes and escaping
+                    String escaped = value.replace("'", "''"); // Escape single quotes
+                    sqlValues.add("'" + escaped + "'");
+                }
+            }
+            
+            String values = String.join(", ", sqlValues);
+            String sql = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")";
+            
+            logger.l4("Executing preserved ID insert: " + sql);
+            
+            // Execute the raw SQL
+            dao.executeRaw(sql);
+            
+        } catch (Exception e) {
+            logger.l2("Error in insertWithPreservedId for " + entityClass.getSimpleName() + ": " + e.getMessage());
+            logger.l2("Falling back to regular save - ID may not be preserved");
+            dao.save(entity);
+        }
     }
     
     /**

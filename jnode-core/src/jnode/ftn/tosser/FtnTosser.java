@@ -245,13 +245,32 @@ public class FtnTosser {
 							"Echoarea: %s\n" +
 							"From Link: %s\n" +
 							"Message From: %s (%s)\n" +
-							"Subject: %s\n\n" +
+							"Subject: %s\n" +
+							"Message Date: %s\n" +
+							"Message ID: %s\n\n" +
+							"PATH Information:\n" +
+							"================\n" +
+							"Raw PATH: %s\n" +
+							"Parsed PATH: %s\n" +
+							"Last node in PATH: %s\n\n" +
+							"SEEN-BY Information:\n" +
+							"===================\n" +
+							"SEEN-BY: %s\n\n" +
 							"Error Details: %s\n\n" +
 							"Suggested Action:\n%s",
 							errorDescription,
 							echomail.getArea(), linkAddr,
 							echomail.getFromAddr().toString(), echomail.getFromName(),
 							echomail.getSubject(),
+							(echomail.getDate() != null) ? echomail.getDate().toString() : "unknown",
+							(echomail.getMsgid() != null) ? echomail.getMsgid() : "none",
+							echomail.getPath() != null ? echomail.getPath().toString() : "empty",
+							echomail.getPath() != null && !echomail.getPath().isEmpty() ? 
+								formatPath(echomail.getPath()) : "empty",
+							echomail.getPath() != null && !echomail.getPath().isEmpty() ? 
+								getLastPathNode(echomail.getPath()) : "none",
+							echomail.getSeenby() != null && !echomail.getSeenby().isEmpty() ? 
+								formatSeenBy(echomail.getSeenby()) : "empty",
 							lookupResult.getErrorMessage(),
 							suggestedAction));
 			
@@ -1354,6 +1373,62 @@ public class FtnTosser {
 	 */
 	private boolean isNetmailLoopPreventionEnabled() {
 		return MainHandler.getCurrentInstance().getBooleanProperty(LOOP_PREVENTION_NETMAIL, true);
+	}
+
+	/**
+	 * Format PATH information for display in error messages
+	 * @param path List of Ftn2D addresses in PATH
+	 * @return Formatted string showing the path traversal
+	 */
+	private String formatPath(List<Ftn2D> path) {
+		if (path == null || path.isEmpty()) {
+			return "No PATH entries";
+		}
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < path.size(); i++) {
+			if (i > 0) sb.append(" -> ");
+			sb.append(path.get(i).toString());
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Get the last node in the PATH (the most recent node that handled the message)
+	 * @param path List of Ftn2D addresses in PATH
+	 * @return String representation of the last node or "none" if empty
+	 */
+	private String getLastPathNode(List<Ftn2D> path) {
+		if (path == null || path.isEmpty()) {
+			return "none";
+		}
+		return path.get(path.size() - 1).toString();
+	}
+
+	/**
+	 * Format SEEN-BY information for display in error messages
+	 * @param seenby List of Ftn2D addresses that have seen the message
+	 * @return Formatted string showing all nodes that have seen the message
+	 */
+	private String formatSeenBy(List<Ftn2D> seenby) {
+		if (seenby == null || seenby.isEmpty()) {
+			return "No SEEN-BY entries";
+		}
+		List<Ftn2D> sorted = new ArrayList<>(seenby);
+		Collections.sort(sorted, new Ftn2DComparator());
+		StringBuilder sb = new StringBuilder();
+		int count = 0;
+		for (Ftn2D node : sorted) {
+			if (count > 0) {
+				if (count % 10 == 0) {
+					sb.append("\n        ");
+				} else {
+					sb.append(" ");
+				}
+			}
+			sb.append(node.toString());
+			count++;
+		}
+		return sb.toString();
 	}
 
 }

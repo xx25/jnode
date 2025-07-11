@@ -23,6 +23,7 @@ package jnode.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
@@ -145,6 +146,7 @@ public class Link {
 	 * 
 	 * @return Resolved protocol address or "-" if no valid address found
 	 */
+	@JsonIgnore
 	public String getResolvedProtocolAddress() {
 		// If explicitly set to "-", don't connect
 		if ("-".equals(protocolAddress)) {
@@ -196,6 +198,7 @@ public class Link {
 	 * 
 	 * @return List of all available protocol addresses (empty if no valid addresses found)
 	 */
+	@JsonIgnore
 	public List<String> getAllResolvedProtocolAddresses() {
 		List<String> addresses = new ArrayList<>();
 		

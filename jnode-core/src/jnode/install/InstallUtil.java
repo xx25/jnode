@@ -85,21 +85,21 @@ public class InstallUtil {
 		Robot areafix = new Robot();
 		areafix.setClassName(AreaFix.class.getCanonicalName());
 		areafix.setRobot("areafix");
-		ORMManager.get(Robot.class).save(areafix);
+		ORMManager.get(Robot.class).saveOrUpdate(areafix);
 		Robot filefix = new Robot();
 		filefix.setClassName(FileFix.class.getCanonicalName());
 		filefix.setRobot("filefix");
-		ORMManager.get(Robot.class).save(filefix);
+		ORMManager.get(Robot.class).saveOrUpdate(filefix);
 
 		Robot scriptfix = new Robot();
 		scriptfix.setClassName(ScriptFix.class.getCanonicalName());
 		scriptfix.setRobot("scriptfix");
-		ORMManager.get(Robot.class).save(scriptfix);
+		ORMManager.get(Robot.class).saveOrUpdate(scriptfix);
 
 		Robot ping = new Robot();
 		ping.setClassName(PingRobot.class.getCanonicalName());
 		ping.setRobot("ping");
-		ORMManager.get(Robot.class).save(ping);
+		ORMManager.get(Robot.class).saveOrUpdate(ping);
 
 		logger.l1("[+] Robots created");
 
@@ -187,7 +187,7 @@ public class InstallUtil {
 				sub.setLink(owner);
 				ORMManager.get(Subscription.class).save(sub);
 				FtnTools.writeEchomail(local, "Your new jNode installation",
-						"Welcome aboard!\n\nYou've just installed. Enjoy in Fidonet now!");
+						"Welcome aboard!\n\nYou've just installed jNode. Enjoy Fidonet now!");
 				logger.l1("[+] created local echoarea " + local.getName());
 			}
 		}
@@ -408,6 +408,6 @@ public class InstallUtil {
 		ScriptHelper helper = new ScriptHelper();
 		helper.setId(id);
 		helper.setClassName(className);
-		ORMManager.get(ScriptHelper.class).save(helper);
+		ORMManager.get(ScriptHelper.class).saveOrUpdate(helper);
 	}
 }
