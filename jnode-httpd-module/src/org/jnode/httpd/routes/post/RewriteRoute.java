@@ -67,7 +67,7 @@ public class RewriteRoute implements Handler {
 		} else {
 			try {
 				Long nice = Long.valueOf(n);
-				boolean last = Boolean.valueOf(l);
+				boolean last = "on".equals(l);
 				Rewrite rew;
 				
 				if (id != null && !id.equals("0")) {
