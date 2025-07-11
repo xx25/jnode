@@ -62,6 +62,7 @@ public class FtnTosser {
 	private static final String MAIL_LIMIT = "tosser.mail_limit";
 	private static final String LOOP_PREVENTION_ECHOMAIL = "tosser.loop_prevention.echomail";
 	private static final String LOOP_PREVENTION_NETMAIL = "tosser.loop_prevention.netmail";
+	private static final String OLD_MESSAGE_DAYS_THRESHOLD = "tosser.old_message_days_threshold";
 	private final Map<String, Integer> tossed = new HashMap<>();
 	private final Map<String, Integer> bad = new HashMap<>();
 	private final Set<Link> pollLinks = new HashSet<>();
@@ -399,14 +400,25 @@ public class FtnTosser {
 		mail.setMsgid(echomail.getMsgid());
 		ORMManager.get(Echomail.class).save(mail);
 		if (mail.getId() != null) {
+			// Check if message is too old to forward to links
+			boolean tooOldToForward = isMessageTooOldToForward(echomail.getDate());
+			if (tooOldToForward) {
+				logger.l3(String.format("Message in area %s is older than threshold - stored locally but not forwarded to links (date: %s)", 
+						echomail.getArea(), echomail.getDate()));
+			}
+			
 			for (Subscription sub : getSubscription(area)) {
 				if (link == null
 						|| !sub.getLink().equals(link)
 						&& !getOptionBooleanDefFalse(sub.getLink(),
 								LinkOption.BOOLEAN_PAUSE)) {
-					ORMManager.get(EchomailAwaiting.class).save(
-							new EchomailAwaiting(sub.getLink(), mail));
-					pollLinks.add(sub.getLink());
+					
+					// Only forward to links if message is not too old
+					if (!tooOldToForward) {
+						ORMManager.get(EchomailAwaiting.class).save(
+								new EchomailAwaiting(sub.getLink(), mail));
+						pollLinks.add(sub.getLink());
+					}
 				}
 			}
 		}
@@ -1373,6 +1385,34 @@ public class FtnTosser {
 	 */
 	private boolean isNetmailLoopPreventionEnabled() {
 		return MainHandler.getCurrentInstance().getBooleanProperty(LOOP_PREVENTION_NETMAIL, true);
+	}
+
+	/**
+	 * Check if message is too old to forward to links
+	 * @param messageDate Date of the message
+	 * @return true if message is older than threshold and should not be forwarded
+	 */
+	private boolean isMessageTooOldToForward(Date messageDate) {
+		// Get threshold in days (0 = disabled, default 30 days)
+		int thresholdDays = MainHandler.getCurrentInstance().getIntegerProperty(OLD_MESSAGE_DAYS_THRESHOLD, 30);
+		
+		// If threshold is 0, feature is disabled
+		if (thresholdDays <= 0) {
+			return false;
+		}
+		
+		// If message has no date, don't block it
+		if (messageDate == null) {
+			return false;
+		}
+		
+		// Calculate age in milliseconds
+		long currentTime = System.currentTimeMillis();
+		long messageTime = messageDate.getTime();
+		long ageInMillis = currentTime - messageTime;
+		long thresholdInMillis = thresholdDays * 24L * 60L * 60L * 1000L;
+		
+		return ageInMillis > thresholdInMillis;
 	}
 
 	/**
