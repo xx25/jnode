@@ -5,7 +5,7 @@ jnode-dumb-module/target
 jnode-pointchecker-module/target
 jnode-httpd-module/target
 jnode-mail-module/target
-jnode-assembly/target
+jnode-assembly/target/
 .project
 .settings
 .idea
