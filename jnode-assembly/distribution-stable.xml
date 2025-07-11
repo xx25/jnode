@@ -45,10 +45,10 @@
 			</includes>
 		</fileSet>
 		<fileSet>
-			<directory>${basedir}/../docs/docs</directory>
+			<directory>${basedir}/../docs</directory>
 			<outputDirectory>jnode/docs</outputDirectory>
 			<includes>
-				<include>*.*</include>
+				<include>*.txt</include>
 			</includes>
 		</fileSet>
 		<fileSet>
@@ -82,6 +82,13 @@
 		<fileSet>
 			<directory>./</directory>
 			<outputDirectory>jnode/tmp</outputDirectory>
+			<excludes>
+				<exclude>*/**</exclude>
+			</excludes>
+		</fileSet>
+		<fileSet>
+			<directory>./</directory>
+			<outputDirectory>jnode/db</outputDirectory>
 			<excludes>
 				<exclude>*/**</exclude>
 			</excludes>
