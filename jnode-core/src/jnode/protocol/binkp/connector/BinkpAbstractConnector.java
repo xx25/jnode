@@ -65,9 +65,9 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	private static final int STATE_GREET = 0;
 	protected static final int STATE_ERROR = 1;
 	protected static final int STATE_END = 2;
-	private static final int STATE_ADDR = 3;
-	private static final int STATE_AUTH = 4;
-	private static final int STATE_TRANSFER = 5;
+	protected static final int STATE_ADDR = 3;
+	protected static final int STATE_AUTH = 4;
+	protected static final int STATE_TRANSFER = 5;
 	private static final String BINKP_NETWORK_NAME = "binkp.network";
 	private static final String BINKP_MAX_MEM = "binkp.maxmem";
 	private static final String BINKP_TEMP = "binkp.temp";
@@ -150,7 +150,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 	public abstract void run();
 
-	private String getStateString() {
+	protected String getStateString() {
 		switch (connectionState) {
 		case STATE_GREET:
 			return "GREET";

@@ -1047,6 +1047,9 @@ public class FtnTosser {
 				LinkOption.BOOLEAN_PACK_ECHOMAIL);
 		Ftn2D link2d = new Ftn2D(address.getNet(), address.getNode());
 		int num = 0;
+		int orphanedRecordsFound = 0;
+		int loopCount = 0;
+		final int MAX_LOOPS = 100; // Emergency circuit breaker
 		try {
 			List<EchomailAwaiting> email = null;
 			File f = createOutboundFile(link);
@@ -1060,17 +1063,49 @@ public class FtnTosser {
 			}
 			header.write(os);
 			do {
+				loopCount++;
+				if (loopCount > MAX_LOOPS) {
+					logger.l1("EMERGENCY STOP: packEchomail exceeded maximum loops (" + MAX_LOOPS + 
+						") for link_id=" + link.getId() + " - preventing infinite loop");
+					break;
+				}
+				
 				email = getEchoMail(link);
 				if (!email.isEmpty()) {
+					// Create a list to track records that need to be removed to prevent infinite loops
+					List<EchomailAwaiting> toRemove = new ArrayList<>();
+					
 					for (EchomailAwaiting e : email) {
 						Echomail mail = e.getMail();
 						if (mail == null) {
-							deleteEAmail(e);
+							// Log orphaned record with available information
+							String linkInfo = "link_id=" + e.getLink().getId();
+							try {
+								String linkAddress = e.getLink().getLinkAddress();
+								if (linkAddress != null) {
+									linkInfo += " (address=" + linkAddress + ")";
+								}
+							} catch (Exception ex) {
+								// Link address might not be accessible due to foreign key issues
+								linkInfo += " (address lookup failed)";
+							}
+							
+							logger.l2("ERROR-TRIGGERED CLEANUP: echomailawait " + linkInfo + 
+								" - echomail record does not exist, performing emergency cleanup of broken record");
+							
+							// Emergency cleanup only triggered by detection of broken database integrity
+							deleteEAmailSafe(e);
+							toRemove.add(e);
+							orphanedRecordsFound++;
 							continue;
 						}
 						Echoarea area = mail.getArea();
 						if (area == null) {
-							deleteEAmail(e);
+							logger.l2("ERROR-TRIGGERED CLEANUP: echomail_id=" + mail.getId() + 
+								" has no echoarea, performing emergency cleanup for link_id=" + e.getLink().getId());
+							deleteEAmailSafe(e);
+							toRemove.add(e);
+							orphanedRecordsFound++;
 							continue;
 						}
 						List<Ftn2D> path = read2D(mail.getPath());
@@ -1099,6 +1134,9 @@ public class FtnTosser {
 						num++;
 					}
 
+					// Remove any orphaned records from the processing list to prevent infinite loops
+					email.removeAll(toRemove);
+					
 					for (EchomailAwaiting e : email) {
 						deleteEAmail(e);
 					}
@@ -1120,6 +1158,13 @@ public class FtnTosser {
 		} catch (IOException e) {
 			logger.l2("Error while packing echomails ", e);
 		}
+		
+		// Log summary of orphaned records found and cleaned
+		if (orphanedRecordsFound > 0) {
+			logger.l2("SUMMARY: Cleaned up " + orphanedRecordsFound + " orphaned echomailawait records for link_id=" + 
+				link.getId() + " (address=" + link.getLinkAddress() + ")");
+		}
+		
 		return messages;
 	}
 
@@ -1128,7 +1173,92 @@ public class FtnTosser {
 				e.getLink(), "echomail_id", "null");
 		ORMManager.get(EchomailAwaiting.class).delete("link_id", "=",
 				e.getLink(), "echomail_id", "=", e.getMail());
+	}
 
+	/**
+	 * Enhanced cleanup method for orphaned echomailawait records
+	 * Handles transaction issues and provides better error reporting
+	 */
+	private void deleteEAmailSafe(EchomailAwaiting e) {
+		boolean deleted = false;
+		Long linkId = null;
+		
+		try {
+			linkId = (e.getLink() != null) ? e.getLink().getId() : null;
+		} catch (Exception ex) {
+			logger.l1("ERROR: Cannot get link_id from orphaned echomailawait record: " + ex.getMessage());
+			return;
+		}
+		
+		if (linkId == null) {
+			logger.l1("ERROR: Cannot delete orphaned echomailawait record - link_id is null");
+			return;
+		}
+		
+		// Method 1: Try direct object delete first
+		try {
+			ORMManager.get(EchomailAwaiting.class).delete(e);
+			deleted = true;
+			logger.l4("Successfully deleted orphaned echomailawait record using object delete for link_id=" + linkId);
+		} catch (Exception ex) {
+			logger.l4("Object delete failed for link_id=" + linkId + " (expected for tables without ID field): " + ex.getMessage());
+		}
+		
+		// Method 2: If object delete failed, use criteria-based delete
+		if (!deleted) {
+			try {
+				// Delete using the original deleteEAmail approach but with better logging
+				ORMManager.get(EchomailAwaiting.class).delete("link_id", "=", e.getLink(), "echomail_id", "null");
+				ORMManager.get(EchomailAwaiting.class).delete("link_id", "=", e.getLink(), "echomail_id", "=", e.getMail());
+				deleted = true;
+				logger.l4("Successfully deleted orphaned echomailawait record using criteria delete for link_id=" + linkId);
+			} catch (Exception ex) {
+				logger.l3("Criteria delete also failed for link_id=" + linkId + ": " + ex.getMessage());
+			}
+		}
+		
+		// Method 3: If all else fails, use raw SQL with better targeting
+		if (!deleted) {
+			try {
+				// Get count before deletion to verify
+				List<EchomailAwaiting> beforeCount = ORMManager.get(EchomailAwaiting.class).getAnd("link_id", "=", linkId);
+				logger.l4("Found " + beforeCount.size() + " echomailawait records for link_id=" + linkId + " before cleanup");
+				
+				// Use executeRaw with a more comprehensive delete
+				ORMManager.get(EchomailAwaiting.class).executeRaw(
+					"DELETE FROM echomailawait WHERE link_id = " + linkId + 
+					" AND (echomail_id IS NULL OR echomail_id NOT IN (SELECT id FROM echomail))");
+				
+				List<EchomailAwaiting> afterCount = ORMManager.get(EchomailAwaiting.class).getAnd("link_id", "=", linkId);
+				logger.l3("RAW SQL cleanup for link_id=" + linkId + " completed. Before: " + beforeCount.size() + 
+					", After: " + afterCount.size());
+				
+				deleted = (afterCount.size() < beforeCount.size());
+				
+			} catch (Exception fallbackEx) {
+				logger.l1("CRITICAL: All cleanup methods failed for link_id=" + linkId + ": " + fallbackEx.getMessage());
+			}
+		}
+		
+		if (!deleted) {
+			logger.l1("CRITICAL: Could not delete orphaned echomailawait record for link_id=" + linkId);
+		}
+	}
+
+	/**
+	 * Emergency cleanup method for orphaned echomailawait records
+	 * NOTE: This method is intentionally disabled to prevent proactive cleanup.
+	 * Cleanup should only be triggered by actual error detection during message processing.
+	 * 
+	 * @deprecated This method is not used - cleanup is error-triggered only
+	 * @return always returns 0
+	 */
+	@Deprecated
+	private int cleanupOrphanedEchomailAwait() {
+		// Cleanup is now error-triggered only during message processing
+		// This method is kept for reference but not used
+		logger.l4("cleanupOrphanedEchomailAwait() called but disabled - cleanup is error-triggered only");
+		return 0;
 	}
 
 	private void deleteFAMail(FilemailAwaiting f) {
