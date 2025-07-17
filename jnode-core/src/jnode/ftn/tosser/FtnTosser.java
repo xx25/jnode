@@ -1597,12 +1597,11 @@ public class FtnTosser {
 	}
 
 	/**
-	 * Check if any of our addresses appear in the PATH indicating a true loop.
-	 * A loop is only detected if our address appears in the PATH and there are 
-	 * other addresses after it. If our address is the last entry in the PATH,
-	 * it's not a loop (normal POINT system behavior).
+	 * Check if any of our addresses appear twice in the PATH indicating a true loop.
+	 * A loop is only detected if our address appears at least twice in the PATH.
+	 * Single appearance is allowed for normal routing scenarios.
 	 * @param path List of Ftn2D addresses in PATH
-	 * @return Our address if found in PATH with other addresses after it (indicating a loop), null otherwise
+	 * @return Our address if found twice in PATH (indicating a loop), null otherwise
 	 */
 	private Ftn2D checkOurAddressInPath(List<Ftn2D> path) {
 		if (path == null || path.isEmpty()) {
@@ -1615,12 +1614,17 @@ public class FtnTosser {
 			ourAddresses.add(new Ftn2D(addr.getNet(), addr.getNode()));
 		}
 		
-		// Check if any of our addresses appear in the path, but ignore if it's the last entry
-		for (int i = 0; i < path.size() - 1; i++) {  // Note: path.size() - 1 to exclude last entry
-			Ftn2D pathAddr = path.get(i);
+		// Check if any of our addresses appear twice in the path
+		Map<Ftn2D, Integer> addressCounts = new HashMap<>();
+		for (Ftn2D pathAddr : path) {
 			if (ourAddresses.contains(pathAddr)) {
-				// Found our address with other addresses after it - this is a true loop
-				return pathAddr;
+				int count = addressCounts.getOrDefault(pathAddr, 0) + 1;
+				addressCounts.put(pathAddr, count);
+				
+				// If we've seen this address twice, it's a loop
+				if (count >= 2) {
+					return pathAddr;
+				}
 			}
 		}
 		
