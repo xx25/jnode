@@ -118,6 +118,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	protected List<FtnAddress> foreignAddress = new ArrayList<>();
 	private List<FtnAddress> ourAddress = new ArrayList<>();
 	protected Link foreignLink;
+	private String protocolAddress = null; // Store original address for error reporting
 	private boolean secure = false;
 	protected boolean clientConnection = true;
 	private String cramAlgo = null;
@@ -149,9 +150,42 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 	public abstract void run();
 
+	private String getStateString() {
+		switch (connectionState) {
+		case STATE_GREET:
+			return "GREET";
+		case STATE_ERROR:
+			return "ERROR";
+		case STATE_END:
+			return "END";
+		case STATE_ADDR:
+			return "ADDR";
+		case STATE_AUTH:
+			return "AUTH";
+		case STATE_TRANSFER:
+			return "TRANSFER";
+		default:
+			return "UNKNOWN(" + connectionState + ")";
+		}
+	}
+
+	/**
+	 * Get address information for error reporting, prioritizing FTN addresses over protocol addresses
+	 */
+	private String getAddressInfo() {
+		if (!foreignAddress.isEmpty()) {
+			return foreignAddress.get(0).toString();
+		}
+		if (protocolAddress != null && !protocolAddress.isEmpty()) {
+			return protocolAddress;
+		}
+		return "unknown";
+	}
+
 	public BinkpAbstractConnector(String protocolAddress) throws IOException {
 		init();
 		this.clientConnection = true;
+		this.protocolAddress = protocolAddress; // Store for error reporting
 		logger.l3("Created " + getClass().getSimpleName()
 				+ " client connection to " + protocolAddress);
 	}
@@ -166,20 +200,20 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	protected void error(String text) {
 		frames.clear();
 		frames.addLast(new BinkpFrame(BinkpCommand.M_ERR, text));
-		long elapsed = new Date().getTime() - time;
+		long elapsed = (time > 0) ? (new Date().getTime() - time) : 0;
 		String duration = String.format("%.2f", elapsed / 1000.0);
-		String addressInfo = foreignAddress.isEmpty() ? "unknown" : foreignAddress.get(0).toString();
-		logger.l2("Local error connecting to " + addressInfo + " after " + duration + " seconds: " + text);
+		String addressInfo = getAddressInfo();
+		logger.l2("[STATE:" + getStateString() + "->ERROR] Local error connecting to " + addressInfo + " after " + duration + " seconds: " + text);
 		connectionState = STATE_ERROR;
 	}
 
 	protected void error(String text, Exception e) {
 		frames.clear();
 		frames.addLast(new BinkpFrame(BinkpCommand.M_ERR, text));
-		long elapsed = new Date().getTime() - time;
+		long elapsed = (time > 0) ? (new Date().getTime() - time) : 0;
 		String duration = String.format("%.2f", elapsed / 1000.0);
-		String addressInfo = foreignAddress.isEmpty() ? "unknown" : foreignAddress.get(0).toString();
-		logger.l2("Local error connecting to " + addressInfo + " after " + duration + " seconds: " + text, e);
+		String addressInfo = getAddressInfo();
+		logger.l2("[STATE:" + getStateString() + "->ERROR] Local error connecting to " + addressInfo + " after " + duration + " seconds: " + text, e);
 		connectionState = STATE_ERROR;
 	}
 
@@ -188,7 +222,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			time = new Date().getTime();
 		}
 		addTimeout(); // it's ok :-)
-		logger.l5("Processing frame: " + frame);
+		logger.l4("[STATE:" + getStateString() + "] Processing frame: " + frame);
 		if (frame.getCommand() != null) {
 			switch (frame.getCommand()) {
 			case M_NUL:
@@ -309,11 +343,12 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	}
 
 	private void rerror(String string) {
-		logger.l2("Remote error: " + string);
+		logger.l2("[STATE:" + getStateString() + "->ERROR] Remote error: " + string);
 		connectionState = STATE_ERROR;
 	}
 
 	private void m_eob() {
+		logger.l4("[STATE:" + getStateString() + "] Received M_EOB from remote");
 		flag_reob = true;
 		checkEOB();
 	}
@@ -443,11 +478,11 @@ public abstract class BinkpAbstractConnector implements Runnable {
 				+ " connection with "
 				+ ((secure) ? foreignLink.getLinkAddress() : foreignAddress
 						.get(0));
-		logger.l3(text);
+		logger.l3("[STATE:AUTH->TRANSFER] " + text);
 		connectionState = STATE_TRANSFER;
 		
 		// CRITICAL: Check for messages immediately after authentication
-		logger.l5("Connection authenticated, checking for messages to send");
+		logger.l4("[STATE:TRANSFER] Connection authenticated, checking for messages to send");
 		checkForMessages();
 	}
 
@@ -470,13 +505,13 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			text = "(U) Unsecure connection with " + foreignAddress.get(0);
 		}
 		if (valid) {
-			logger.l3(text);
+			logger.l3("[STATE:AUTH->TRANSFER] " + text);
 			frames.addLast(new BinkpFrame(BinkpCommand.M_OK, text));
 			connectionState = STATE_TRANSFER;
 			
 			// CRITICAL: For server connections, check for messages after sending M_OK
 			if (!clientConnection) {
-				logger.l5("Server authenticated client, checking for messages to send");
+				logger.l4("[STATE:TRANSFER] Server authenticated client, checking for messages to send");
 				checkForMessages();
 			}
 		} else {
@@ -522,7 +557,9 @@ public abstract class BinkpAbstractConnector implements Runnable {
 					foreignAddress.add(a);
 					logger.l5("Address " + addr + " accepted (link=" + (link != null) + ", nodelist=" + nodelist + ")");
 				} else {
-					logger.l3("Address " + addr + " not recognized: not in our links and not in nodelist");
+					// Standard FidoNet behavior: allow unknown nodes for netmail delivery to our addresses
+					foreignAddress.add(a);
+					logger.l4("Address " + addr + " accepted for netmail delivery (unknown node)");
 				}
 			} catch (NumberFormatException e) {
 				logger.l2("Invalid address format: '" + addr + "' - " + e.getMessage());
@@ -558,8 +595,10 @@ public abstract class BinkpAbstractConnector implements Runnable {
 				}
 			}
 			if (!nodelist) {
-				error("No one address you specified exists in Nodelist");
-				return;
+				// Allow unlisted nodes for netmail delivery (FidoNet standard)
+				logger.l4("Allowing connection from unlisted node for netmail delivery: " + 
+					foreignAddress.toString());
+				// Allow the connection but keep it unsecure - netmail acceptance rules will apply
 			}
 		}
 		for (FtnAddress addr : foreignAddress) {
@@ -575,6 +614,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		} else {
 			sendAddrs();
 		}
+		logger.l4("[STATE:ADDR->AUTH] Moving to authentication phase");
 		connectionState = STATE_AUTH;
 
 	}
@@ -676,10 +716,11 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 	protected void checkForMessages() {
 		checkTimeout();
-		// logger.l5("checkForMessages: state=" + connectionState + 
-		//	", flag_leob=" + flag_leob + ", messages.size=" + messages.size() +
-		//	", currentInputStream=" + (currentInputStream != null));
+		logger.l5("[STATE:" + getStateString() + "] checkForMessages: flag_leob=" + flag_leob + 
+			", messages.size=" + messages.size() + ", currentInputStream=" + (currentInputStream != null) + 
+			", frames.size=" + frames.size());
 		if (connectionState != STATE_TRANSFER) {
+			logger.l5("[STATE:" + getStateString() + "] Not in TRANSFER state, skipping message check");
 			return;
 		}
 		if (flag_leob) {
@@ -689,15 +730,13 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			return;
 		}
 		if (messages.size() > 0) {
-			logger.l5("Attempting to read frame from current file");
+			logger.l5("[STATE:" + getStateString() + "] Attempting to read frame from current file");
 			BinkpFrame frame = readFrame();
 			if (frame != null) {
-				logger.l5("DATA FRAME CREATED: " + (frame.getBytes().length - 2) + " bytes, adding to queue position " + frames.size());
-				logger.l5("Got data frame, size: " + frame.getBytes().length + 
-					", adding to queue");
+				logger.l5("[STATE:" + getStateString() + "] DATA FRAME CREATED: " + (frame.getBytes().length - 2) + " bytes, adding to queue position " + frames.size());
 				frames.addLast(frame);
 			} else { // error, null
-				logger.l5("readFrame returned null - EOF or error");
+				logger.l5("[STATE:" + getStateString() + "] readFrame returned null - EOF or error");
 			}
 			return;
 
@@ -707,23 +746,25 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		}
 		if (messages.isEmpty()) {
 			if (!flag_leob) {
-				logger.l5("No more messages, sending M_EOB");
+				logger.l4("[STATE:" + getStateString() + "] No more messages, sending M_EOB");
 				flag_leob = true;
 				frames.addLast(new BinkpFrame(BinkpCommand.M_EOB));
 				checkEOB();
+			} else {
+				logger.l5("[STATE:" + getStateString() + "] Already sent EOB, waiting for remote EOB");
 			}
 		} else {
-			logger.l5("Found " + messages.size() + " messages to send");
+			logger.l4("[STATE:" + getStateString() + "] Found " + messages.size() + " messages to send");
 			messages_index = 0;
 			startNextFile();
 		}
 	}
 
 	protected void finish(String reason) {
-		time = new Date().getTime() - time;
-		String duration = String.format("%.2f", time / 1000.0);
-		String addressInfo = foreignAddress.isEmpty() ? "unknown" : foreignAddress.get(0).toString();
-		logger.l4("Finishing connection to " + addressInfo + " after " + duration + " seconds: " + reason);
+		long elapsed = (time > 0) ? (new Date().getTime() - time) : 0;
+		String duration = String.format("%.2f", elapsed / 1000.0);
+		String addressInfo = getAddressInfo();
+		logger.l3("[STATE:" + getStateString() + "->END] Finishing connection to " + addressInfo + " after " + duration + " seconds: " + reason);
 		for (FtnAddress addr : foreignAddress) {
 			PollQueue.getSelf().end(addr);
 		}
@@ -753,6 +794,7 @@ public abstract class BinkpAbstractConnector implements Runnable {
 		frames.addLast(new BinkpFrame(BinkpCommand.M_NUL, "TIME "
 				+ format.format(new Date())));
 
+		logger.l4("[STATE:GREET->ADDR] Moving to address phase");
 		connectionState = STATE_ADDR;
 		if (clientConnection) {
 			sendAddrs();
@@ -780,7 +822,12 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 	protected boolean isConnected() {
 		checkTimeout();
-		return !((frames.isEmpty() && connectionState == STATE_END) || connectionState == STATE_ERROR);
+		boolean connected = !((frames.isEmpty() && connectionState == STATE_END) || connectionState == STATE_ERROR);
+		if (!connected) {
+			logger.l5("[STATE:" + getStateString() + "] Connection no longer active: frames.isEmpty=" + 
+				frames.isEmpty() + ", connectionState=" + getStateString());
+		}
+		return connected;
 	}
 
 	protected BinkpFrame readFrame() {
@@ -829,29 +876,29 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	}
 
 	protected boolean startNextFile() {
-		logger.l5("startNextFile() called, messages_index=" + messages_index + 
+		logger.l5("[STATE:" + getStateString() + "] startNextFile() called, messages_index=" + messages_index + 
 			", messages.size=" + messages.size());
 		try {
 			Message nextMessage = messages.get(messages_index);
-			logger.l5("Starting file: " + nextMessage.getMessageName());
+			logger.l4("[STATE:" + getStateString() + "] Starting file: " + nextMessage.getMessageName());
 			sendMessage(nextMessage, 0);
 			return true;
 		} catch (IndexOutOfBoundsException e) {
-			logger.l5("No more files to send");
+			logger.l5("[STATE:" + getStateString() + "] No more files to send");
 			return false;
 		}
 	}
 
 	protected void sendMessage(Message message, int skip) {
-		logger.l5("sendMessage(" + message.getMessageName() + ", skip=" + skip + ")");
+		logger.l4("[STATE:" + getStateString() + "] sendMessage(" + message.getMessageName() + ", skip=" + skip + ")");
 		String fileInfo = getString(message, skip);
-		logger.l5("M_FILE string: " + fileInfo);
+		logger.l5("[STATE:" + getStateString() + "] M_FILE string: " + fileInfo);
 		frames.addLast(new BinkpFrame(BinkpCommand.M_FILE, fileInfo));
-		logger.l3(String.format("Sending file: %s (%d bytes)",
+		logger.l3(String.format("[STATE:" + getStateString() + "] Sending file: %s (%d bytes)",
 				message.getMessageName(), message.getMessageLength()));
 		
 		// DEBUG: Log frame queue state after M_FILE
-		logger.l5("After M_FILE: Queue has " + frames.size() + " frames");
+		logger.l5("[STATE:" + getStateString() + "] After M_FILE: Queue has " + frames.size() + " frames");
 		
 		try {
 			message.getInputStream().skip(skip);
@@ -861,21 +908,21 @@ public abstract class BinkpAbstractConnector implements Runnable {
 			}
 			currentInputStream = message.getInputStream();
 			int available = currentInputStream.available();
-			logger.l5("Opened input stream for file: " + message.getMessageName() + 
+			logger.l5("[STATE:" + getStateString() + "] Opened input stream for file: " + message.getMessageName() + 
 				", available bytes: " + available + 
 				", expected length: " + message.getMessageLength());
 			
 			// CRITICAL FIX: Immediately queue at least one data frame after M_FILE
 			if (currentInputStream != null && available > 0) {
-				logger.l5("Immediately reading first data frame after M_FILE");
+				logger.l5("[STATE:" + getStateString() + "] Immediately reading first data frame after M_FILE");
 				BinkpFrame dataFrame = readFrame();
 				if (dataFrame != null) {
-					logger.l5("Queued first data frame: " + (dataFrame.getBytes().length - 2) + " bytes");
+					logger.l5("[STATE:" + getStateString() + "] Queued first data frame: " + (dataFrame.getBytes().length - 2) + " bytes");
 					frames.addLast(dataFrame);
 				}
 			}
 		} catch (IOException e) {
-			logger.l5("IOException in sendMessage", e);
+			logger.l4("[STATE:" + getStateString() + "] IOException in sendMessage", e);
 			error("IOException opening file", e);
 			currentInputStream = null;
 		}
@@ -884,9 +931,16 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 	private void checkTimeout() {
 		long last = new Date().getTime();
-		if (last - lastTimeout > staticMaxTimeout) {
+		long timeSinceLastActivity = last - lastTimeout;
+		if (timeSinceLastActivity > staticMaxTimeout) {
+			logger.l2("[STATE:" + getStateString() + "->ERROR] Connection timeout after " + 
+				(timeSinceLastActivity / 1000.0) + " seconds (limit: " + (staticMaxTimeout / 1000.0) + "s)");
 			connectionState = STATE_ERROR;
 			finish("Connection timeout");
+		} else if (timeSinceLastActivity > staticMaxTimeout * 0.8) {
+			// Warn when we're approaching timeout (80% of limit)
+			logger.l4("[STATE:" + getStateString() + "] Connection approaching timeout: " + 
+				(timeSinceLastActivity / 1000.0) + "s / " + (staticMaxTimeout / 1000.0) + "s");
 		}
 	}
 
@@ -896,14 +950,17 @@ public abstract class BinkpAbstractConnector implements Runnable {
 
 	protected void checkEOB() {
 		checkTimeout();
+		logger.l5("[STATE:" + getStateString() + "] checkEOB: flag_leob=" + flag_leob + 
+			", flag_reob=" + flag_reob + ", sent_bytes=" + sent_bytes + ", recv_bytes=" + recv_bytes);
 		if (connectionState == STATE_END || connectionState == STATE_ERROR) {
 			finish("connectionState = END|ERROR");
 		}
 		if (flag_leob && flag_reob) {
 			if (sent_bytes + recv_bytes == 0 || binkp1_0) {
+				logger.l4("[STATE:" + getStateString() + "->END] Both sides sent EOB, no data transferred or BinkP/1.0");
 				connectionState = STATE_END;
 			} else {
-				logger.l5("Binkp/1.1 : reset state");
+				logger.l4("[STATE:" + getStateString() + "] BinkP/1.1: reset state for potential next batch");
 				flag_leob = false;
 				flag_reob = false;
 				sent_bytes = 0;
@@ -913,31 +970,35 @@ public abstract class BinkpAbstractConnector implements Runnable {
 	}
 
 	protected void done() {
+		logger.l4("[STATE:" + getStateString() + "] Starting connection cleanup");
 		try {
 			if (currentOS != null) {
+				logger.l5("[STATE:" + getStateString() + "] Closing output stream");
 				currentOS.close();
 			}
 			for (Message message : messages) {
 				if (message.getInputStream() != null) {
+					logger.l5("[STATE:" + getStateString() + "] Closing input stream for: " + message.getMessageName());
 					message.getInputStream().close();
 				}
 			}
 		} catch (IOException e2) {
-			logger.l2("Error while closing key", e2);
+			logger.l2("[STATE:" + getStateString() + "] Error while closing streams", e2);
 		}
 		ConnectionEndEvent event = null;
 		if (!foreignAddress.isEmpty()) {
 			for (FtnAddress addr : foreignAddress) {
+				logger.l5("[STATE:" + getStateString() + "] Ending poll queue for: " + addr);
 				PollQueue.getSelf().end(addr);
 			}
-			time /= 1000;
-			long scps = (time > 0) ? total_sent_bytes / time : total_sent_bytes;
-			long rcps = (time > 0) ? total_recv_bytes / time : total_recv_bytes;
+			long elapsed = (time > 0) ? time : 1; // Avoid division by zero
+			long scps = (elapsed > 0) ? total_sent_bytes * 1000 / elapsed : total_sent_bytes;
+			long rcps = (elapsed > 0) ? total_recv_bytes * 1000 / elapsed : total_recv_bytes;
 
 			String address = (foreignLink != null) ? foreignLink
-					.getLinkAddress() : foreignAddress.get(0).toString();
+					.getLinkAddress() : (!foreignAddress.isEmpty() ? foreignAddress.get(0).toString() : getAddressInfo());
 			logger.l2(String.format(
-					"Done: %s %s, %s, S/R: %d/%d (%d/%d bytes) (%d/%d cps)",
+					"[STATE:" + getStateString() + "] Done: %s %s, %s, S/R: %d/%d (%d/%d bytes) (%d/%d cps)",
 					(clientConnection) ? "to" : "from", address,
 					(connectionState == STATE_END) ? "OK" : "ERROR",
 					total_sent_files, total_recv_files, total_sent_bytes,
@@ -947,8 +1008,9 @@ public abstract class BinkpAbstractConnector implements Runnable {
 					total_recv_bytes, total_sent_bytes);
 		} else {
 			event = new ConnectionEndEvent(clientConnection, false);
-			logger.l3("Connection ended as unknown");
+			logger.l3("[STATE:" + getStateString() + "] Connection ended as " + getAddressInfo());
 		}
+		logger.l4("[STATE:" + getStateString() + "] Notifying connection end event");
 		Notifier.INSTANCE.notify(event);
 	}
 

@@ -63,6 +63,7 @@ public class FtnTosser {
 	private static final String LOOP_PREVENTION_ECHOMAIL = "tosser.loop_prevention.echomail";
 	private static final String LOOP_PREVENTION_NETMAIL = "tosser.loop_prevention.netmail";
 	private static final String OLD_MESSAGE_DAYS_THRESHOLD = "tosser.old_message_days_threshold";
+	private static final String TROUBLESHOOTING_DIRECTORY = "tosser.troubleshooting.directory";
 	private final Map<String, Integer> tossed = new HashMap<>();
 	private final Map<String, Integer> bad = new HashMap<>();
 	private final Set<Link> pollLinks = new HashSet<>();
@@ -475,13 +476,48 @@ public class FtnTosser {
 						FtnMessage ftnm;
 						FtnPkt pkt = new FtnPkt();
 						pkt.unpack(m.getInputStream());
+						
+						// Track if this packet contains dropped messages
+						boolean hasDroppedMessages = false;
+						StringBuilder droppedInfo = new StringBuilder();
+						int totalMessages = 0;
+						int droppedMessages = 0;
+						
 						while ((ftnm = pkt.getNextMessage()) != null) {
+							totalMessages++;
+							int initialBadCount = bad.values().stream().mapToInt(Integer::intValue).sum();
+							
 							if (ftnm.isNetmail()) {
 								tossNetmail(ftnm, true);
 							} else {
 								tossEchomail(ftnm, null, true);
 							}
+							
+							// Check if message was dropped (bad count increased)
+							int currentBadCount = bad.values().stream().mapToInt(Integer::intValue).sum();
+							if (currentBadCount > initialBadCount) {
+								hasDroppedMessages = true;
+								droppedMessages++;
+								droppedInfo.append(String.format("Message %d: %s from %s to %s - Subject: %s\n",
+										totalMessages,
+										ftnm.isNetmail() ? "Netmail" : "Echomail to " + ftnm.getArea(),
+										ftnm.getFromAddr(),
+										ftnm.getToAddr(),
+										ftnm.getSubject()));
+							}
 						}
+						
+						// Save packet for troubleshooting if it contained dropped messages
+						if (hasDroppedMessages) {
+							String additionalInfo = String.format("Packet Statistics:\n" +
+									"Total Messages: %d\n" +
+									"Dropped Messages: %d\n" +
+									"Processing Date: %s\n\n" +
+									"Dropped Message Details:\n%s",
+									totalMessages, droppedMessages, new Date().toString(), droppedInfo.toString());
+							savePacketForTroubleshooting(file, "dropped_messages", additionalInfo);
+						}
+						
 						file.delete();
 					} catch (Exception e) {
 						markAsBad(file, "Tossing failed");
@@ -509,14 +545,54 @@ public class FtnTosser {
 								}
 							}
 						}
+						
+						// Track if this packet contains dropped messages
+						boolean hasDroppedMessages = false;
+						StringBuilder droppedInfo = new StringBuilder();
+						int totalMessages = 0;
+						int droppedMessages = 0;
+						
 						FtnMessage ftnm;
 						while ((ftnm = pkt.getNextMessage()) != null) {
+							totalMessages++;
+							int initialBadCount = bad.values().stream().mapToInt(Integer::intValue).sum();
+							
 							if (ftnm.isNetmail()) {
 								tossNetmail(ftnm, secure);
 							} else {
 								tossEchomail(ftnm, link, secure);
 							}
+							
+							// Check if message was dropped (bad count increased)
+							int currentBadCount = bad.values().stream().mapToInt(Integer::intValue).sum();
+							if (currentBadCount > initialBadCount) {
+								hasDroppedMessages = true;
+								droppedMessages++;
+								droppedInfo.append(String.format("Message %d: %s from %s to %s - Subject: %s\n",
+										totalMessages,
+										ftnm.isNetmail() ? "Netmail" : "Echomail to " + ftnm.getArea(),
+										ftnm.getFromAddr(),
+										ftnm.getToAddr(),
+										ftnm.getSubject()));
+							}
 						}
+						
+						// Save packet for troubleshooting if it contained dropped messages
+						if (hasDroppedMessages) {
+							String linkInfo = (link != null) ? link.getLinkAddress() : "unknown";
+							String additionalInfo = String.format("Packet Statistics:\n" +
+									"Total Messages: %d\n" +
+									"Dropped Messages: %d\n" +
+									"From Link: %s\n" +
+									"Packet Type: %s\n" +
+									"Processing Date: %s\n\n" +
+									"Dropped Message Details:\n%s",
+									totalMessages, droppedMessages, linkInfo, 
+									secure ? "Secure" : "Unsecure", 
+									new Date().toString(), droppedInfo.toString());
+							savePacketForTroubleshooting(file, "dropped_messages", additionalInfo);
+						}
+						
 						file.delete();
 					} catch (Exception e) {
 						markAsBad(file, "Tossing failed");
@@ -713,16 +789,105 @@ public class FtnTosser {
 	private void markAsBad(File file, String message) {
 		logger.l2(String.format("MAIL ERROR: File %s marked as bad - %s", file.getName(), message));
 		
+		// Get troubleshooting directory from config
+		String troubleDir = MainHandler.getCurrentInstance()
+				.getProperty(TROUBLESHOOTING_DIRECTORY, null);
+		
+		File badFile;
+		if (troubleDir != null && !troubleDir.isEmpty()) {
+			// Move to configured troubleshooting directory
+			File troubleDirectory = new File(troubleDir);
+			if (!troubleDirectory.exists()) {
+				troubleDirectory.mkdirs();
+			}
+			badFile = new File(troubleDirectory, file.getName() + ".bad");
+		} else {
+			// Default behavior: rename in place
+			badFile = new File(file.getAbsolutePath() + ".bad");
+		}
+		
 		// Notify sysop about bad file
 		notifySysop("Packet Processing Error", 
 				String.format("A packet file was marked as bad and moved to quarantine.\n\n" +
 						"File: %s\n" +
 						"Reason: %s\n" +
-						"Action: File renamed to %s.bad\n\n" +
+						"Action: File moved to %s\n\n" +
 						"This may indicate corrupted packets, password issues, or format problems.",
-						file.getName(), message, file.getName()));
+						file.getName(), message, badFile.getAbsolutePath()));
 		
-		file.renameTo(new File(file.getAbsolutePath() + ".bad"));
+		file.renameTo(badFile);
+	}
+
+	/**
+	 * Save packet copy to troubleshooting directory for analysis
+	 * @param originalFile Original packet file
+	 * @param reason Reason for saving (e.g., "dropped_echomail", "subscription_error")
+	 * @param additionalInfo Additional context for the troubleshooting file
+	 */
+	private void savePacketForTroubleshooting(File originalFile, String reason, String additionalInfo) {
+		// Check if troubleshooting directory is configured
+		String troubleDir = MainHandler.getCurrentInstance()
+				.getProperty(TROUBLESHOOTING_DIRECTORY, null);
+		
+		if (troubleDir == null || troubleDir.isEmpty()) {
+			logger.l4("Troubleshooting directory not configured - packet copy not saved");
+			return;
+		}
+		
+		try {
+			// Create troubleshooting directory if it doesn't exist
+			File troubleDirectory = new File(troubleDir);
+			if (!troubleDirectory.exists()) {
+				troubleDirectory.mkdirs();
+			}
+			
+			// Create filename with timestamp and reason
+			String timestamp = String.valueOf(System.currentTimeMillis());
+			String filename = String.format("%s_%s_%s.pkt", 
+					originalFile.getName().replaceAll("\\.pkt$", ""), 
+					reason, 
+					timestamp);
+			
+			File troubleFile = new File(troubleDirectory, filename);
+			
+			// Copy the original file to troubleshooting directory
+			FileInputStream fis = new FileInputStream(originalFile);
+			FileOutputStream fos = new FileOutputStream(troubleFile);
+			byte[] buffer = new byte[4096];
+			int len;
+			while ((len = fis.read(buffer)) > 0) {
+				fos.write(buffer, 0, len);
+			}
+			fos.close();
+			fis.close();
+			
+			// Create accompanying info file with details
+			String infoFilename = filename.replaceAll("\\.pkt$", ".info");
+			File infoFile = new File(troubleDirectory, infoFilename);
+			
+			StringBuilder infoContent = new StringBuilder();
+			infoContent.append("Packet Troubleshooting Information\n");
+			infoContent.append("==================================\n\n");
+			infoContent.append("Original File: ").append(originalFile.getAbsolutePath()).append("\n");
+			infoContent.append("Saved Time: ").append(new Date().toString()).append("\n");
+			infoContent.append("Reason: ").append(reason).append("\n");
+			infoContent.append("File Size: ").append(originalFile.length()).append(" bytes\n");
+			infoContent.append("Last Modified: ").append(new Date(originalFile.lastModified()).toString()).append("\n");
+			infoContent.append("\nAdditional Information:\n");
+			infoContent.append("=======================\n");
+			infoContent.append(additionalInfo != null ? additionalInfo : "No additional information provided");
+			infoContent.append("\n\n--- Generated by jNode ").append(MainHandler.getVersion()).append(" ---\n");
+			
+			FileOutputStream infoFos = new FileOutputStream(infoFile);
+			infoFos.write(infoContent.toString().getBytes());
+			infoFos.close();
+			
+			logger.l3(String.format("Packet saved for troubleshooting: %s (reason: %s)", 
+					troubleFile.getAbsolutePath(), reason));
+			
+		} catch (Exception e) {
+			logger.l2("Failed to save packet for troubleshooting: " + originalFile.getName(), e);
+		}
 	}
 
 	/**
