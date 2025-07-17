@@ -108,10 +108,11 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 					}
 					
 					loopCounter++;
-					// logger.l5("Selector loop #" + loopCounter + ", keys=" + selector.selectedKeys().size());
+					logger.l5("[STATE:" + getStateString() + "] Selector loop #" + loopCounter + ", selected keys=" + selector.selectedKeys().size() + ", total keys=" + selector.keys().size());
 					for (SelectionKey key : selector.selectedKeys()) {
 						SocketChannel channel = (SocketChannel) key.channel();
 						if (key.isValid()) {
+							logger.l5("[STATE:" + getStateString() + "] Key valid: readable=" + key.isReadable() + ", writable=" + key.isWritable() + ", connectable=" + key.isConnectable());
 							if (key.isConnectable()) {
 								try {
 									if (!channel.finishConnect()) {
@@ -146,6 +147,7 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 								}
 							}
 							if (key.isWritable()) {
+								logger.l5("[STATE:" + getStateString() + "] Key is writable, checking for messages");
 								checkForMessages();
 								// CRITICAL: Send ALL queued frames before processing any reads
 								while (!frames.isEmpty()) {
@@ -163,7 +165,7 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 									}
 									
 									BinkpFrame frame = frames.removeFirst();
-									logger.l5("SENDING Frame: " + frame
+									logger.l5("[STATE:" + getStateString() + "] SENDING Frame: " + frame
 											+ ", next " + frames.size()
 											+ " frames, total sent "
 											+ total_sent_bytes);
@@ -188,10 +190,10 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 											}
 											logger.l5("DATA SENT to network: " + (data.length - 2) + " bytes, preview: " + hex.toString());
 										} else {
-											logger.l5("COMMAND SENT to network: " + frame);
+											logger.l5("[STATE:" + getStateString() + "] COMMAND SENT to network: " + frame);
 										}
 									} catch (Exception e) {
-										logger.l5("SEND FAILED: " + frame + ", error: " + e.getMessage());
+										logger.l5("[STATE:" + getStateString() + "] SEND FAILED: " + frame + ", error: " + e.getMessage());
 										throw e;
 									}
 								}
@@ -201,9 +203,9 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 							}
 							// CRITICAL: Only process reads AFTER all writes are complete
 							if (key.isReadable()) {
-								logger.l5("Key is READABLE, frames.isEmpty()=" + frames.isEmpty());
+								logger.l5("[STATE:" + getStateString() + "] Key is READABLE, frames.isEmpty()=" + frames.isEmpty());
 								if (!frames.isEmpty()) {
-									logger.l5("SKIPPING READ: Still have " + frames.size() + " frames to send");
+									logger.l5("[STATE:" + getStateString() + "] SKIPPING READ: Still have " + frames.size() + " frames to send");
 								} else {
 								BinkpFrame frame = null;
 								ByteBuffer head = ByteBuffer.allocate(2);
@@ -283,17 +285,25 @@ public class BinkpAsyncConnector extends BinkpAbstractConnector {
 									}
 								}
 								if (frame != null) {
-									logger.l5("Frame received: " + frame);
+									logger.l5("[STATE:" + getStateString() + "] Frame received: " + frame);
 									proccessFrame(frame);
 								}
 								}
 							}
 						} else {
+							logger.l4("[STATE:" + getStateString() + "] Key is invalid, finishing connection");
 							finish("Key is invalid");
 						}
 					}
 					// CRITICAL: Clear selected keys after processing to prevent re-processing
+					logger.l5("[STATE:" + getStateString() + "] Clearing selected keys, loop complete");
 					selector.selectedKeys().clear();
+					
+					// CRITICAL: In TRANSFER state, ensure we periodically check for messages even if no write event
+					if (connectionState == STATE_TRANSFER) {
+						logger.l5("[STATE:" + getStateString() + "] In TRANSFER state, explicitly checking for messages");
+						checkForMessages();
+					}
 				} catch (ConnectException e) {
 					error("Connection timeout: " + e.getLocalizedMessage());
 				} catch (SocketTimeoutException e) {
