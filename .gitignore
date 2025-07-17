@@ -16,3 +16,5 @@ CHRS.md
 fts-5003.001
 *.versionsBackup
 .vscode/settings.json
+__pycache__/
+.DS_Store
