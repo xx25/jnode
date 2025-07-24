@@ -2,13 +2,14 @@
 #
 # JNode Local Build and Deploy Script
 # Builds locally but can upload to VM
-# Usage: ./build-local.sh [h2_version] [target_host]
+# Usage: ./build-local.sh [target_host]
 #
 
 set -e
 
-H2_VERSION=${1:-"2.3.232"}
-TARGET_HOST=${2:-""}
+# Always use the latest H2 version
+H2_VERSION="2.3.232"
+TARGET_HOST=${1:-""}
 
 # Colors
 GREEN='\033[0;32m'
@@ -23,7 +24,7 @@ success() {
     echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
-log "Building JNode with H2 version: $H2_VERSION"
+log "Building JNode with H2 version: $H2_VERSION (latest)"
 
 # Build with Maven
 log "Running Maven build..."
@@ -36,13 +37,9 @@ ZIPFILE=$(ls jnode-*.zip | head -1)
 unzip -j "$ZIPFILE" "jnode/lib/*" -d ../lib-temp/
 
 # Replace H2 version
-log "Setting H2 version to $H2_VERSION"
+log "Setting H2 version to $H2_VERSION (latest)"
 rm -f ../lib-temp/h2-*.jar
-case "$H2_VERSION" in
-    "1.3.174") cp ../../jdbc-drivers/old-drivers/h2-1.3.174.jar ../lib-temp/ ;;
-    "1.4.200") cp ../../jdbc-drivers/old-drivers/h2-1.4.200.jar ../lib-temp/ ;;
-    *) cp ../../jdbc-drivers/h2-2.3.232.jar ../lib-temp/ ;;
-esac
+cp ../../jdbc-drivers/h2-2.3.232.jar ../lib-temp/
 
 if [ -n "$TARGET_HOST" ]; then
     log "Uploading to $TARGET_HOST..."

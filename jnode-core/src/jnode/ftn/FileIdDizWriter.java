@@ -24,8 +24,10 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 import jnode.logger.Logger;
 
@@ -47,11 +49,10 @@ public class FileIdDizWriter {
     private static final int MAX_LINE_LENGTH = 45;
     
     /**
-     * Appends a file entry to FILE_ID.DIZ in the specified directory using US-ASCII encoding.
-     * If the file doesn't exist, it will be created. If it exists, the entry
-     * will be appended to preserve existing descriptions.
+     * Adds or updates a file entry in FILE_ID.DIZ in the specified directory using US-ASCII encoding.
+     * If the filename already exists, its description will be replaced.
      * 
-     * @param directory The directory to create/append to FILE_ID.DIZ in
+     * @param directory The directory to create/update FILE_ID.DIZ in
      * @param filename The filename being described
      * @param description The file description (can be multi-line)
      * @throws IOException if writing fails
@@ -61,11 +62,10 @@ public class FileIdDizWriter {
     }
     
     /**
-     * Appends a file entry to FILE_ID.DIZ in the specified directory with configurable encoding.
-     * If the file doesn't exist, it will be created. If it exists, the entry
-     * will be appended to preserve existing descriptions.
+     * Adds or updates a file entry in FILE_ID.DIZ in the specified directory with configurable encoding.
+     * If the filename already exists, its description will be replaced.
      * 
-     * @param directory The directory to create/append to FILE_ID.DIZ in
+     * @param directory The directory to create/update FILE_ID.DIZ in
      * @param filename The filename being described
      * @param description The file description (can be multi-line)
      * @param use8bit If true, uses specified charset; if false, uses US-ASCII
@@ -114,21 +114,9 @@ public class FileIdDizWriter {
             charset = StandardCharsets.US_ASCII;
         }
         
-        // Append to FILE_ID.DIZ with proper encoding and synchronization
+        // Update FILE_ID.DIZ with proper encoding and synchronization
         synchronized (FileIdDizWriter.class) {
-            try (BufferedWriter writer = new BufferedWriter(
-                    new OutputStreamWriter(
-                            new FileOutputStream(fileIdDiz, true), // Append mode
-                            charset))) {
-                
-                for (String line : formattedLines) {
-                    writer.write(line);
-                    writer.newLine();
-                }
-                
-                writer.flush();
-                logger.l4("Successfully flushed data to FILE_ID.DIZ using " + charset.displayName());
-            }
+            updateFileIdDiz(fileIdDiz, filename, formattedLines, charset);
         }
         
         logger.l4("Added entry to FILE_ID.DIZ: " + filename + " in " + directory.getAbsolutePath());
@@ -289,5 +277,86 @@ public class FileIdDizWriter {
         
         File fileIdDiz = new File(directory, FILE_ID_DIZ);
         return fileIdDiz.exists() && fileIdDiz.isFile();
+    }
+    
+    /**
+     * Updates FILE_ID.DIZ by either replacing existing entries for the filename or appending new ones.
+     * 
+     * @param fileIdDiz The FILE_ID.DIZ file
+     * @param filename The filename to add or update
+     * @param newLines The formatted lines for this filename
+     * @param charset The charset to use for encoding
+     * @throws IOException if file operations fail
+     */
+    private static void updateFileIdDiz(File fileIdDiz, String filename, List<String> newLines, Charset charset) throws IOException {
+        List<String> allLines = new ArrayList<>();
+        
+        // Read existing content if file exists
+        if (fileIdDiz.exists()) {
+            try {
+                allLines = Files.readAllLines(fileIdDiz.toPath(), charset);
+                logger.l4("Read " + allLines.size() + " existing lines from FILE_ID.DIZ");
+            } catch (Exception e) {
+                logger.l3("Could not read existing FILE_ID.DIZ with " + charset.displayName() + ", trying with US-ASCII: " + e.getMessage());
+                try {
+                    allLines = Files.readAllLines(fileIdDiz.toPath(), StandardCharsets.US_ASCII);
+                    logger.l4("Successfully read " + allLines.size() + " lines with US-ASCII fallback");
+                } catch (Exception e2) {
+                    logger.l2("Could not read existing FILE_ID.DIZ, creating new file: " + e2.getMessage());
+                    allLines = new ArrayList<>();
+                }
+            }
+        }
+        
+        // Remove any existing entries for this filename
+        boolean foundExisting = false;
+        ListIterator<String> iterator = allLines.listIterator();
+        while (iterator.hasNext()) {
+            String line = iterator.next();
+            // Check if line starts with filename followed by space or equals filename exactly
+            if (line.startsWith(filename + " ") || line.equals(filename)) {
+                foundExisting = true;
+                iterator.remove();
+                logger.l4("Removed existing entry for " + filename + ": " + line);
+                
+                // Remove subsequent lines until we find another filename (line not starting with space)
+                while (iterator.hasNext()) {
+                    String nextLine = iterator.next();
+                    if (!nextLine.startsWith(" ") && !nextLine.trim().isEmpty()) {
+                        // This looks like another filename, put it back and stop
+                        iterator.previous();
+                        break;
+                    } else {
+                        iterator.remove();
+                        logger.l5("Removed continuation line: " + nextLine);
+                    }
+                }
+                break; // Only remove the first match
+            }
+        }
+        
+        // Add the new lines
+        allLines.addAll(newLines);
+        
+        if (foundExisting) {
+            logger.l4("Replaced existing entry for " + filename);
+        } else {
+            logger.l4("Added new entry for " + filename);
+        }
+        
+        // Write all lines back to the file
+        try (BufferedWriter writer = new BufferedWriter(
+                new OutputStreamWriter(
+                        new FileOutputStream(fileIdDiz, false), // Overwrite mode
+                        charset))) {
+            
+            for (String line : allLines) {
+                writer.write(line);
+                writer.newLine();
+            }
+            
+            writer.flush();
+            logger.l4("Successfully wrote " + allLines.size() + " lines to FILE_ID.DIZ using " + charset.displayName());
+        }
     }
 }

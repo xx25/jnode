@@ -315,4 +315,24 @@ public class FileIdDizWriterTest {
         assertTrue(lines.stream().anyMatch(l -> l.contains("THREAD1.ZIP")));
         assertTrue(lines.stream().anyMatch(l -> l.contains("THREAD2.ZIP")));
     }
+    
+    @Test
+    public void testAppendEntry_ReplacesDuplicateFilename() throws IOException {
+        String filename = "DUPLICATE.ZIP";
+        
+        // Add initial entry
+        FileIdDizWriter.appendEntry(testDirectory, filename, "Original description");
+        
+        File fileIdDiz = new File(testDirectory, "FILE_ID.DIZ");
+        List<String> lines = Files.readAllLines(fileIdDiz.toPath(), StandardCharsets.US_ASCII);
+        assertEquals(1, lines.size());
+        assertEquals("DUPLICATE.ZIP Original description", lines.get(0));
+        
+        // Add same filename again with different description - should replace
+        FileIdDizWriter.appendEntry(testDirectory, filename, "Updated description");
+        
+        lines = Files.readAllLines(fileIdDiz.toPath(), StandardCharsets.US_ASCII);
+        assertEquals(1, lines.size());
+        assertEquals("DUPLICATE.ZIP Updated description", lines.get(0));
+    }
 }
