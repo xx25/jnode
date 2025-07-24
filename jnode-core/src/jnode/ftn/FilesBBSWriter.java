@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 import jnode.logger.Logger;
 
@@ -44,10 +45,11 @@ public class FilesBBSWriter {
     private static final int MAX_FILENAME_LENGTH = 12;
     
     /**
-     * Appends a file entry to FILES.BBS in the specified directory using US-ASCII encoding.
+     * Adds or updates a file entry in FILES.BBS in the specified directory using US-ASCII encoding.
+     * If the filename already exists, its description will be replaced.
      * 
      * @param directory The directory containing the file and FILES.BBS
-     * @param filename The filename to add
+     * @param filename The filename to add or update
      * @param description The file description (can be multi-line)
      * @throws IOException if writing fails
      */
@@ -56,10 +58,11 @@ public class FilesBBSWriter {
     }
     
     /**
-     * Appends a file entry to FILES.BBS in the specified directory with configurable encoding.
+     * Adds or updates a file entry in FILES.BBS in the specified directory with configurable encoding.
+     * If the filename already exists, its description will be replaced.
      * 
      * @param directory The directory containing the file and FILES.BBS
-     * @param filename The filename to add
+     * @param filename The filename to add or update
      * @param description The file description (can be multi-line)
      * @param use8bit If true, uses specified charset; if false, uses US-ASCII
      * @param charsetName The charset name to use when use8bit is true (e.g., "CP866", "CP437")
@@ -107,21 +110,9 @@ public class FilesBBSWriter {
             charset = StandardCharsets.US_ASCII;
         }
         
-        // Append to FILES.BBS with file locking for concurrent access
+        // Update FILES.BBS with file locking for concurrent access
         synchronized (FilesBBSWriter.class) {
-            try (BufferedWriter writer = new BufferedWriter(
-                    new OutputStreamWriter(
-                            new FileOutputStream(filesBbs, true), 
-                            charset))) {
-                
-                for (String line : formattedLines) {
-                    writer.write(line);
-                    writer.newLine();
-                }
-                
-                writer.flush();
-                logger.l4("Successfully flushed data to FILES.BBS using " + charset.displayName());
-            }
+            updateFilesBBS(filesBbs, filename, formattedLines, charset);
         }
         
         logger.l4("Added entry to FILES.BBS: " + filename + " in " + directory.getAbsolutePath());
@@ -216,5 +207,85 @@ public class FilesBBSWriter {
         }
         
         return line;
+    }
+    
+    /**
+     * Updates FILES.BBS by either replacing existing entries for the filename or appending new ones.
+     * 
+     * @param filesBbs The FILES.BBS file
+     * @param filename The filename to add or update
+     * @param newLines The formatted lines for this filename
+     * @param charset The charset to use for encoding
+     * @throws IOException if file operations fail
+     */
+    private static void updateFilesBBS(File filesBbs, String filename, List<String> newLines, Charset charset) throws IOException {
+        List<String> allLines = new ArrayList<>();
+        
+        // Read existing content if file exists
+        if (filesBbs.exists()) {
+            try {
+                allLines = Files.readAllLines(filesBbs.toPath(), charset);
+                logger.l4("Read " + allLines.size() + " existing lines from FILES.BBS");
+            } catch (Exception e) {
+                logger.l3("Could not read existing FILES.BBS with " + charset.displayName() + ", trying with US-ASCII: " + e.getMessage());
+                try {
+                    allLines = Files.readAllLines(filesBbs.toPath(), StandardCharsets.US_ASCII);
+                    logger.l4("Successfully read " + allLines.size() + " lines with US-ASCII fallback");
+                } catch (Exception e2) {
+                    logger.l2("Could not read existing FILES.BBS, creating new file: " + e2.getMessage());
+                    allLines = new ArrayList<>();
+                }
+            }
+        }
+        
+        // Remove any existing entries for this filename
+        boolean foundExisting = false;
+        ListIterator<String> iterator = allLines.listIterator();
+        while (iterator.hasNext()) {
+            String line = iterator.next();
+            if (line.startsWith(filename + " ") || line.equals(filename)) {
+                foundExisting = true;
+                iterator.remove();
+                logger.l4("Removed existing entry for " + filename + ": " + line);
+                
+                // Remove continuation lines (lines starting with space after filename line)
+                while (iterator.hasNext()) {
+                    String nextLine = iterator.next();
+                    if (nextLine.startsWith(" ")) {
+                        iterator.remove();
+                        logger.l5("Removed continuation line: " + nextLine);
+                    } else {
+                        // Put back the line that doesn't start with space
+                        iterator.previous();
+                        break;
+                    }
+                }
+                break; // Only remove the first match
+            }
+        }
+        
+        // Add the new lines
+        allLines.addAll(newLines);
+        
+        if (foundExisting) {
+            logger.l4("Replaced existing entry for " + filename);
+        } else {
+            logger.l4("Added new entry for " + filename);
+        }
+        
+        // Write all lines back to the file
+        try (BufferedWriter writer = new BufferedWriter(
+                new OutputStreamWriter(
+                        new FileOutputStream(filesBbs, false), // Overwrite mode
+                        charset))) {
+            
+            for (String line : allLines) {
+                writer.write(line);
+                writer.newLine();
+            }
+            
+            writer.flush();
+            logger.l4("Successfully wrote " + allLines.size() + " lines to FILES.BBS using " + charset.displayName());
+        }
     }
 }

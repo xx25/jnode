@@ -86,6 +86,77 @@ public abstract class GenericDAO<T> {
 		return (Dao<T, ?>) daoMap.get(getType());
 	}
 
+	/**
+	 * Execute database operation with unlimited retry on connection failures
+	 */
+	private <R> R executeWithRetry(DatabaseOperation<R> operation, String methodName, Object... args) {
+		while (true) {
+			try {
+				return operation.execute();
+			} catch (SQLException e) {
+				// Check if this is a connection-related error
+				if (isConnectionError(e)) {
+					logger.l2("Database connection error in " + methodName + ", attempting reconnection: " + e.getMessage());
+					
+					// Try to reconnect
+					if (ORMManager.reconnect()) {
+						logger.l2("Reconnection successful, retrying " + methodName);
+						continue; // Retry the operation
+					} else {
+						logger.l1("Reconnection failed for " + methodName + ", retrying in 5 seconds...");
+						try {
+							Thread.sleep(5000);
+						} catch (InterruptedException ie) {
+							Thread.currentThread().interrupt();
+							logger.l1("Retry interrupted for " + methodName, ie);
+							return null;
+						}
+						continue; // Keep trying
+					}
+				} else {
+					// Not a connection error, log and return null
+					logger.l1("SQL Exception in " + methodName, e);
+					if (args.length > 0) {
+						logger.l1(MessageFormat.format("we worked with {0}", 
+							args.length == 1 ? args[0] : Arrays.toString(args)));
+					}
+					return null;
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Check if SQLException indicates a connection problem
+	 */
+	private boolean isConnectionError(SQLException e) {
+		String message = e.getMessage().toLowerCase();
+		String sqlState = e.getSQLState();
+		
+		// Common connection error patterns
+		return message.contains("connection") && (
+			message.contains("closed") || 
+			message.contains("timeout") || 
+			message.contains("broken") ||
+			message.contains("lost") ||
+			message.contains("reset")
+		) || 
+		// SQL State codes for connection errors
+		(sqlState != null && (
+			sqlState.startsWith("08") || // Connection exception
+			sqlState.equals("57P01") ||  // PostgreSQL connection terminated
+			sqlState.equals("JZ006")     // Sybase connection closed
+		));
+	}
+	
+	/**
+	 * Functional interface for database operations
+	 */
+	@FunctionalInterface
+	private interface DatabaseOperation<R> {
+		R execute() throws SQLException;
+	}
+
 	@SuppressWarnings("unchecked")
 	private <V> Dao<T, V> getDaoV() {
 		return (Dao<T, V>) daoMap.get(getType());
@@ -166,13 +237,7 @@ public abstract class GenericDAO<T> {
 	 * @return
 	 */
 	public <V> T getById(V id) {
-		try {
-			return getDaoV().queryForId(id);
-		} catch (SQLException e) {
-			logger.l1("SQL Exception in getById", e);
-			logger.l1(MessageFormat.format("we worked with {0}", e));
-		}
-		return null;
+		return executeWithRetry(() -> getDaoV().queryForId(id), "getById", id);
 	}
 
 	/**
@@ -181,13 +246,8 @@ public abstract class GenericDAO<T> {
 	 * @return
 	 */
 	public List<T> getAll() {
-		try {
-			return getDao().queryForAll();
-		} catch (SQLException e) {
-			logger.l1("SQL Exception in getAll", e);
-			logger.l1(MessageFormat.format("we worked with {0}", e));
-		}
-		return new ArrayList<>();
+		List<T> result = executeWithRetry(() -> getDao().queryForAll(), "getAll");
+		return result != null ? result : new ArrayList<>();
 	}
 
 	/**
@@ -332,39 +392,31 @@ public abstract class GenericDAO<T> {
 	}
 
 	public void update(T object) {
-		try {
+		executeWithRetry(() -> {
 			getDao().update(object);
-		} catch (SQLException e) {
-			logger.l1("SQL Exception in update", e);
-			logger.l1(MessageFormat.format("we worked with {0}", object));
-		}
+			return null;
+		}, "update", object);
 	}
 
 	public void save(T object) {
-		try {
+		executeWithRetry(() -> {
 			getDao().create(object);
-		} catch (SQLException e) {
-			logger.l1("SQL Exception in save", e);
-			logger.l1(MessageFormat.format("we worked with {0}", object));
-		}
+			return null;
+		}, "save", object);
 	}
 
 	public void saveOrUpdate(T object) {
-		try {
+		executeWithRetry(() -> {
 			getDao().createOrUpdate(object);
-		} catch (SQLException e) {
-			logger.l1("SQL Exception in saveOrUpdate", e);
-			logger.l1(MessageFormat.format("we worked with {0}", object));
-		}
+			return null;
+		}, "saveOrUpdate", object);
 	}
 
 	public void delete(T object) {
-		try {
+		executeWithRetry(() -> {
 			getDao().delete(object);
-		} catch (SQLException e) {
-			logger.l1("SQL Exception in delete", e);
-			logger.l1(MessageFormat.format("we worked with {0}", object));
-		}
+			return null;
+		}, "delete", object);
 	}
 
 	public void update(String field, Object value, Object... args) {

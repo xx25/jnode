@@ -336,4 +336,26 @@ public class FilesBBSWriterTest {
         String longLine = lines.get(2);
         assertTrue(longLine.contains("Long filename"));
     }
+    
+    @Test
+    public void testAppendEntry_ReplacesDuplicateFilename() throws IOException {
+        String filename = "DUPLICATE.ZIP";
+        
+        // Add initial entry
+        FilesBBSWriter.appendEntry(testDirectory, filename, "Original description");
+        
+        File filesBbs = new File(testDirectory, "files.bbs");
+        List<String> lines = Files.readAllLines(filesBbs.toPath(), StandardCharsets.US_ASCII);
+        assertEquals(1, lines.size());
+        assertTrue(lines.get(0).contains("Original description"));
+        
+        // Add same filename again with different description - should replace
+        FilesBBSWriter.appendEntry(testDirectory, filename, "Updated description");
+        
+        lines = Files.readAllLines(filesBbs.toPath(), StandardCharsets.US_ASCII);
+        assertEquals(1, lines.size());
+        assertTrue(lines.get(0).contains("Updated description"));
+        assertFalse(lines.get(0).contains("Original description"));
+        assertTrue(lines.get(0).startsWith(filename));
+    }
 }

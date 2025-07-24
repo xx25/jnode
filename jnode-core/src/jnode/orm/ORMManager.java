@@ -49,6 +49,7 @@ public enum ORMManager {
 	public final static String JDBC_USER = "jdbc.user";
 	public final static String JDBC_PASS = "jdbc.pass";
 	private static final int MAX_DAO_CACHE_SIZE = 100;
+	private static final int RETRY_DELAY = 5000; // 5 seconds
 
 	private static final Logger logger = Logger.getLogger(ORMManager.class);
 	private Map<Class<?>, GenericDAO<?>> genericDAOMap = Collections.synchronizedMap(
@@ -65,13 +66,42 @@ public enum ORMManager {
 	private ConnectionSource source;
 
 	public void start() throws Exception {
-		try {
-		source = new JdbcConnectionSource(MainHandler.getCurrentInstance()
-				.getProperty(JDBC_URL, ""), MainHandler.getCurrentInstance()
-				.getProperty(JDBC_USER, ""), MainHandler.getCurrentInstance()
-				.getProperty(JDBC_PASS, ""));
-		} catch(SQLException e) {
-			throw new Exception("Exception in source creation", e);
+		Exception lastException = null;
+		int attempt = 1;
+		
+		while (true) {
+			try {
+				source = new JdbcConnectionSource(
+					MainHandler.getCurrentInstance().getProperty(JDBC_URL, ""), 
+					MainHandler.getCurrentInstance().getProperty(JDBC_USER, ""), 
+					MainHandler.getCurrentInstance().getProperty(JDBC_PASS, "")
+				);
+				
+				// Test the connection without closing it improperly
+				var testConnection = source.getReadOnlyConnection(null);
+				if (testConnection != null) {
+					source.releaseConnection(testConnection);
+				}
+				
+				if (attempt > 1) {
+					logger.l2("Database connection established on attempt " + attempt);
+				}
+				return; // Success, exit retry loop
+				
+			} catch (SQLException e) {
+				lastException = e;
+				logger.l2("Database connection attempt " + attempt + " failed: " + e.getMessage());
+				logger.l2("Retrying database connection in " + RETRY_DELAY + "ms...");
+				
+				try {
+					Thread.sleep(RETRY_DELAY);
+				} catch (InterruptedException ie) {
+					Thread.currentThread().interrupt();
+					throw new Exception("Connection retry interrupted", ie);
+				}
+				
+				attempt++;
+			}
 		}
 	}
 
@@ -202,6 +232,53 @@ public enum ORMManager {
 		synchronized (INSTANCE) {
 			INSTANCE.start();
 			return INSTANCE.source;
+		}
+	}
+	
+	/**
+	 * Attempt to reconnect if current connection is invalid
+	 * @return true if reconnection was successful
+	 */
+	public static boolean reconnect() {
+		try {
+			synchronized (INSTANCE) {
+				if (INSTANCE.source != null) {
+					try {
+						INSTANCE.source.close();
+					} catch (Exception e) {
+						logger.l3("Error closing old connection source: " + e.getMessage());
+					}
+				}
+				INSTANCE.source = null;
+				INSTANCE.start();
+				logger.l2("Database reconnection successful");
+				return true;
+			}
+		} catch (Exception e) {
+			logger.l1("Database reconnection failed", e);
+			return false;
+		}
+	}
+	
+	/**
+	 * Test if current connection is valid
+	 * @return true if connection is valid
+	 */
+	public static boolean isConnectionValid() {
+		try {
+			if (INSTANCE.source == null) {
+				return false;
+			}
+			// Test connection with a quick query without improperly closing
+			var testConnection = INSTANCE.source.getReadOnlyConnection(null);
+			if (testConnection != null) {
+				INSTANCE.source.releaseConnection(testConnection);
+				return true;
+			}
+			return false;
+		} catch (Exception e) {
+			logger.l3("Connection validation failed: " + e.getMessage());
+			return false;
 		}
 	}
 }
