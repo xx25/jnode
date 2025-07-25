@@ -1588,7 +1588,7 @@ public class FtnTosser {
 		if (fmsg.getText() != null) {
 			String[] lines = fmsg.getText().split("\n");
 			for (String line : lines) {
-				if (line.startsWith("\001Via")) {
+				if (line.startsWith("\001Via") || line.startsWith(".Via")) {
 					viaLines.add(line);
 				}
 			}
@@ -1646,27 +1646,60 @@ public class FtnTosser {
 		
 		// Check each VIA line
 		for (String viaLine : viaLines) {
-			// Via line format: \001Via address jNode version date/time
-			// Example: \001Via 2:5020/1042 jNode ver 2.0.1 Fri Nov 06 2014 at 20:17:07
-			String[] parts = viaLine.split(" ");
-			if (parts.length >= 2) {
-				try {
-					// The address is the second part (after \001Via)
-					FtnAddress viaAddr = new FtnAddress(parts[1]);
-					
-					// Check if this is one of our addresses
-					for (FtnAddress ourAddr : ourAddresses) {
-						if (viaAddr.equals(ourAddr)) {
-							return ourAddr;
-						}
+			// Via line formats vary:
+			// Standard: \001Via 2:5020/1042 jNode ver 2.0.1 Fri Nov 06 2014 at 20:17:07
+			// ParToss: .Via ParToss 1.10.073/ZOO/W32 2:6078/80.0, 25 Jul 25 06:47:20
+			// Other formats: \001Via program 2:net/node date/time
+			
+			FtnAddress foundAddress = extractAddressFromViaLine(viaLine);
+			if (foundAddress != null) {
+				// Check if this is one of our addresses
+				for (FtnAddress ourAddr : ourAddresses) {
+					if (foundAddress.equals(ourAddr)) {
+						return ourAddr;
 					}
-				} catch (Exception e) {
-					// If we can't parse the address, log it and continue
-					logger.l3("Could not parse VIA address from line: " + viaLine);
 				}
 			}
 		}
 		
+		return null;
+	}
+	
+	/**
+	 * Extract FTN address from a Via line using multiple parsing strategies
+	 * @param viaLine The Via line to parse
+	 * @return FtnAddress if found, null otherwise
+	 */
+	private FtnAddress extractAddressFromViaLine(String viaLine) {
+		// Strategy 1: Standard format - address is second part after Via
+		String[] parts = viaLine.split(" ");
+		if (parts.length >= 2) {
+			try {
+				FtnAddress addr = new FtnAddress(parts[1]);
+				return addr;
+			} catch (Exception e) {
+				// Continue to other strategies
+			}
+		}
+		
+		// Strategy 2: Search for FTN address pattern anywhere in the line
+		// Pattern: zone:net/node[.point] (optionally with @ and domain)
+		java.util.regex.Pattern addressPattern = java.util.regex.Pattern.compile(
+			"(?:^|\\s)(\\d{1,5}:\\d{1,5}/\\d{1,5}(?:\\.\\d{1,5})?(?:@\\w+(?:\\.\\w+)*)?)(?:\\s|,|$)");
+		java.util.regex.Matcher matcher = addressPattern.matcher(viaLine);
+		
+		while (matcher.find()) {
+			String addressStr = matcher.group(1);
+			try {
+				FtnAddress addr = new FtnAddress(addressStr);
+				return addr;
+			} catch (Exception e) {
+				// Continue searching for other addresses
+			}
+		}
+		
+		// If we can't parse any address, log it for debugging
+		logger.l4("Could not parse VIA address from line: " + viaLine);
 		return null;
 	}
 
