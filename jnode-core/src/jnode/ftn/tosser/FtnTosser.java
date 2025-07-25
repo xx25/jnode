@@ -1671,6 +1671,13 @@ public class FtnTosser {
 	 * @return FtnAddress if found, null otherwise
 	 */
 	private FtnAddress extractAddressFromViaLine(String viaLine) {
+		// Check if line starts with control character (required for valid Via lines)
+		// Valid control characters: \001 (ASCII 1) or . (dot)
+		if (viaLine == null || viaLine.isEmpty() || 
+			(viaLine.charAt(0) != '\001' && viaLine.charAt(0) != '.')) {
+			return null;
+		}
+		
 		// Strategy 1: Standard format - address is second part after Via
 		String[] parts = viaLine.split(" ");
 		if (parts.length >= 2) {
