@@ -18,3 +18,52 @@ fts-5003.001
 .vscode/settings.json
 __pycache__/
 .DS_Store
+
+# Go development files
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+vendor/
+
+# Go workspace file
+go.work
+
+# Build directories
+jnode-go-bridge/build/
+jnode-go-bridge/dist/
+
+# Go module cache
+go.sum.bak
+
+# IDE specific files for Go
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.env.local
+
+# Log files
+*.log
+logs/
+
+# Database files (for testing)
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
