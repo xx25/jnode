@@ -24,7 +24,7 @@ import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-@DatabaseTable(tableName = "filearea")
+@DatabaseTable(tableName = "fileareas")
 public class Filearea {
     @DatabaseField(generatedId = true)
     private Long id;

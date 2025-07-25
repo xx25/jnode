@@ -71,7 +71,7 @@ public class EchoLinksRoute implements Handler {
 						"SELECT l.id, l.station_name, l.ftn_address, " +
 						"CASE WHEN s.echoarea_id IS NOT NULL THEN 1 ELSE 0 END as subscribed " +
 						"FROM links l " +
-						"LEFT JOIN subscription s ON (l.id = s.link_id AND s.echoarea_id = %d) " +
+						"LEFT JOIN subscriptions s ON (l.id = s.link_id AND s.echoarea_id = %d) " +
 						"ORDER BY l.ftn_address",
 						echo.getId()));
 			

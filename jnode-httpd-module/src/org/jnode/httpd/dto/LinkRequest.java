@@ -25,7 +25,7 @@ import java.util.UUID;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-@DatabaseTable(tableName = "httpd_link_request")
+@DatabaseTable(tableName = "httpd_link_requests")
 public class LinkRequest {
 	@DatabaseField(id = true)
 	private String id = UUID.randomUUID().toString();

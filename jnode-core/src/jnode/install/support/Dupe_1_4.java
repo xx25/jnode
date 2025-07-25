@@ -28,7 +28,7 @@ import com.j256.ormlite.table.DatabaseTable;
 /**
  * @author kreon
  */
-@DatabaseTable(tableName = "dupes")
+@DatabaseTable(tableName = "duplicate_messages")
 public class Dupe_1_4 {
     @DatabaseField(columnName = "msgid", index = true)
     private String msgid;

@@ -187,7 +187,7 @@ func testDatabaseQueries(db *sql.DB) error {
 	
 	// Test echomail table
 	var echomailCount int
-	err = db.QueryRow("SELECT COUNT(*) FROM echomail").Scan(&echomailCount)
+	err = db.QueryRow("SELECT COUNT(*) FROM echomails").Scan(&echomailCount)
 	if err != nil {
 		return fmt.Errorf("failed to query echomail table: %w", err)
 	}
@@ -195,7 +195,7 @@ func testDatabaseQueries(db *sql.DB) error {
 	
 	// Test netmail table
 	var netmailCount int
-	err = db.QueryRow("SELECT COUNT(*) FROM netmail").Scan(&netmailCount)
+	err = db.QueryRow("SELECT COUNT(*) FROM netmails").Scan(&netmailCount)
 	if err != nil {
 		return fmt.Errorf("failed to query netmail table: %w", err)
 	}

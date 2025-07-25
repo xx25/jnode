@@ -33,7 +33,7 @@ import java.util.Date;
  *
  * @author Manjago
  */
-@DatabaseTable(tableName = "schedule")
+@DatabaseTable(tableName = "schedules")
 public class Schedule {
     private static final ConcurrentDateFormatAccess DATE_DAY_FORMAT = new ConcurrentDateFormatAccess("MMMM dd yyyy");
     private static final ConcurrentDateFormatAccess DATE_HOUR_FORMAT = new ConcurrentDateFormatAccess("MMMM dd yyyy HH");

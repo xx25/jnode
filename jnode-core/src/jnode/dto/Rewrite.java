@@ -29,7 +29,7 @@ import com.j256.ormlite.table.DatabaseTable;
  * @author kreon
  * 
  */
-@DatabaseTable(tableName = "rewrite")
+@DatabaseTable(tableName = "rewrite_rules")
 public class Rewrite {
 	public static enum Type {
 		NETMAIL, ECHOMAIL

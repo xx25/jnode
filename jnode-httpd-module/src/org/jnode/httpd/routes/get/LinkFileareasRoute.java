@@ -70,8 +70,8 @@ public class LinkFileareasRoute implements Handler {
 					.getRaw(String.format(
 						"SELECT fa.id, fa.name, fa.description, " +
 						"CASE WHEN fs.link_id IS NOT NULL THEN 1 ELSE 0 END as subscribed " +
-						"FROM filearea fa " +
-						"LEFT JOIN filesubscription fs ON (fa.id = fs.filearea_id AND fs.link_id = %d) " +
+						"FROM fileareas fa " +
+						"LEFT JOIN filesubscriptions fs ON (fa.id = fs.filearea_id AND fs.link_id = %d) " +
 						"ORDER BY fa.name",
 						link.getId()));
 			

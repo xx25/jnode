@@ -70,8 +70,8 @@ public class LinkEchoesRoute implements Handler {
 					.getRaw(String.format(
 						"SELECT e.id, e.name, e.description, " +
 						"CASE WHEN s.link_id IS NOT NULL THEN 1 ELSE 0 END as subscribed " +
-						"FROM echoarea e " +
-						"LEFT JOIN subscription s ON (e.id = s.echoarea_id AND s.link_id = %d) " +
+						"FROM echoareas e " +
+						"LEFT JOIN subscriptions s ON (e.id = s.echoarea_id AND s.link_id = %d) " +
 						"ORDER BY e.name",
 						link.getId()));
 			

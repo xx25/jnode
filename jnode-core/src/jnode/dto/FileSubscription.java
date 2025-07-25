@@ -23,7 +23,7 @@ package jnode.dto;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-@DatabaseTable(tableName = "filesubscription")
+@DatabaseTable(tableName = "filesubscriptions")
 public class FileSubscription {
     @DatabaseField(foreign = true, columnName = "link_id")
     private Link link;

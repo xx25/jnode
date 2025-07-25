@@ -32,7 +32,7 @@ import com.j256.ormlite.table.DatabaseTable;
  * @author kreon
  * 
  */
-@DatabaseTable(tableName = "linkoptions")
+@DatabaseTable(tableName = "link_options")
 public class LinkOption {
 	public static final String BOOLEAN_IGNORE_PKTPWD = "ignorepktpwd";
 	public static final String BOOLEAN_PACK_NETMAIL = "packnetmail";

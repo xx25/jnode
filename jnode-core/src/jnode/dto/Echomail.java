@@ -29,7 +29,7 @@ import java.util.Date;
 /**
  * @author kreon
  */
-@DatabaseTable(tableName = "echomail")
+@DatabaseTable(tableName = "echomails")
 public class Echomail implements Entity, Mail {
 	@DatabaseField(generatedId = true, columnName = "id")
 	private Long id;

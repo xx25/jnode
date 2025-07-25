@@ -29,9 +29,9 @@ public class EchoareaCSVRoute implements Handler {
 						"DELETE FROM httpd_echoarea_csv;");
 				GenericRawResults<String[]> results = ORMManager
 						.get(Echoarea.class)
-						.getRaw("SELECT e.name,e.description,(SELECT count(id) FROM echomail "
-								+ "WHERE echoarea_id=e.id) AS num,(SELECT max(date) FROM echomail "
-								+ "WHERE echoarea_id=e.id) AS latest FROM echoarea e ORDER BY e.name;");
+						.getRaw("SELECT e.name,e.description,(SELECT count(id) FROM echomails "
+								+ "WHERE echoarea_id=e.id) AS num,(SELECT max(date) FROM echomails "
+								+ "WHERE echoarea_id=e.id) AS latest FROM echoareas e ORDER BY e.name;");
 				latest = now;
 				for (String[] row : results.getResults()) {
 					EchoareaCSV csv = new EchoareaCSV();

@@ -31,7 +31,7 @@ import java.util.Date;
  * @author kreon
  * 
  */
-@DatabaseTable(tableName = "netmail")
+@DatabaseTable(tableName = "netmails")
 public class Netmail implements Entity, Mail {
 	@DatabaseField(columnName = "id", generatedId = true)
 	private Long id;

@@ -26,7 +26,7 @@ import com.j256.ormlite.table.DatabaseTable;
 /**
  * @author kreon
  */
-@DatabaseTable(tableName = "subscription")
+@DatabaseTable(tableName = "subscriptions")
 public class Subscription {
     @DatabaseField(columnName = "link_id", foreign = true, uniqueIndexName = "subs_idx")
     private Link link;

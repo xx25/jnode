@@ -23,7 +23,7 @@ package jnode.dto;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-@DatabaseTable(tableName = "echomailawait")
+@DatabaseTable(tableName = "echomail_queue")
 public class EchomailAwaiting {
     @DatabaseField(foreign = true, columnName = "link_id")
     private Link link;

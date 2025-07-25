@@ -31,7 +31,7 @@ import com.j256.ormlite.table.DatabaseTable;
  * @author kreon
  * 
  */
-@DatabaseTable(tableName = "rewrite")
+@DatabaseTable(tableName = "rewrite_rules")
 public class Rewrite_1_4 {
 	@DatabaseField(canBeNull = false, defaultValue = "0", columnName = "nice")
 	private Long nice;

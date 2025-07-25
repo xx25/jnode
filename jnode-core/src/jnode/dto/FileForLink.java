@@ -24,7 +24,7 @@ import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-@DatabaseTable(tableName = "filesforlink")
+@DatabaseTable(tableName = "files_for_links")
 public class FileForLink {
     @DatabaseField(foreign = true, columnName = "link_id", uniqueIndexName = "idnameidx")
     private Link link;

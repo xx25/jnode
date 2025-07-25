@@ -163,12 +163,12 @@ public class FtnTosserTest {
             // Table might not exist yet - ignore
         }
         try {
-            ORMManager.get(Echomail.class).executeRaw("DELETE FROM echomail");
+            ORMManager.get(Echomail.class).executeRaw("DELETE FROM echomails");
         } catch (Exception e) {
             // Table might not exist yet - ignore
         }
         try {
-            ORMManager.get(EchomailAwaiting.class).executeRaw("DELETE FROM echomailawait");
+            ORMManager.get(EchomailAwaiting.class).executeRaw("DELETE FROM echomail_queue");
         } catch (Exception e) {
             // Table might not exist yet - ignore
         }

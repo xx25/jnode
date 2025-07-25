@@ -71,7 +71,7 @@ public class FileLinksRoute implements Handler {
 						"SELECT l.id, l.station_name, l.ftn_address, " +
 						"CASE WHEN fs.filearea_id IS NOT NULL THEN 1 ELSE 0 END as subscribed " +
 						"FROM links l " +
-						"LEFT JOIN filesubscription fs ON (l.id = fs.link_id AND fs.filearea_id = %d) " +
+						"LEFT JOIN filesubscriptions fs ON (l.id = fs.link_id AND fs.filearea_id = %d) " +
 						"ORDER BY l.ftn_address",
 						filearea.getId()));
 			

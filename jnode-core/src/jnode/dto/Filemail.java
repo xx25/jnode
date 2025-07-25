@@ -26,7 +26,7 @@ import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-@DatabaseTable(tableName = "filemail")
+@DatabaseTable(tableName = "filemails")
 public class Filemail {
 	@DatabaseField(generatedId = true)
 	private Long id;

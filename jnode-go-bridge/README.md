@@ -140,11 +140,11 @@ binkp.threads=10
 The bridge maintains full compatibility with jNode's database schema:
 
 - **links**: FTN nodes and routing configuration
-- **echomail**: Public message storage  
-- **netmail**: Private message storage
-- **echomailawaiting**: Outbound echomail queue
-- **netmailawaiting**: Outbound netmail queue
-- **filemailawaiting**: Outbound file transfer queue
+- **echomails**: Public message storage  
+- **netmails**: Private message storage
+- **echomail_queue**: Outbound echomail queue
+- **netmail_queue**: Outbound netmail queue
+- **filemail_queue**: Outbound file transfer queue
 
 ## Development Roadmap
 

@@ -23,7 +23,7 @@ package org.jnode.httpd.dto;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-@DatabaseTable(tableName="httpd_webadmin")
+@DatabaseTable(tableName="httpd_web_admins")
 public class WebAdmin {
 	@DatabaseField(generatedId = true, columnName = "id")
 	private Long id;

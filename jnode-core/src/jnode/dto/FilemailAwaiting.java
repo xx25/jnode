@@ -23,7 +23,7 @@ package jnode.dto;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-@DatabaseTable(tableName = "filemailawaiting")
+@DatabaseTable(tableName = "filemail_queue")
 public class FilemailAwaiting {
 	@DatabaseField(columnName = "link_id", foreign = true, foreignAutoRefresh = true)
 	private Link link;

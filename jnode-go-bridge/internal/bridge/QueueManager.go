@@ -105,8 +105,8 @@ func (j *JnodeQueueManager) getOutboundEchomail(linkID int64) ([]FileEntry, erro
 	query := `
 		SELECT e.id, e.from_name, e.to_name, e.from_ftn, e.to_ftn,
 		       e.subject, e.text, e.date, e.area_name
-		FROM echomail e
-		JOIN echomailawaiting ea ON e.id = ea.echomail_id
+		FROM echomails e
+		JOIN echomail_queue ea ON e.id = ea.echomail_id
 		WHERE ea.link_id = ?
 		ORDER BY e.date ASC
 	`
@@ -152,7 +152,7 @@ func (j *JnodeQueueManager) getOutboundNetmail(linkID int64) ([]FileEntry, error
 	query := `
 		SELECT id, from_name, to_name, from_ftn, to_ftn, subject, text,
 		       date, attributes
-		FROM netmail
+		FROM netmails
 		WHERE route_via = ? AND send = false
 		ORDER BY date ASC
 	`
@@ -197,8 +197,8 @@ func (j *JnodeQueueManager) getOutboundNetmail(linkID int64) ([]FileEntry, error
 func (j *JnodeQueueManager) getOutboundFilemail(linkID int64) ([]FileEntry, error) {
 	query := `
 		SELECT f.id, f.filename, f.filepath, f.size
-		FROM filemail f
-		JOIN filemailawaiting fa ON f.id = fa.filemail_id
+		FROM filemails f
+		JOIN filemail_queue fa ON f.id = fa.filemail_id
 		WHERE fa.link_id = ?
 		ORDER BY f.created ASC
 	`
@@ -243,19 +243,19 @@ func (j *JnodeQueueManager) getOutboundFilemail(linkID int64) ([]FileEntry, erro
 }
 
 func (j *JnodeQueueManager) markEchomailSent(linkID, echomailID int64) error {
-	query := "DELETE FROM echomailawaiting WHERE link_id = ? AND echomail_id = ?"
+	query := "DELETE FROM echomail_queue WHERE link_id = ? AND echomail_id = ?"
 	_, err := j.db.Exec(query, linkID, echomailID)
 	return err
 }
 
 func (j *JnodeQueueManager) markNetmailSent(netmailID int64) error {
-	query := "UPDATE netmail SET send = true WHERE id = ?"
+	query := "UPDATE netmails SET send = true WHERE id = ?"
 	_, err := j.db.Exec(query, netmailID)
 	return err
 }
 
 func (j *JnodeQueueManager) markFilemailSent(linkID, filemailID int64) error {
-	query := "DELETE FROM filemailawaiting WHERE link_id = ? AND filemail_id = ?"
+	query := "DELETE FROM filemail_queue WHERE link_id = ? AND filemail_id = ?"
 	_, err := j.db.Exec(query, linkID, filemailID)
 	return err
 }

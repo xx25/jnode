@@ -77,7 +77,7 @@ public class ScriptEditRoute implements Handler {
         html.append("reporthelper.report(\n");
         html.append("    \"828.robots\",          // ").append(html.t("scripts.param_echoarea")).append("\n");
         html.append("    \"").append(html.t("scripts.example_report_subject")).append("\",  // ").append(html.t("scripts.param_subject")).append("\n");
-        html.append("    \"SELECT e.name FROM echoarea e WHERE (SELECT COUNT(*) FROM subscription WHERE echoarea_id=e.id)=1 ORDER BY 1\",  // ").append(html.t("scripts.param_sql")).append("\n");
+        html.append("    \"SELECT e.name FROM echoareas e WHERE (SELECT COUNT(*) FROM subscriptions WHERE echoarea_id=e.id)=1 ORDER BY 1\",  // ").append(html.t("scripts.param_sql")).append("\n");
         html.append("    \"ECHOAREA\",            // ").append(html.t("scripts.param_headers")).append("\n");
         html.append("    \"50\",                  // ").append(html.t("scripts.param_col_width")).append("\n");
         html.append("    \"S\"                   // ").append(html.t("scripts.param_format")).append("\n");
@@ -90,7 +90,7 @@ public class ScriptEditRoute implements Handler {
         html.append("reporthelper.report(\n");
         html.append("    \"828.robots\",\n");
         html.append("    \"").append(html.t("scripts.example_report_multi_subject")).append("\",\n");
-        html.append("    \"SELECT e.name, e.description, COUNT(s.id) FROM echoarea e LEFT JOIN subscription s ON e.id=s.echoarea_id GROUP BY e.id\",\n");
+        html.append("    \"SELECT e.name, e.description, COUNT(s.id) FROM echoareas e LEFT JOIN subscriptions s ON e.id=s.echoarea_id GROUP BY e.id\",\n");
         html.append("    \"ECHOAREA,DESCRIPTION,SUBSCRIBERS\",  // ").append(html.t("scripts.param_headers")).append("\n");
         html.append("    \"30,40,15\",            // ").append(html.t("scripts.param_col_width")).append("\n");
         html.append("    \"S,S,S\"               // ").append(html.t("scripts.param_format")).append("\n");

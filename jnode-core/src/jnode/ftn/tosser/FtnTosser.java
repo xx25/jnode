@@ -1090,7 +1090,7 @@ public class FtnTosser {
 								linkInfo += " (address lookup failed)";
 							}
 							
-							logger.l2("ERROR-TRIGGERED CLEANUP: echomailawait " + linkInfo + 
+							logger.l2("ERROR-TRIGGERED CLEANUP: echomail_queue " + linkInfo + 
 								" - echomail record does not exist, performing emergency cleanup of broken record");
 							
 							// Emergency cleanup only triggered by detection of broken database integrity
@@ -1161,7 +1161,7 @@ public class FtnTosser {
 		
 		// Log summary of orphaned records found and cleaned
 		if (orphanedRecordsFound > 0) {
-			logger.l2("SUMMARY: Cleaned up " + orphanedRecordsFound + " orphaned echomailawait records for link_id=" + 
+			logger.l2("SUMMARY: Cleaned up " + orphanedRecordsFound + " orphaned echomail_queue records for link_id=" + 
 				link.getId() + " (address=" + link.getLinkAddress() + ")");
 		}
 		
@@ -1176,7 +1176,7 @@ public class FtnTosser {
 	}
 
 	/**
-	 * Enhanced cleanup method for orphaned echomailawait records
+	 * Enhanced cleanup method for orphaned echomail_queue records
 	 * Handles transaction issues and provides better error reporting
 	 */
 	private void deleteEAmailSafe(EchomailAwaiting e) {
@@ -1186,12 +1186,12 @@ public class FtnTosser {
 		try {
 			linkId = (e.getLink() != null) ? e.getLink().getId() : null;
 		} catch (Exception ex) {
-			logger.l1("ERROR: Cannot get link_id from orphaned echomailawait record: " + ex.getMessage());
+			logger.l1("ERROR: Cannot get link_id from orphaned echomail_queue record: " + ex.getMessage());
 			return;
 		}
 		
 		if (linkId == null) {
-			logger.l1("ERROR: Cannot delete orphaned echomailawait record - link_id is null");
+			logger.l1("ERROR: Cannot delete orphaned echomail_queue record - link_id is null");
 			return;
 		}
 		
@@ -1199,7 +1199,7 @@ public class FtnTosser {
 		try {
 			ORMManager.get(EchomailAwaiting.class).delete(e);
 			deleted = true;
-			logger.l4("Successfully deleted orphaned echomailawait record using object delete for link_id=" + linkId);
+			logger.l4("Successfully deleted orphaned echomail_queue record using object delete for link_id=" + linkId);
 		} catch (Exception ex) {
 			logger.l4("Object delete failed for link_id=" + linkId + " (expected for tables without ID field): " + ex.getMessage());
 		}
@@ -1211,7 +1211,7 @@ public class FtnTosser {
 				ORMManager.get(EchomailAwaiting.class).delete("link_id", "=", e.getLink(), "echomail_id", "null");
 				ORMManager.get(EchomailAwaiting.class).delete("link_id", "=", e.getLink(), "echomail_id", "=", e.getMail());
 				deleted = true;
-				logger.l4("Successfully deleted orphaned echomailawait record using criteria delete for link_id=" + linkId);
+				logger.l4("Successfully deleted orphaned echomail_queue record using criteria delete for link_id=" + linkId);
 			} catch (Exception ex) {
 				logger.l3("Criteria delete also failed for link_id=" + linkId + ": " + ex.getMessage());
 			}
@@ -1222,12 +1222,12 @@ public class FtnTosser {
 			try {
 				// Get count before deletion to verify
 				List<EchomailAwaiting> beforeCount = ORMManager.get(EchomailAwaiting.class).getAnd("link_id", "=", linkId);
-				logger.l4("Found " + beforeCount.size() + " echomailawait records for link_id=" + linkId + " before cleanup");
+				logger.l4("Found " + beforeCount.size() + " echomail_queue records for link_id=" + linkId + " before cleanup");
 				
 				// Use executeRaw with a more comprehensive delete
 				ORMManager.get(EchomailAwaiting.class).executeRaw(
-					"DELETE FROM echomailawait WHERE link_id = " + linkId + 
-					" AND (echomail_id IS NULL OR echomail_id NOT IN (SELECT id FROM echomail))");
+					"DELETE FROM echomail_queue WHERE link_id = " + linkId + 
+					" AND (echomail_id IS NULL OR echomail_id NOT IN (SELECT id FROM echomails))");
 				
 				List<EchomailAwaiting> afterCount = ORMManager.get(EchomailAwaiting.class).getAnd("link_id", "=", linkId);
 				logger.l3("RAW SQL cleanup for link_id=" + linkId + " completed. Before: " + beforeCount.size() + 
@@ -1241,12 +1241,12 @@ public class FtnTosser {
 		}
 		
 		if (!deleted) {
-			logger.l1("CRITICAL: Could not delete orphaned echomailawait record for link_id=" + linkId);
+			logger.l1("CRITICAL: Could not delete orphaned echomail_queue record for link_id=" + linkId);
 		}
 	}
 
 	/**
-	 * Emergency cleanup method for orphaned echomailawait records
+	 * Emergency cleanup method for orphaned echomail_queue records
 	 * NOTE: This method is intentionally disabled to prevent proactive cleanup.
 	 * Cleanup should only be triggered by actual error detection during message processing.
 	 * 

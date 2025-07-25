@@ -29,7 +29,7 @@ import com.j256.ormlite.table.DatabaseTable;
  * @author kreon
  * 
  */
-@DatabaseTable(tableName = "scripthelpers")
+@DatabaseTable(tableName = "script_helpers")
 public class ScriptHelper {
 	@DatabaseField(id = true, columnName = "helper")
 	private String id;

@@ -30,7 +30,7 @@ import com.j256.ormlite.table.DatabaseTable;
  * @author Manjago
  *
  */
-@DatabaseTable(tableName = "jscripts")
+@DatabaseTable(tableName = "javascript_code")
 public class Jscript {
 	@DatabaseField(columnName = "id", generatedId = true)
 	private Long id;
