@@ -210,12 +210,12 @@ public class Main {
 	}
 
 	private static void tryRedirectLog() {
-		String redirectMask = MainHandler.getCurrentInstance().getProperty(
-				LOGFILE, "");
-		if (redirectMask.length() != 0) {
-			String zipMask = MainHandler.getCurrentInstance().getProperty(
-					LOGZIPPATH, "");
-			new Redirector(redirectMask, zipMask).invoke();
+		String logFile = MainHandler.getCurrentInstance().getProperty(
+				LOGFILE, "log/jnode.log");
+		if (logFile.length() != 0) {
+			String zipPath = MainHandler.getCurrentInstance().getProperty(
+					LOGZIPPATH, "log/old/");
+			new Redirector(logFile, zipPath).invoke();
 		}
 	}
 
