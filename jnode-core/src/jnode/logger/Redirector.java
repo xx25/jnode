@@ -37,22 +37,29 @@ public class Redirector implements Runnable {
 
     private final Logger logger = Logger.getLogger(Redirector.class);
     private final String pathPrefix;
-    private final String zipPrefix;
+    private final String zipPath;
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yy-MM-dd-HH-mm-ss");
 
     private String lastLogFilename;
+    private String currentLogFile;
 
-    public Redirector(String pathPrefix, String zipPrefix) {
-        this.pathPrefix = pathPrefix;
-        this.zipPrefix = zipPrefix;
+    public Redirector(String logFile, String zipPath) {
+        this.pathPrefix = FileUtils.getPathPart(logFile);
+        this.zipPath = zipPath;
+        this.currentLogFile = logFile;
     }
 
     public void invoke() {
 
-        if (pathPrefix == null) {
+        if (currentLogFile == null) {
             return;
         }
 
+        // Create log directory if it doesn't exist
+        File logDir = new File(pathPrefix);
+        if (!logDir.exists()) {
+            logDir.mkdirs();
+        }
 
         File[] files = needZip() ? getFilesToZip() : null;
         redirect();
@@ -70,12 +77,17 @@ public class Redirector implements Runnable {
     }
 
     private File[] getFilesToZip() {
-        File directory = new File(FileUtils.getPathPart(fullLogFileName("1")));
+        File directory = new File(FileUtils.getPathPart(currentLogFile));
 
         return directory.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
-                return pathname.getName().endsWith(".log");
+                String name = pathname.getName();
+                // Accept files matching the pattern: prefix + timestamp + .log
+                // but not the current log file
+                return name.endsWith(".log") && 
+                       name.matches(".*\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}\\.log$") &&
+                       !pathname.getAbsolutePath().equals(currentLogFile);
             }
         });
     }
@@ -98,7 +110,7 @@ public class Redirector implements Runnable {
 
         String result = lastLogFilename;
         lastLogFilename = DATE_FORMAT.format(new Date());
-        String logpath = fullLogFileName(lastLogFilename);
+        String logpath = currentLogFile;
 
         try {
             PrintStream out = new PrintStream(
@@ -116,46 +128,77 @@ public class Redirector implements Runnable {
     }
 
     private String fullLogFileName(String logFileName) {
-        return pathPrefix + logFileName + ".log";
+        String baseName = new File(currentLogFile).getName();
+        if (baseName.endsWith(".log")) {
+            baseName = baseName.substring(0, baseName.length() - 4);
+        }
+        return pathPrefix + File.separator + baseName + "-" + logFileName + ".log";
     }
 
     private String fullZipFileName(String filename) {
-        return zipPrefix + filename + ".zip";
+        // Ensure zipPath ends with separator
+        String zipDir = zipPath;
+        if (!zipDir.endsWith(File.separator)) {
+            zipDir += File.separator;
+        }
+        return zipDir + new File(filename).getName() + ".zip";
     }
 
     @Override
     public void run() {
         PrintStream oldOut = System.out;
         logger.l5("oldOut " + oldOut);
-        final String oldLogName = redirect();
+        
+        // Rename current log file with timestamp before redirecting
+        final String oldLogName = DATE_FORMAT.format(new Date());
+        File currentLog = new File(currentLogFile);
+        File renamedLog = new File(fullLogFileName(oldLogName));
+        
+        if (currentLog.exists()) {
+            if (currentLog.renameTo(renamedLog)) {
+                logger.l5("renamed current log file to " + renamedLog.getAbsolutePath());
+            } else {
+                logger.l1("failed to rename current log file to " + renamedLog.getAbsolutePath());
+            }
+        }
+        
+        // Now redirect to fresh log file
+        redirect();
         oldOut.close();
         logger.l5("close " + oldOut);
 
-        if (needZip()) {
+        if (needZip() && renamedLog.exists()) {
             ThreadPool.execute(new Runnable() {
                 @Override
                 public void run() {
-                    moveToZip(fullLogFileName(oldLogName));
+                    moveToZip(renamedLog.getAbsolutePath());
                 }
             });
         }
     }
 
     private boolean needZip() {
-        return zipPrefix != null && zipPrefix.length() != 0;
+        return zipPath != null && zipPath.length() != 0;
     }
 
     private void moveToZip(String filename) {
         if (!needZip()){
             return;
         }
+        
+        // Create zip directory if it doesn't exist
+        File zipDir = new File(zipPath);
+        if (!zipDir.exists()) {
+            zipDir.mkdirs();
+        }
+        
         String nameInsideZip = new File(filename).getName();
-        String zipPath = fullZipFileName(nameInsideZip);
+        String zipFilePath = fullZipFileName(filename);
         try {
             FileUtils.zipFile(filename,
-                    zipPath, nameInsideZip);
+                    zipFilePath, nameInsideZip);
             logger.l5(MessageFormat.format("zip file {0} to {1}",
-                    filename, zipPath));
+                    filename, zipFilePath));
             if (new File(filename).delete()){
                 logger.l5("delete " + filename);
             } else {
@@ -163,7 +206,7 @@ public class Redirector implements Runnable {
             }
         } catch (IOException e) {
             logger.l1(MessageFormat.format("fail zip file {0} to {1}",
-                    filename, zipPath), e);
+                    filename, zipFilePath), e);
         }
     }
 
