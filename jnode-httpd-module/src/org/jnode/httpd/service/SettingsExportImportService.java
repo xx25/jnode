@@ -164,6 +164,9 @@ public class SettingsExportImportService {
                 }
             }
             
+            // Update sequences after import
+            updateSequences();
+            
             result.setSuccess(true);
             logger.l4("Settings import completed successfully");
             
@@ -700,6 +703,30 @@ public class SettingsExportImportService {
             logger.l2("Error in insertWithPreservedId for " + entityClass.getSimpleName() + ": " + e.getMessage());
             logger.l2("Falling back to regular save - ID may not be preserved");
             dao.save(entity);
+        }
+    }
+    
+    /**
+     * Update PostgreSQL sequences after importing with preserved IDs
+     */
+    private void updateSequences() throws SQLException {
+        logger.l4("Updating database sequences after import");
+        
+        for (Class<?> entityClass : EXPORT_ENTITIES) {
+            if (hasGeneratedId(entityClass)) {
+                try {
+                    String tableName = getTableName(entityClass);
+                    String sequenceName = tableName + "_id_seq";
+                    
+                    // Update sequence to max ID + 1
+                    String sql = "SELECT setval('" + sequenceName + "', (SELECT COALESCE(MAX(id), 0) FROM " + tableName + "))";
+                    ORMManager.get(entityClass).executeRaw(sql);
+                    
+                    logger.l4("Updated sequence " + sequenceName + " for table " + tableName);
+                } catch (Exception e) {
+                    logger.l2("Error updating sequence for " + entityClass.getSimpleName() + ": " + e.getMessage());
+                }
+            }
         }
     }
     
